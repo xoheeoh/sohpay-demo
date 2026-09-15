@@ -1,0 +1,43 @@
+project_id = "sohpay-demo"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 200
+
+[db]
+port = 54322
+major_version = 17
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+site_url = "http://localhost:8081"
+additional_redirect_urls = ["sohpay://"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false   # 데모라 메일 확인 단계를 건너뛴다
+
+# 브라우저(웹뷰)가 직접 여는 화면이라 JWT 검증을 끈다.
+# 대신 URL 서명(_shared/signature.ts)과 10분 만료로 접근을 제한한다.
+[functions.charge-checkout]
+verify_jwt = false
+
+[functions.identity]
+verify_jwt = false
+
+[functions.charges]
+verify_jwt = true
+
+[functions.account-verify]
+verify_jwt = true
