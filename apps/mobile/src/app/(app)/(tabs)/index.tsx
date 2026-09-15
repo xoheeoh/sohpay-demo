@@ -6,6 +6,7 @@ import { Card, EmptyState, Skeleton, Typography } from '@/components/ui';
 import { BalanceCard } from '@/components/dashboard/BalanceCard';
 import { TransactionRow } from '@/components/dashboard/TransactionRow';
 import { useTheme } from '@/theme';
+import { Wordmark } from '@/components/brand/Wordmark';
 import { wallet } from '@/lib/api';
 import { keys } from '@/lib/query';
 import { useAuth } from '@/lib/auth/store';
@@ -30,7 +31,7 @@ export default function HomeScreen() {
       contentContainerStyle={{ paddingTop: insets.top + space.md, paddingHorizontal: space.xl, paddingBottom: space.xxxl, gap: space.xl }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { w.refetch(); recent.refetch(); }} tintColor={colors.primary} />}>
       <View style={styles.top}>
-        <Typography variant="h2" color="primary" weight="800">SohPay</Typography>
+        <Wordmark height={24} />
         <Typography variant="label" color="textMuted" onPress={() => router.push('/(app)/demo/qr')}>데모 가맹점 →</Typography>
       </View>
 

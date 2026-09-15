@@ -1,4 +1,9 @@
-# SohPay
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/lockup-dark.png">
+    <img src="docs/brand/lockup-light.png" alt="SohPay" width="360">
+  </picture>
+</p>
 
 충전 · QR 결제 · 환불이 되는 선불 지갑 앱입니다. React Native(Expo) 한 코드베이스로 iOS · Android · Web 에서 동작합니다.
 
