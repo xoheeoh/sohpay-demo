@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Button, Screen, TextField, Typography, toast } from '@/components/ui';
 import { useTheme } from '@/theme';
+import { Wordmark } from '@/components/brand/Wordmark';
 import { useAuth } from '@/lib/auth/store';
 import { messageOf } from '@/lib/errors';
 import { useJoinFlow } from '@/lib/flows';
@@ -39,7 +40,7 @@ export default function LoginScreen() {
         </>
       }>
       <View style={[styles.hero, { paddingTop: 96, gap: space.sm }]}>
-        <Typography variant="display" color="primary">SohPay</Typography>
+        <Wordmark height={44} />
         <Typography variant="body1" color="textSub">충전하고, 스캔하고, 끝.</Typography>
       </View>
 
