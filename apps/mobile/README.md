@@ -13,32 +13,29 @@ npm run ios / android     # 시뮬레이터 (Expo Go 또는 개발 빌드)
 ## 구조
 
 ```
+App.tsx           네비게이션 스택·전역 프로바이더(로딩·다이얼로그·토스트)·폰트 로딩
 src/
-  app/            expo-router 라우트 (파일 = 화면)
-    (auth)/       로그인 · 회원가입 4단계
-    (app)/        로그인 후 영역
-      (tabs)/     홈 · 내역 · 전체
-      charge/     금액 → 수단 → 결제창 → 결과
-      pay/        스캔 → 확인 → PIN → 완료
-      refund/     금액 → PIN → 완료
-      accounts/   계좌 목록 · 1원 인증 등록
-      ...
-  components/     ui (디자인 시스템) · dashboard · 플랫폼 분기 컴포넌트
-  lib/
-    api/          Supabase 호출을 도메인별로 묶음. 화면은 supabase 를 직접 만지지 않는다.
-    auth/         세션 스토어 (zustand)
-    errors.ts     서버 오류 코드 → 사용자 문구
-    flows.ts      여러 화면에 걸친 임시 상태
-  theme/          토큰 · ThemeProvider (라이트/다크)
+  screens/        화면 (React Navigation native-stack)
+  components/     common (디자인 시스템) · dashboard · uselist
+  svc/apis/       API 어댑터 — 화면이 기대하는 { resultCd, ... } 응답을 Supabase 호출로 만든다
+  svc/contexts/   Dialog · Loading · Navigation 컨텍스트
+  svc/storages/   AsyncStorage + 보안 저장소(expo-secure-store)
+  styles/         colors · layout · theme
+  utils/          포맷터 · 검증 · 결제 콜백 파싱 · 은행 앱 링크
+  shims/          Expo 환경 대역 (env, linear-gradient, 웹용 WebView)
 ```
 
-## 플랫폼 분기
+## Expo 이식 시 바뀐 것
 
-| 기능 | 네이티브 | 웹 |
+| 원본 | 이 앱 | 이유 |
 |---|---|---|
-| 세션 저장 | expo-secure-store (2KB 조각 저장) | localStorage |
-| 결제창 | WebView, `sohpay://` 가로채기 | iframe + 서버 상태 폴링 |
-| QR 스캔 | expo-camera | 카메라 가능하나 코드 직접 입력을 안내 |
-| 확인 대화상자 | Alert | window.confirm |
+| react-native-vision-camera | expo-camera | Expo 관리형 프로젝트에서 바로 동작 |
+| react-native-encrypted-storage | expo-secure-store (웹: localStorage) | 동일 역할, 2KB 제한은 조각 저장으로 처리 |
+| @react-native-camera-roll + react-native-permissions | expo-media-library | 권한 요청과 저장을 한 모듈이 처리 |
+| react-native-device-info / version-check | expo-application | 스토어 미배포라 현재 버전만 표시 |
+| react-native-linear-gradient | expo-linear-gradient (shim) | 같은 API |
+| react-native-dotenv `@env` | `EXPO_PUBLIC_*` (shim) | Expo 환경변수 규칙 |
+| 네이티브 폰트 링크 | expo-font 런타임 로드 | |
+| axios + 단일 엔드포인트 | Supabase SDK | 화면 코드는 응답 모양이 같아 그대로 |
 
-파일명 `.web.tsx` 로 분기한 컴포넌트는 `CheckoutView` 하나이고, 나머지는 `Platform.OS` 로 처리한다.
+웹에서는 WebView 가 iframe 대역으로 동작하고(`src/shims/webview`), 카메라 대신 결제코드 직접 입력을 안내합니다.

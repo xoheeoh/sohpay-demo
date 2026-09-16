@@ -11,7 +11,7 @@
 | 금액은 원(KRW) 단위 정수 | 화면에서 `toLocaleString` 만 적용, 소수 처리 없음 |
 | 돈이 움직이는 요청은 `idempotency_key` 필수. 재요청 시 `replayed: true` | 재시도 시 같은 키 재사용 |
 | PIN 실패는 예외가 아니라 `{ ok: false, code, remainingAttempts }` 응답 | `assertOk()` 로 검사 후 남은 횟수 표시 |
-| 그 외 실패는 오류 코드 문자열로 응답 (`error.message`) | `lib/errors.ts` 에서 문구로 변환 |
+| 그 외 실패는 오류 코드 문자열로 응답 (`error.message`) | `apps/mobile/src/svc/apis/client.ts` 에서 문구로 변환 |
 | 조회는 RLS 로 본인 데이터만 반환 | 쿼리에 사용자 필터를 넣지 않음 |
 
 ## 1. 인증
@@ -77,9 +77,13 @@ GET /rest/v1/transactions
 
 | 동작 | 호출 | 설명 |
 |---|---|---|
-| QR 해석 | `POST /rest/v1/rpc/resolve_payment_request` | `{ qr_token }` → 가맹점/금액/상품명. 만료·중복사용 검사 |
-| 결제 실행 | `POST /rest/v1/rpc/execute_payment` | `{ qr_token, pin, idempotency_key }` |
+| QR 해석 | `POST /rest/v1/rpc/resolve_payment_request` | `{ qr_token }` → 가맹점/금액/상품명 + `attemptKey`. 만료·중복사용 검사 |
+| 결제 실행 | `POST /rest/v1/rpc/execute_payment` | `{ qr_token, pin, idempotency_key }` — `idempotency_key` 에는 해석 시 받은 `attemptKey` 를 그대로 보낸다 |
 | 코드 직접 입력 | 동일 RPC (`qr_token`에 수기 입력 코드) | |
+
+일반 QR 은 발급 후 5분간 유효하고 한 번 결제되면 `USED` 가 된다. README 에 실린 **데모 QR**(`reusable = true`) 은
+만료되지 않고 몇 번이든 결제할 수 있으며, 결제마다 새 거래(새 주문번호)가 생긴다. 이때 `attemptKey` 는 해석마다 새로 발급되므로
+같은 QR 을 다시 스캔하면 새 결제, 같은 화면에서 PIN 을 다시 입력하면 같은 결제(멱등)로 처리된다.
 
 `execute_payment` 내부 순서: PIN 검증 → 요청 유효성 → 지갑 행 잠금 → 잔액 확인 → 거래 생성 → 원장 기록 → 잔액 갱신. **단일 트랜잭션.**
 

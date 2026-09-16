@@ -15,6 +15,24 @@ insert into public.merchants (mid, name, category, address, business_no, logo_em
   ('M20260008', '종로 약국',           '약국',       '서울 종로구 종로 89',      '120-81-00008', '💊')
 on conflict (mid) do nothing;
 
+-- ── 데모용 상시 결제 QR ──────────────────────────────────────────────
+-- README 에 인쇄된 QR / 결제코드. 만료되지 않고 몇 번이든 결제할 수 있다 (0700_demo_qr 참고).
+-- 결제코드 화면이 숫자 입력이므로 토큰도 숫자로 둔다.
+insert into public.payment_requests (merchant_id, qr_token, order_no, goods_name, amount, supply_amount, vat,
+                                     expires_at, reusable)
+select m.id, d.token, d.order_no, d.goods, d.amount, round(d.amount / 1.1), d.amount - round(d.amount / 1.1),
+       timestamptz '2099-12-31 23:59:59+09', true
+  from (values
+    ('M20260001', '20260001', 'DEMO-CAFE',   '아메리카노 1잔',   4500),
+    ('M20260003', '20260003', 'DEMO-STORE',  '생수 외 3건',     12400),
+    ('M20260007', '20260007', 'DEMO-RAMEN',  '돈코츠 라멘',     13500)
+  ) as d(mid, token, order_no, goods, amount)
+  join public.merchants m on m.mid = d.mid
+on conflict (qr_token) do update
+   set goods_name = excluded.goods_name, amount = excluded.amount,
+       supply_amount = excluded.supply_amount, vat = excluded.vat,
+       expires_at = excluded.expires_at, reusable = true, status = 'OPEN';
+
 insert into public.notices (title, body, is_pinned, published_at) values
   ('서비스 점검 안내', E'더 나은 서비스를 위해 정기 점검을 진행합니다.\n\n· 일시: 매월 둘째 주 화요일 02:00~04:00\n· 영향: 충전 및 결제 일시 중단', true, now() - interval '2 days'),
   ('QR 결제 한도 상향 안내', E'1회 결제 한도가 30만원에서 50만원으로 상향되었습니다.\n1일 한도는 200만원으로 유지됩니다.', false, now() - interval '9 days'),
@@ -75,7 +93,9 @@ begin
     insert into public.transactions (user_id, type, status, amount, charge_method, order_no,
                                      goods_name, approved_at, created_at)
     values (p_user_id, 'CHARGE', 'APPROVED', r.amt, r.method::public.charge_method,
-            'SEEDCHG' || v_seq, '잔액 충전',
+            -- 실제 충전 플로우(create_charge)와 같은 형식: CHG + 일시 + 4자리
+            'CHG' || to_char(now() - (r.days_ago || ' days')::interval, 'YYYYMMDDHH24MISS') || lpad(v_seq::text, 4, '0'),
+            '잔액 충전',
             now() - (r.days_ago || ' days')::interval,
             now() - (r.days_ago || ' days')::interval)
     returning * into v_tx;
@@ -104,7 +124,9 @@ begin
     insert into public.transactions (user_id, type, status, amount, merchant_id, order_no,
                                      goods_name, approved_at, created_at)
     values (p_user_id, 'PAYMENT', 'APPROVED', r.amount, r.merchant_id,
-            'SEEDPAY' || v_seq, r.goods,
+            -- 실제 결제 플로우(issue_payment_request)와 같은 형식: ORD + 일시 + 3자리
+            'ORD' || to_char(now() - (r.days_ago || ' days')::interval, 'YYYYMMDDHH24MISSMS') || lpad(v_seq::text, 3, '0'),
+            r.goods,
             now() - (r.days_ago || ' days')::interval,
             now() - (r.days_ago || ' days')::interval)
     returning * into v_tx;

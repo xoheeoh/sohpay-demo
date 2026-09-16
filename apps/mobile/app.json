@@ -6,12 +6,15 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "sohpay",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
       "bundleIdentifier": "app.sohpay.demo",
       "supportsTablet": false,
-      "infoPlist": { "NSCameraUsageDescription": "가맹점 QR 코드를 스캔해 결제하기 위해 카메라를 사용합니다." }
+      "infoPlist": {
+        "NSCameraUsageDescription": "가맹점 QR 코드를 스캔해 결제하기 위해 카메라를 사용합니다.",
+        "NSPhotoLibraryAddUsageDescription": "결제 내역 이미지를 사진에 저장하기 위해 사용합니다."
+      }
     },
     "android": {
       "package": "app.sohpay.demo",
@@ -30,11 +33,11 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-router",
       "expo-secure-store",
+      "expo-font",
       ["expo-camera", { "cameraPermission": "가맹점 QR 코드를 스캔해 결제하기 위해 카메라를 사용합니다." }],
+      ["expo-media-library", { "savePhotosPermission": "결제 내역 이미지를 사진에 저장하기 위해 사용합니다." }],
       ["expo-splash-screen", { "backgroundColor": "#1E63F0", "image": "./assets/images/splash-icon.png", "imageWidth": 76 }]
-    ],
-    "experiments": { "typedRoutes": true, "reactCompiler": true }
+    ]
   }
 }

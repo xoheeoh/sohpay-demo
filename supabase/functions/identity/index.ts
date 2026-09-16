@@ -3,7 +3,7 @@
  *
  *   POST /functions/v1/identity/start      → { verificationId, checkoutUrl }
  *   GET  /functions/v1/identity/page?id=&sig=   인증 화면
- *   POST /functions/v1/identity/page?id=&sig=   인증 완료 → 앱 딥링크
+ *   POST /functions/v1/identity/page?id=&sig=   인증 완료 → 결과를 앱에 postMessage
  *   POST /functions/v1/identity/result     → { name, birthDate, phone, memberAuthKey }
  *
  * 가입 전 단계라 로그인 세션이 없다. 그래서 verify_jwt = false 로 두고,
@@ -14,6 +14,7 @@
  */
 import { asService, DEEP_LINK, FUNCTIONS_URL } from '../_shared/clients.ts';
 import { json, fail, html, redirect, preflight } from '../_shared/http.ts';
+import { bridgePage } from '../_shared/bridge.ts';
 import { sign, verify, TTL_MS } from '../_shared/signature.ts';
 import { shell, esc } from '../_shared/page.ts';
 
@@ -81,7 +82,15 @@ Deno.serve(async (req) => {
         .eq('id', id)
         .eq('status', 'PENDING');
 
-      return redirect(`${DEEP_LINK}join/identity?verificationId=${id}&status=VERIFIED`);
+      // 앱 웹뷰에는 postMessage(certData/nonce = 인증 id) 로, 그 외에는 딥링크로 결과를 돌려준다.
+      return bridgePage(
+        '본인인증 완료',
+        '모의 본인인증',
+        '본인인증이 완료되었습니다',
+        '앱으로 돌아가 가입을 계속합니다.',
+        { resultCd: '0000', resultMsg: '본인인증 성공', certData: id, nonce: id },
+        `${DEEP_LINK}join/identity?verificationId=${id}&status=VERIFIED`
+      );
     }
 
     const err = url.searchParams.get('err')
