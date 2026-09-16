@@ -86,8 +86,8 @@ begin
   insert into public.wallets (user_id) values (p_user_id) on conflict (user_id) do nothing;
   select * into v_wallet from public.wallets where user_id = p_user_id;
 
-  -- 충전 2건
-  for r in select * from (values (200000, 'BANK_TRANSFER', 26), (100000, 'VIRTUAL_ACCOUNT', 12)) as t(amt, method, days_ago)
+  -- 충전 3건 (75일 전 1건은 이용내역 "3개월" 필터에서만 보이는 케이스)
+  for r in select * from (values (150000, 'BANK_TRANSFER', 75), (200000, 'BANK_TRANSFER', 26), (100000, 'VIRTUAL_ACCOUNT', 12)) as t(amt, method, days_ago)
   loop
     v_seq := v_seq + 1;
     insert into public.transactions (user_id, type, status, amount, charge_method, order_no,
@@ -104,7 +104,7 @@ begin
     update public.transactions set balance_after = v_balance where id = v_tx.id;
   end loop;
 
-  -- 결제 이력
+  -- 결제 이력 (34일 전 이후 4건은 이용내역 "3개월" 필터에서만 보이는 케이스)
   for r in
     select m.id as merchant_id, g.amount, g.goods, g.days_ago
       from (values
@@ -115,7 +115,11 @@ begin
         ('M20260007', 13500, '돈코츠 라멘',     8),
         ('M20260006', 18000, '단행본 1권',     11),
         ('M20260005', 99000, '헬스 1개월권',   15),
-        ('M20260008',  6200, '종합비타민',     19)
+        ('M20260008',  6200, '종합비타민',     19),
+        ('M20260002',  8500, '떡볶이 세트',    34),
+        ('M20260004', 15600, '식빵 외 3건',    45),
+        ('M20260001',  4500, '아메리카노 1잔', 58),
+        ('M20260007', 27000, '라멘 2인 세트',  70)
       ) as g(mid, amount, goods, days_ago)
       join public.merchants m on m.mid = g.mid
      order by g.days_ago desc   -- 오래된 것부터 넣어 순번을 예측 가능하게 둔다

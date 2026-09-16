@@ -52,6 +52,9 @@ const UseListScreen: React.FC<UseListScreenProps> = () => {
       case '1month':
         setPeriodPlaceholder('1개월');
         break;
+      case '3months':
+        setPeriodPlaceholder('3개월');
+        break;
       case 'specific':
         setPeriodPlaceholder('직접입력');
         break;
