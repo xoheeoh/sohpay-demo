@@ -14,9 +14,9 @@
 
 ```
 supabase/
-  migrations/   스키마 · RLS · 도메인 함수 · 재사용 데모 QR (7개)
+  migrations/   스키마 · RLS · 도메인 함수 · 재사용 데모 QR · 데모 회원 부트스트랩 (8개)
   functions/    Edge Functions — 모의 PG 결제창, 모의 본인인증, 모의 1원 인증
-  seed.sql      가맹점 · 공지 · FAQ · 약관 · 데모 QR(상시) · 데모 회원 부트스트랩
+  seed.sql      가맹점 · 공지 · FAQ · 약관 · 데모 QR(상시)
   config.toml   로컬 스택 설정
 ```
 

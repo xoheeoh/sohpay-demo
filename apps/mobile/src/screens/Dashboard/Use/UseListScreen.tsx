@@ -4,7 +4,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Divider } from 'react-native-paper';
 
 import type { RootStackParamList } from '@typ/navigation';
-import { IChargeList, IRefundList, IUseList } from '@typ/paymentType';
+import { TransactionListItem } from '@typ/paymentType';
 import { convertDateWithoutHypen, getDateWithHypen, getOneWeekAgoDate } from '@utils/formatter';
 import { useDialog } from '@contexts/DialogContext';
 import { loadTransactionList } from '@apis/paymentApi';
@@ -70,9 +70,9 @@ const UseListScreen: React.FC<UseListScreenProps> = () => {
    * 거래 종류 select 클릭하면 해당 BottomSheet 등장
    * 라디오 버튼 선택 값에 따라 getCd 값 설정
    */
-  const [tempGetCd, setTempGetCd] = useState<string>('USE'); // 거래종류 셀렉트 박스에서 선택된 값 (모달에 전달)
-  const [actualGetCd, setActualGetCd] = useState<string>('USE'); // 실제 조회에 사용할 getCd (출금 선택 시 RFND로 변경됨)
-  const [getCd, setGetCd] = useState<string>('USE'); // USE: 결제, CHRG: 충전, RFND: 출금 (실제 조회에 사용하는 거래종류 값)
+  const [tempGetCd, setTempGetCd] = useState<string>('USE'); // 거래종류 셀렉트 박스에서 선택된 값 ALL | USE | CHRG (거래상태 모달에 전달)
+  const [actualGetCd, setActualGetCd] = useState<string>('USE'); // 실제 조회에 사용할 getCd (충전 종류에서 거래 상태를 고르면 CHRG_RFND | CHRG | RFND 로 바뀜)
+  const [getCd, setGetCd] = useState<string>('USE'); // 조회 버튼을 누른 시점의 getCd: ALL 모두 | USE 결제 | CHRG 충전 | RFND 출금 | CHRG_RFND 충전+출금
   const [getCdModal, setGetCdModal] = useState<boolean>(false); // 거래종류 선택 BottomSheet
 
   const [selectedGetCd, setSelectedGetCd] = useState<string>('use'); // 선택된 radio value값
@@ -82,26 +82,22 @@ const UseListScreen: React.FC<UseListScreenProps> = () => {
   // 모달로부터 값 전달받는 이벤트
   const handleGetCdChange = (selectedGetCd: string, radio: string) => {
     setTempGetCd(selectedGetCd); // 모달에 전달할 값
-    setActualGetCd(selectedGetCd); // 실제 조회에 사용할 값 초기화
     setSelectedGetCd(radio);
 
-    // 거래 종류에 따른 거래 상태 첫 번째 값으로 초기화
-    let firstTrxSt = { id: '', label: '거래상태', value: '' };
-
-    if (selectedGetCd === 'USE') {
-      firstTrxSt = { id: 'all', label: '모두', value: '9' };
-    } else if (selectedGetCd === 'CHRG') {
-      firstTrxSt = { id: 'charge', label: '충전', value: '9' };
-    }
-
-    setTrxStCd(firstTrxSt.value);
-    setSelectedTrxStCd(firstTrxSt.id);
-    setTrxStCdPlaceholder(firstTrxSt.label);
+    // 거래 종류가 바뀌면 거래 상태는 "모두"로 되돌린다.
+    // 충전 종류의 "모두"는 충전+출금이라 실제 조회 getCd 가 CHRG_RFND 가 된다.
+    setActualGetCd(selectedGetCd === 'CHRG' ? 'CHRG_RFND' : selectedGetCd);
+    setTrxStCd('9');
+    setSelectedTrxStCd('all');
+    setTrxStCdPlaceholder('모두');
   };
 
   // selectedGetCd 변경되었을 때 placeholder 업데이트
   useEffect(() => {
     switch (selectedGetCd) {
+      case 'all':
+        setGetCdPlaceholder('모두');
+        break;
       case 'use':
         setGetCdPlaceholder('결제');
         break;
@@ -168,7 +164,7 @@ const UseListScreen: React.FC<UseListScreenProps> = () => {
    * 조회 데이터 및 페이지 상태관리
    * 스크롤이 리스트 맨 아래에 도달하면 다음 페이지 보이기 (무한 스크롤)
    */
-  const [listData, setListData] = useState<any[]>([]); // 사용 내역
+  const [listData, setListData] = useState<TransactionListItem[]>([]); // 사용 내역 (모두 조회 시 종류가 섞여 있음)
 
   const [startIdx, setStartIdx] = useState(0); // 항목 시작 번호
   const [maxCount] = useState(10); // 한 번에 가져올 최대 항목 수
@@ -305,17 +301,15 @@ const UseListScreen: React.FC<UseListScreenProps> = () => {
       <FlatList
         contentContainerStyle={{ paddingHorizontal: 16 }}
         data={listData}
-        keyExtractor={(item, index) => `${item.tid}-${index}`}
+        keyExtractor={(item, index) => `${item.getCd}-${'tid' in item ? item.tid : item.rfndNo}-${index}`}
         renderItem={({ item }) => {
-          if (getCd === 'USE') {
-            const useItem = item as IUseList;
-            return <UseComponent getCd={getCd} item={useItem} />;
-          } else if (getCd === 'CHRG') {
-            const chargeItem = item as IChargeList;
-            return <ChargeComponent item={chargeItem} getCd={getCd} />;
+          // 화면 전체 조회 조건이 아니라 각 건의 종류(item.getCd)로 행 모양을 정한다 ("모두" 조회 시 섞여 있음)
+          if (item.getCd === 'USE') {
+            return <UseComponent getCd={item.getCd} item={item} />;
+          } else if (item.getCd === 'CHRG') {
+            return <ChargeComponent item={item} getCd={item.getCd} />;
           } else {
-            const refundItem = item as IRefundList;
-            return <RefundComponent item={refundItem} getCd={getCd} />;
+            return <RefundComponent item={item} getCd={item.getCd} />;
           }
         }}
         ItemSeparatorComponent={() => <Divider style={{ backgroundColor: theme.colors.gray100 }} />}
