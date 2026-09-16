@@ -1,9 +1,14 @@
-import { useMemo } from 'react';
-import RadioGroup, { RadioButtonProps } from 'react-native-radio-buttons-group';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { theme } from '@styles';
-import { StyleSheet } from 'react-native';
 
-interface RadioButtonData extends Omit<RadioButtonProps, 'color' | 'borderColor' | 'borderSize'> {
+// 라디오 원의 크기. 모든 값이 정수 px가 되도록 잡아서 어느 화면에서도 점이 정중앙에 온다.
+// 바깥 원 22 - 테두리(2 x 2) = 안쪽 공간 18, 점 10 → 위아래·좌우 여백이 정확히 4px씩.
+const OUTER_SIZE = 22;
+const DOT_SIZE = 10;
+const BORDER_SELECTED = 2;
+const BORDER_UNSELECTED = 1.5;
+
+interface RadioButtonData {
   id: string;
   label: string;
   value: string;
@@ -16,36 +21,55 @@ interface RadioProps {
 }
 
 const Radio: React.FC<RadioProps> = ({ selectedId, setSelectedId, radioButtons }) => {
-  const radioBtnStyle = (id: string) => ({
-    borderColor: id === selectedId ? theme.colors.primary : theme.colors.gray300,
-    borderSize: id === selectedId ? 2 : 1.5,
-    size: 22,
-    color: theme.colors.primary,
-    containerStyle: { height: 48, alignSelf: 'baseline' as 'baseline', marginHorizontal: 0, marginVertical: 0 },
-  });
-
-  // 전달받은 radioButtons에 스타일 추가
-  const styledRadioButtons: RadioButtonProps[] = useMemo(
-    () =>
-      radioButtons.map((button) => ({
-        ...button,
-        ...radioBtnStyle(button.id), // 스타일 병합
-      })),
-    [radioButtons, selectedId],
-  );
-
   return (
-    <RadioGroup
-      labelStyle={styles.label}
-      radioButtons={styledRadioButtons}
-      onPress={setSelectedId}
-      selectedId={selectedId}
-    />
+    <View accessibilityRole="radiogroup" style={styles.group}>
+      {radioButtons.map((button) => {
+        const selected = button.id === selectedId;
+        return (
+          <Pressable
+            key={button.id}
+            accessibilityRole="radio"
+            accessibilityLabel={button.label}
+            accessibilityState={{ checked: selected }}
+            style={styles.row}
+            onPress={() => {
+              if (!selected) setSelectedId(button.id);
+            }}>
+            <View style={[styles.outerCircle, selected ? styles.outerCircleSelected : styles.outerCircleUnselected]}>
+              {selected && <View style={styles.dot} />}
+            </View>
+            <Text style={styles.label}>{button.label}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  group: { alignItems: 'flex-start' },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 48,
+  },
+  outerCircle: {
+    width: OUTER_SIZE,
+    height: OUTER_SIZE,
+    borderRadius: OUTER_SIZE / 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  outerCircleSelected: { borderWidth: BORDER_SELECTED, borderColor: theme.colors.primary },
+  outerCircleUnselected: { borderWidth: BORDER_UNSELECTED, borderColor: theme.colors.gray300 },
+  dot: {
+    width: DOT_SIZE,
+    height: DOT_SIZE,
+    borderRadius: DOT_SIZE / 2,
+    backgroundColor: theme.colors.primary,
+  },
   label: {
+    marginLeft: 10,
     fontFamily: 'Pretendard-Medium',
     fontSize: 15,
     lineHeight: 22,
