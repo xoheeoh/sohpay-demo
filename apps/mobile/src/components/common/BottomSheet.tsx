@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   title: { flex: 1 },
-  closeBtn: { margin: 0, width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.gray100 },
+  closeBtn: { margin: 0, width: 36, height: 36, borderRadius: 18 },
   scrollArea: {
     flex: 1, // 스크롤 가능한 영역
     maxHeight: '100%', // 최대 높이 제한
