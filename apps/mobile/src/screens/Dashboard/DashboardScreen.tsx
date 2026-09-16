@@ -1,0 +1,210 @@
+import { useCallback, useState } from 'react';
+import { FlatList, Image, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Divider, Icon } from 'react-native-paper';
+
+import { IRmnAmt, ListDataItem } from '@typ/paymentType';
+import type { RootStackParamList } from '@typ/navigation';
+import { IUserProfile } from '@typ/userType';
+import { storeData } from '@storages/asyncStorage';
+import { loadUserAmt, loadUsrInfoData } from '@apis/commonApi';
+import { getUseList } from '@apis/paymentApi';
+import { BalanceInfo, GradientButton, TransactionItem } from '@components/dashboard';
+import { ScreenWrapper, Typography } from '@components/common';
+import { layout, theme } from '@styles';
+
+type DashboardScreenProps = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
+
+const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
+  // 사용자 정보 조회 ==================================================
+  const [usrData, setUsrData] = useState<IUserProfile>();
+
+  const fetchUserInfo = async () => {
+    loadUsrInfoData().then((data) => {
+      if (data.resultCd === '0000') {
+        setUsrData(data);
+        // console.log('조회된 사용자 정보:', data);
+
+        // 사용자명 저장
+        storeData('usrNm', data.usrNm);
+      } else {
+        console.error('사용자 정보 조회 실패: ', data.resultMsg);
+      }
+    });
+  };
+  // ================================================== 사용자 정보 조회
+
+  // 회원 잔액 조회 ===================================================
+  const [rmnAmtData, setRmnAmtData] = useState<IRmnAmt>();
+  const fetchUserBalance = async () => {
+    loadUserAmt().then((data) => {
+      if (data.resultCd === '0000') {
+        setRmnAmtData(data);
+        // console.log('회원 잔액:', data);
+      } else {
+        console.error('회원 잔액 조회 실패: ', data.resultMsg);
+      }
+    });
+  };
+  // =================================================== 회원 잔액 조회
+
+  // 회원 최근 이력 조회 (20건) =========================================
+  const [useList, setUseList] = useState<ListDataItem[] | null>(null);
+  const getUseListApi = async () => {
+    try {
+      const result = await getUseList();
+      setUseList(result.listData);
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
+  // ========================================= 회원 최근 이력 조회 (20건)
+
+  // 모든 데이터 새로고침 ===============================================
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = async () => {
+    setRefreshing(true); // 새로고침 시작
+
+    await Promise.all([
+      fetchUserInfo(), // 사용자 정보 업데이트
+      fetchUserBalance(), // 회원 잔액 업데이트
+      getUseListApi(), // 회원 최근 이력 업데이트
+    ]);
+
+    setRefreshing(false); // 새로고침 완료
+  };
+  // =============================================== 모든 데이터 새로고침
+
+  // 화면 focus 시 데이터 조회 =========================================
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserInfo();
+      fetchUserBalance();
+      getUseListApi();
+    }, []),
+  );
+  // ========================================= 화면 focus 시 데이터 조회
+
+  // 최근 이용내역 조회 ================================================
+  const PAGE_SIZE = 5;
+  const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
+
+  // 최근 결제내역 아이템 렌더링
+  const renderTransactionItem = ({ item }: { item: ListDataItem }) => {
+    return <TransactionItem data={item} />;
+  };
+  // ================================================ 최근 이용내역 조회
+
+  return (
+    <ScreenWrapper backgroundColor={theme.colors.bg} topComponent={false}>
+      <ScrollView
+        contentContainerStyle={styles.wrap}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+        {/* 상단 */}
+        <View style={{ gap: 12 }}>
+          {/* 현재 잔액 */}
+          <BalanceInfo navigation={navigation} usrData={usrData} rmnAmtData={rmnAmtData} />
+
+          {/* 결제하기 버튼 */}
+          <GradientButton label={'결제하기'} onPress={() => navigation.navigate('QRscan')} />
+        </View>
+
+        {/* 하단 - 최근 이용 내역 카드 */}
+        <View style={styles.recentList}>
+          <Pressable style={styles.recentHeader} onPress={() => navigation.navigate('UseList')}>
+            <View style={[layout.rowCenter, { gap: 10 }]}>
+              <View style={styles.recentIcon}>
+                <Image source={require('@images/icon/list.png')} style={styles.icon} />
+              </View>
+              <Typography mode="subtitle1" color="gray900">
+                최근 이용 내역
+              </Typography>
+            </View>
+            <View style={[layout.rowCenter, { gap: 2 }]}>
+              <Typography mode="subtitle3" color="gray500">
+                전체보기
+              </Typography>
+              <Icon color={theme.colors.gray400} size={18} source={'chevron-right'} />
+            </View>
+          </Pressable>
+
+          {/* 리스트 */}
+          <FlatList
+            data={useList ? useList.slice(0, visibleCount) : []}
+            renderItem={renderTransactionItem}
+            keyExtractor={(item, index) => `${index}`}
+            scrollEnabled={false}
+            contentContainerStyle={{ paddingBottom: 8 }}
+            ListEmptyComponent={() => (
+              <View style={styles.empty}>
+                <Typography mode="body2" color="gray500">
+                  최근 7일간 이용 내역이 없습니다.
+                </Typography>
+              </View>
+            )}
+            ItemSeparatorComponent={() => <Divider style={styles.separator} />}
+            ListFooterComponent={() => (
+              <>
+                {useList && visibleCount < useList.length && (
+                  <Pressable
+                    style={({ pressed }) => [styles.more, pressed && { opacity: 0.6 }]}
+                    onPress={() =>
+                      setVisibleCount((prev) => (useList ? Math.min(prev + PAGE_SIZE, useList.length) : prev))
+                    }>
+                    <Typography mode="subtitle3" color="gray600">
+                      더보기
+                    </Typography>
+                    <Icon color={theme.colors.gray500} size={18} source="chevron-down" />
+                  </Pressable>
+                )}
+              </>
+            )}
+          />
+        </View>
+      </ScrollView>
+    </ScreenWrapper>
+  );
+};
+
+const styles = StyleSheet.create({
+  wrap: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: Platform.OS === 'android' ? 24 : 16, gap: 16 },
+  icon: { width: 20, height: 20 },
+  recentList: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.xl,
+    boxShadow: theme.shadow.card,
+    overflow: 'hidden',
+  },
+  recentHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  recentIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: theme.colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  separator: { backgroundColor: theme.colors.gray100, marginHorizontal: 16 },
+  empty: { paddingHorizontal: 16, paddingVertical: 24, alignItems: 'center' },
+  more: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+    marginHorizontal: 16,
+    marginTop: 4,
+    height: 40,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.gray50,
+  },
+});
+
+export default DashboardScreen;
+export { DashboardScreen };

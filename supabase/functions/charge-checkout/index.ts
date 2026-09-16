@@ -2,7 +2,7 @@
  * 모의 결제대행사(PG) 결제창.
  *
  *   GET  /functions/v1/charge-checkout?tx=&sig=   결제창 HTML
- *   POST /functions/v1/charge-checkout?tx=&sig=   승인/실패/취소 처리 후 앱으로 복귀
+ *   POST /functions/v1/charge-checkout?tx=&sig=   승인/실패/취소 처리 후 결과를 앱에 postMessage
  *
  * 실제 PG 연동에서 지켜야 할 두 가지를 그대로 흉내 냈다.
  *   1. 결제창은 로그인 세션 없이 열리므로 URL 자체에 서명을 붙인다.
@@ -12,7 +12,8 @@
  * config.toml 에서 verify_jwt = false 로 둔다 (브라우저가 직접 여는 주소).
  */
 import { asService, DEEP_LINK } from '../_shared/clients.ts';
-import { html, redirect } from '../_shared/http.ts';
+import { html } from '../_shared/http.ts';
+import { bridgePage } from '../_shared/bridge.ts';
 import { verify } from '../_shared/signature.ts';
 import { shell, won, esc } from '../_shared/page.ts';
 
@@ -57,25 +58,32 @@ Deno.serve(async (req) => {
     const form = await req.formData();
     const action = String(form.get('action') ?? '');
 
-    if (action === 'cancel') {
-      await supabase.rpc('settle_charge', {
-        p_transaction_id: tx,
-        p_approved: false,
-        p_failure_code: 'USER_CANCELED',
-      });
-      return redirect(`${DEEP_LINK}charge/result?tx=${tx}&status=CANCELED`);
-    }
-
     const approved = action === 'approve';
+    const failureCode = action === 'cancel' ? 'USER_CANCELED' : 'PG_DECLINED';
     const { data, error } = await supabase.rpc('settle_charge', {
       p_transaction_id: tx,
       p_approved: approved,
-      p_failure_code: approved ? null : 'PG_DECLINED',
+      p_failure_code: approved ? null : failureCode,
     });
 
     if (error) return errorPage(error.message);
 
-    return redirect(`${DEEP_LINK}charge/result?tx=${tx}&status=${data.status}`);
+    const success = data.status === 'APPROVED';
+    const resultMsg = success
+      ? '충전이 완료되었습니다.'
+      : action === 'cancel' ? '결제를 취소했습니다.'
+      : data.code === 'MAX_BALANCE_EXCEEDED' ? '보유 한도를 초과해 충전할 수 없습니다.'
+      : '결제사에서 승인을 거절했습니다.';
+
+    // 앱 웹뷰에는 postMessage 로, 그 외에는 딥링크로 결과를 돌려준다.
+    return bridgePage(
+      '충전 결과',
+      '모의 결제창',
+      success ? '충전이 완료되었습니다' : '충전하지 못했습니다',
+      resultMsg,
+      { resultCd: success ? '0000' : '9999', resultMsg, transactionId: tx, amount: trx.amount },
+      `${DEEP_LINK}charge/result?tx=${tx}&status=${data.status}`
+    );
   }
 
   // ── 이미 끝난 거래 ─────────────────────────────────────────────────

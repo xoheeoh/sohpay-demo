@@ -246,6 +246,26 @@ select pg_temp.raises_with(
   format($$ select public.cancel_payment(%L) $$, (select tx from t_paid)),
   'TRANSACTION_NOT_FOUND', '남의 거래는 취소할 수 없다');
 
+\echo '── 7-1. 재사용 데모 QR'
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'alice', false);
+select pg_temp.ok((public.resolve_payment_request('20260001')->>'reusable')::boolean, '데모 QR 은 reusable');
+select pg_temp.ok(
+  (public.resolve_payment_request('20260001')->>'attemptKey') <> (public.resolve_payment_request('20260001')->>'attemptKey'),
+  '데모 QR 은 해석마다 다른 멱등성 키를 준다');
+create temp table t_demo_before as select balance from public.wallets where user_id = :'alice'::uuid;
+select public.execute_payment('20260001', '123456', 'idem-demo-1');
+select public.execute_payment('20260001', '123456', 'idem-demo-2');
+select pg_temp.ok(
+  (select balance from public.wallets where user_id = :'alice'::uuid) = (select balance from t_demo_before) - 9000,
+  '데모 QR 은 두 번 결제하면 두 번 차감된다');
+reset role;
+select pg_temp.ok((select status from public.payment_requests where qr_token = '20260001') = 'OPEN',
+  '데모 QR 은 결제 후에도 OPEN 상태');
+select pg_temp.ok(
+  (select count(distinct order_no) from public.transactions where user_id = :'alice'::uuid and idempotency_key like 'idem-demo-%') = 2,
+  '데모 QR 결제는 건마다 다른 주문번호');
+
 \echo '── 8. 탈퇴'
 select set_config('request.jwt.claim.sub', :'alice', false);
 select pg_temp.raises_with($$ select public.withdraw_member('123456') $$,

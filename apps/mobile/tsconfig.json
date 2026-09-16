@@ -3,18 +3,48 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@/*": [
-        "./src/*"
+      "@screens": [
+        "./src/screens"
       ],
-      "@/assets/*": [
-        "./assets/*"
+      "@components/*": [
+        "./src/components/*"
+      ],
+      "@utils/*": [
+        "./src/utils/*"
+      ],
+      "@styles": [
+        "./src/styles"
+      ],
+      "@typ/*": [
+        "./src/types/*"
+      ],
+      "@contexts/*": [
+        "./src/svc/contexts/*"
+      ],
+      "@images/*": [
+        "./assets/images/*"
+      ],
+      "@apis/*": [
+        "./src/svc/apis/*"
+      ],
+      "@storages/*": [
+        "./src/svc/storages/*"
+      ],
+      "@dt/*": [
+        "./src/svc/data/*"
+      ],
+      "@env": [
+        "./src/shims/env"
+      ],
+      "react-native-linear-gradient": [
+        "./src/shims/linear-gradient"
       ]
     }
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "src",
+    "App.tsx",
+    "index.js",
+    "declarations.d.ts"
   ]
 }

@@ -14,9 +14,9 @@
 
 ```
 supabase/
-  migrations/   스키마 · RLS · 도메인 함수 (5개)
+  migrations/   스키마 · RLS · 도메인 함수 · 재사용 데모 QR (7개)
   functions/    Edge Functions — 모의 PG 결제창, 모의 본인인증, 모의 1원 인증
-  seed.sql      가맹점 · 공지 · FAQ · 약관 · 데모 회원 부트스트랩
+  seed.sql      가맹점 · 공지 · FAQ · 약관 · 데모 QR(상시) · 데모 회원 부트스트랩
   config.toml   로컬 스택 설정
 ```
 
@@ -48,8 +48,8 @@ profiles ─1:1─ wallets ─1:N─ ledger_entries
 | 계약 | 앱에서 의존하는 곳 |
 |---|---|
 | 같은 `idempotency_key` 재요청은 기존 결과를 `replayed: true` 로 반환 | 결제·환불 PIN 화면의 재시도 |
-| PIN 실패는 예외가 아니라 `{ ok:false, code, remainingAttempts }` | `lib/errors.ts` `assertOk()`, PIN 화면의 남은 횟수 표시 |
-| 그 외 실패는 오류 코드 문자열(`INSUFFICIENT_BALANCE` 등)로 던짐 | `lib/errors.ts` 문구 매핑 |
+| PIN 실패는 예외가 아니라 `{ ok:false, code, remainingAttempts }` | `svc/apis/client.ts` `fromRpc()` 가 `resultCd` 로 변환, PIN 화면에서 남은 횟수 안내 |
+| 그 외 실패는 오류 코드 문자열(`INSUFFICIENT_BALANCE` 등)로 던짐 | `svc/apis/client.ts` 문구 매핑 |
 | 충전 승인은 결제창 서버가 확정하고, 앱은 `transactions.status` 를 읽어 결과 확인 | `charge/checkout.tsx` 폴링 |
 | 잔액·거래는 RLS 로 본인 것만 조회됨 | 쿼리에 `user_id` 필터를 넣지 않음 |
 
