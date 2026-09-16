@@ -25,10 +25,12 @@ const TrxStCdModal: React.FC<TrxStCdModalProps> = ({ handleSelectedTrxStCd, onTr
         ]
       : getCd === 'CHRG'
         ? [
+            // 충전 종류에서는 "거래 상태" 값이 실제로는 조회할 거래 종류(getCd)를 뜻한다
+            { id: 'all', label: '모두', value: 'CHRG_RFND' }, // 충전 + 출금
             { id: 'charge', label: '충전', value: 'CHRG' },
             { id: 'refund', label: '출금', value: 'RFND' },
           ]
-        : [{ id: 'all', label: '모두', value: '9' }];
+        : [{ id: 'all', label: '모두', value: '9' }]; // 거래 종류가 "모두"일 때는 상태 구분 없음
 
   // 선택한 radio에 따른 조회 조건 설정
   useEffect(() => {
@@ -43,21 +45,13 @@ const TrxStCdModal: React.FC<TrxStCdModalProps> = ({ handleSelectedTrxStCd, onTr
 
   // 조회 조건 선택 완료 후 해당 값 부모로 전달
   const handleSelectTrxStCdWithValues = () => {
-    // CHRG 선택 시 충전/출금에 따라 실제 getCd 결정
+    // 충전 종류에서는 고른 값(CHRG_RFND / CHRG / RFND)이 실제 조회 getCd 가 되고, 상태는 9(모두)로 둔다
     let actualGetCd = getCd;
     let actualTrxStCd = trxStCd;
 
     if (getCd === 'CHRG') {
-      // 충전 선택 시: getCd는 CHRG, trxStCd는 9(모두)
-      if (trxStCd === 'CHRG') {
-        actualGetCd = 'CHRG';
-        actualTrxStCd = '9';
-      }
-      // 출금 선택 시: getCd는 RFND, trxStCd는 9(모두)
-      else if (trxStCd === 'RFND') {
-        actualGetCd = 'RFND';
-        actualTrxStCd = '9';
-      }
+      actualGetCd = trxStCd;
+      actualTrxStCd = '9';
     }
 
     onTrxStCdChange(actualGetCd, actualTrxStCd, selectedTrxStCd);

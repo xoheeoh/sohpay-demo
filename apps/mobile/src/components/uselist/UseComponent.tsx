@@ -53,9 +53,9 @@ const UseComponent: React.FC<UseComponentProps> = ({ getCd, item }) => {
     <Pressable
       style={({ pressed }) => [styles.container, pressed && styles.pressed]}
       onPress={() => navigation.navigate('UseDetail', { item: item, getCd: getCd })}>
-      {/* 좌측: 가맹점명 / 일시 · 거래구분 */}
+      {/* 좌측: 가맹점명 / 일시 · 거래구분 (취소 건은 가맹점명을 흐리게) */}
       <View style={styles.info}>
-        <Typography mode="subtitle2" color="gray900" numberOfLines={1}>
+        <Typography mode="subtitle2" color={isCancel ? 'gray400' : 'gray900'} numberOfLines={1}>
           {midInfo?.coNm ?? ' '}
         </Typography>
 

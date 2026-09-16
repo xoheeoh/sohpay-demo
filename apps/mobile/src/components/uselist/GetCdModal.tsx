@@ -15,7 +15,9 @@ const GetCdModal: React.FC<GetCdModalProps> = ({ handleSelectedGetCd, onGetCdCha
   const [selectedGetCd, setSelectedGetCd] = useState<string>(radioValue); // 선택된 radio value값
   const [getCd, setGetCd] = useState<string>(''); // 조회 조건
 
+  // ALL: 결제·충전·출금 모두 | USE: 결제 | CHRG: 충전(거래 상태에서 충전/출금/모두를 다시 고름)
   const getCdRadioButtons = [
+    { id: 'all', label: '모두', value: 'ALL' },
     { id: 'use', label: '결제', value: 'USE' },
     { id: 'charge', label: '충전', value: 'CHRG' },
   ];

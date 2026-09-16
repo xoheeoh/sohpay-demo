@@ -158,6 +158,16 @@ export interface IUseList {
   pointAmt: number;
 }
 
+/**
+ * 이용내역 조회 결과 한 건.
+ * "모두" 조회 시 결제·충전·출금이 한 목록에 섞여 내려오므로, 각 건이 자기 종류(getCd)를 갖는다.
+ * 화면은 이 getCd 로 행 컴포넌트와 상세 화면 표시 방식을 고른다.
+ */
+export type TransactionListItem =
+  | (IUseList & { getCd: 'USE' })
+  | (IChargeList & { getCd: 'CHRG' })
+  | (IRefundList & { getCd: 'RFND' });
+
 /* 가맹점 정보 */
 export interface IMidInfo {
   coNo: string;

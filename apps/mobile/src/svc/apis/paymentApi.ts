@@ -15,6 +15,7 @@ import type {
   IUseList,
   IWithdrawalSuc,
   ListDataItem,
+  TransactionListItem,
 } from '@typ/paymentType';
 import { getData } from '@storages/asyncStorage';
 import {
@@ -61,6 +62,9 @@ const CHARGE_CD: Record<string, string> = {
 /* ── 이용내역 ─────────────────────────────────────────────────── */
 const toUse = (t: TxRow): IUseList => {
   const supply = Math.round(t.amount / 1.1);
+  // 화면 상태 코드: 0 승인 | 1 전체 취소 | 2 부분 취소 (행·상세 컴포넌트가 이 값으로 배지와 색을 정한다)
+  const trxStCd = t.status === 'CANCELED' ? '1' : t.status === 'PARTIALLY_CANCELED' ? '2' : '0';
+  const isCanceled = t.canceled_amount > 0;
   return {
     tid: t.id,
     trDt: ymd(t.approved_at ?? t.created_at),
@@ -70,7 +74,7 @@ const toUse = (t: TxRow): IUseList => {
     ordNo: t.order_no,
     reqDt: ymd(t.created_at),
     reqTm: hms(t.created_at),
-    trxStCd: t.status === 'CANCELED' ? '1' : '0',
+    trxStCd,
     appDt: ymd(t.approved_at ?? t.created_at),
     appTm: hms(t.approved_at ?? t.created_at),
     mid: t.merchant?.mid ?? '',
@@ -82,11 +86,12 @@ const toUse = (t: TxRow): IUseList => {
     ordNm: '',
     ordTel: '',
     ordEmail: '',
-    ccMsg: t.status === 'CANCELED' ? '결제 취소' : '',
+    ccMsg: t.status === 'CANCELED' ? '결제 취소' : t.status === 'PARTIALLY_CANCELED' ? '부분 취소' : '',
     cpxTid: '',
     stid: '',
     partCanFlg: t.status === 'PARTIALLY_CANCELED' ? '1' : '0',
-    moneyAmt: t.amount - t.canceled_amount,
+    // 취소 건은 돌려받은 금액 (목록에서 "+ 금액"으로 표시), 승인 건은 결제 금액
+    moneyAmt: isCanceled ? t.canceled_amount : t.amount,
     pointAmt: 0,
   };
 };
@@ -119,7 +124,24 @@ const toRefund = (t: TxRow): IRefundList => ({
   rfndTm: hms(t.approved_at ?? t.created_at),
 });
 
-/* 선불 거래 조회 — getCd: USE | CHRG | RFND, trxStCds: 0 승인 | 1 취소 | 9 모두 */
+/* 조회 종류 코드(getCd) → 실제로 가져올 거래 타입 */
+const GET_CD_TYPES: Record<string, TxRow['type'][]> = {
+  ALL: ['PAYMENT', 'CHARGE', 'REFUND'], // 모두
+  USE: ['PAYMENT'], // 결제
+  CHRG: ['CHARGE'], // 충전
+  RFND: ['REFUND'], // 출금
+  CHRG_RFND: ['CHARGE', 'REFUND'], // 충전 + 출금 모두
+};
+
+/* DB 거래 한 건을 화면용 항목으로 바꾸고, 어떤 종류인지 getCd 를 붙인다 */
+const toListItem = (t: TxRow): TransactionListItem =>
+  t.type === 'PAYMENT'
+    ? { ...toUse(t), getCd: 'USE' }
+    : t.type === 'CHARGE'
+      ? { ...toCharge(t), getCd: 'CHRG' }
+      : { ...toRefund(t), getCd: 'RFND' };
+
+/* 선불 거래 조회 — getCd: ALL | USE | CHRG | RFND | CHRG_RFND, trxStCds: 0 승인 | 1 취소 | 9 모두 (결제에만 적용) */
 export const loadTransactionList = async (
   getCd: string,
   trxStCds: string,
@@ -129,22 +151,22 @@ export const loadTransactionList = async (
   cntRows: number,
 ) => {
   try {
-    const type = getCd === 'CHRG' ? 'CHARGE' : getCd === 'RFND' ? 'REFUND' : 'PAYMENT';
+    const types = GET_CD_TYPES[getCd] ?? GET_CD_TYPES.USE;
     let q = supabase
       .from('transactions')
       .select(TX_SELECT)
-      .eq('type', type)
+      .in('type', types)
       .neq('status', 'PENDING')
       .neq('status', 'FAILED')
       .gte('created_at', fromYmd(frDt))
       .lte('created_at', fromYmd(toDt, true))
       .order('created_at', { ascending: false })
       .range(stRow, stRow + cntRows - 1);
-    if (type === 'PAYMENT' && trxStCds === '0') q = q.eq('status', 'APPROVED');
-    if (type === 'PAYMENT' && trxStCds === '1') q = q.in('status', ['CANCELED', 'PARTIALLY_CANCELED']);
+    if (getCd === 'USE' && trxStCds === '0') q = q.eq('status', 'APPROVED');
+    if (getCd === 'USE' && trxStCds === '1') q = q.in('status', ['CANCELED', 'PARTIALLY_CANCELED']);
 
     const rows = unwrap(await q) as unknown as TxRow[];
-    const listData = rows.map((t) => (type === 'PAYMENT' ? toUse(t) : type === 'CHARGE' ? toCharge(t) : toRefund(t)));
+    const listData = rows.map(toListItem);
     return ok({ listData });
   } catch (e) {
     return toFail(e);
