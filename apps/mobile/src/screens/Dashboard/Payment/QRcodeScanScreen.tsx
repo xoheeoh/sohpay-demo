@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Dimensions, Image, Linking, Platform, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
@@ -14,6 +14,14 @@ import { getAppWidth } from '@utils/dimensions';
 
 type QRcodeScanScreenProps = NativeStackScreenProps<RootStackParamList, 'QRscan'>;
 
+// 웹처럼 카메라를 쓸 수 없는 환경에서 카메라 대신 보여주는 목(mock) 이미지.
+// 컴포넌트 밖에 두어야 화면이 다시 렌더링될 때 이미지가 떼고 붙여지며 깜빡이지 않는다.
+const CameraMock = () => (
+  <View style={StyleSheet.absoluteFill}>
+    <Image source={require('@images/mock.jpg')} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+  </View>
+);
+
 const QRcodeScanScreen: React.FC<QRcodeScanScreenProps> = ({ navigation }) => {
   // Dialog
   const { confirm } = useDialog();
@@ -24,9 +32,16 @@ const QRcodeScanScreen: React.FC<QRcodeScanScreenProps> = ({ navigation }) => {
   const [isScanning, setIsScanning] = useState<boolean>(true);
   const isFocused = useIsFocused();
 
-  // 화면 진입 시 카메라 권한 요청
+  // 화면 진입 시 카메라 권한을 한 번만 요청한다.
+  // 주의: 권한이 거부된 뒤에도 canAskAgain 이 true 로 남는 환경(웹, 일부 Android)에서는
+  // "요청 → 거부 → 새 permission 객체 → 다시 요청"이 무한 반복되며 화면이 깜빡이므로 ref 로 1회만 실행한다.
+  // 웹은 카메라 대신 CameraMock 을 보여주므로 권한 요청 자체를 건너뛴다.
+  const hasRequestedPermission = useRef(false);
   useEffect(() => {
+    if (Platform.OS === 'web') return;
+    if (hasRequestedPermission.current) return;
     if (permission && !permission.granted && permission.canAskAgain) {
+      hasRequestedPermission.current = true;
       requestPermission().catch((error) => console.error('카메라 권한 요청 실패:', error));
     }
   }, [permission, requestPermission]);
@@ -81,12 +96,6 @@ const QRcodeScanScreen: React.FC<QRcodeScanScreenProps> = ({ navigation }) => {
       });
     }
   };
-
-  const CameraMock = () => (
-    <View style={StyleSheet.absoluteFill}>
-      <Image source={require('@images/mock.jpg')} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-    </View>
-  );
 
   const width = getAppWidth();
   const { height } = Dimensions.get('window');
