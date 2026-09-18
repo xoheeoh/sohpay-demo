@@ -1,10 +1,9 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import { Icon } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { RootStackParamList } from '@typ/navigation';
-import { Wordmark } from '@components/common';
+import { NavIconButton, Wordmark } from '@components/common';
 import { theme } from '@styles';
 
 const DashboardNav = () => {
@@ -15,13 +14,8 @@ const DashboardNav = () => {
       <View style={styles.container}>
         <Wordmark height={24} />
 
-        <View style={styles.buttonBox}>
-          <Pressable
-            style={({ pressed }) => [styles.button, pressed && { backgroundColor: theme.colors.gray150 }]}
-            onPress={() => navigation.navigate('MyPage')}>
-            <Icon source={'menu'} size={22} color={theme.colors.gray800} />
-          </Pressable>
-        </View>
+        {/* 햄버거 버튼: MyPage 헤더의 닫기 버튼과 같은 컴포넌트를 써서 위치·모양이 정확히 일치한다 */}
+        <NavIconButton icon="menu" accessibilityLabel="메뉴" onPress={() => navigation.navigate('MyPage')} />
       </View>
     </SafeAreaView>
   );
@@ -33,19 +27,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  buttonBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  button: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.gray100,
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingHorizontal: 16, // Header 의 좌우 여백과 같아야 햄버거·닫기 버튼 위치가 일치한다
   },
 });
 

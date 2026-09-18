@@ -487,6 +487,9 @@ function App(): React.JSX.Element {
                   name="MyPage"
                   component={MyPageScreen}
                   options={{
+                    // 햄버거 메뉴가 오른쪽 위에 있으므로 오른쪽에서 밀려 들어오게 통일 (iOS 기본과 동일, Android 도 같은 방향으로)
+                    // 웹은 native-stack 이 전환 애니메이션을 지원하지 않아 MyPageScreen 안에서 별도로 처리한다.
+                    animation: 'slide_from_right',
                     header: ({ navigation }) => (
                       <Header
                         title=""

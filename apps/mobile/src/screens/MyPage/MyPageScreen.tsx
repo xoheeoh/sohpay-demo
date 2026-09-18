@@ -1,5 +1,5 @@
-import { useCallback, useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Animated, Easing, Image, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { Divider, Icon } from 'react-native-paper';
@@ -10,6 +10,7 @@ import { removeData, removeEncryptedToken } from '@storages/asyncStorage';
 import { loadUsrInfoData } from '@apis/commonApi';
 import { PopupModal, ScreenWrapper, Typography } from '@components/common';
 import { layout, theme } from '@styles';
+import { getAppWidth } from '@utils/dimensions';
 
 type MyPageScreenProps = NativeStackScreenProps<RootStackParamList, 'MyPage'>;
 
@@ -50,159 +51,187 @@ const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
     });
   };
 
+  /**
+   * 웹 전용 등장 애니메이션: 오른쪽에서 밀려 들어오며 나타난다.
+   * 앱(iOS/Android)은 App.tsx 의 animation: 'slide_from_right' 가 화면 전환을 담당하므로 여기서는 웹만 처리한다.
+   * (웹의 native-stack 은 화면 전환 애니메이션을 지원하지 않아 화면이 뚝 끊어져 보인다)
+   * 값 0 = 오른쪽 화면 밖, 1 = 제자리
+   */
+  const isWeb = Platform.OS === 'web';
+  const slideInProgress = useRef(new Animated.Value(isWeb ? 0 : 1)).current;
+
+  useEffect(() => {
+    if (!isWeb) return;
+    Animated.timing(slideInProgress, {
+      toValue: 1,
+      duration: 260,
+      easing: Easing.out(Easing.cubic), // 빠르게 들어와서 부드럽게 멈춤
+      useNativeDriver: true,
+    }).start();
+  }, [isWeb, slideInProgress]);
+
+  const slideInStyle = isWeb
+    ? {
+        opacity: slideInProgress,
+        transform: [{ translateX: Animated.multiply(Animated.subtract(1, slideInProgress), getAppWidth()) }],
+      }
+    : undefined;
+
   return (
-    <ScreenWrapper backgroundColor={theme.colors.bg} topComponent={false}>
-      <ScrollView contentContainerStyle={styles.wrap}>
-        {/* 사용자 프로필 */}
-        <View style={styles.profile}>
-          <Image source={require('@images/non_profile.png')} style={{ width: 56, height: 56 }} resizeMode="cover" />
+    <Animated.View style={[{ flex: 1 }, slideInStyle]}>
+      <ScreenWrapper backgroundColor={theme.colors.bg} topComponent={false}>
+        <ScrollView contentContainerStyle={styles.wrap}>
+          {/* 사용자 프로필 */}
+          <View style={styles.profile}>
+            <Image source={require('@images/non_profile.png')} style={{ width: 56, height: 56 }} resizeMode="cover" />
 
-          <View>
-            <Typography mode="heading2" color="gray900">
-              {usrData?.usrNm} 님
+            <View>
+              <Typography mode="heading2" color="gray900">
+                {usrData?.usrNm} 님
+              </Typography>
+
+              <Pressable
+                style={({ pressed }) => [styles.textButton, pressed && { opacity: 0.5 }]}
+                onPress={() => navigation.navigate('UsrInfo', { usrData: usrData })}>
+                <Typography mode="body2" color="gray500">
+                  회원정보
+                </Typography>
+                <Icon source="chevron-right" size={16} color={theme.colors.gray400} />
+              </Pressable>
+            </View>
+          </View>
+
+          {/* 계정관리 메뉴 */}
+          <View style={styles.section}>
+            <Typography mode="subtitle3" color="gray500" style={styles.sectionTitle}>
+              계정관리
             </Typography>
 
-            <Pressable
-              style={({ pressed }) => [styles.textButton, pressed && { opacity: 0.5 }]}
-              onPress={() => navigation.navigate('UsrInfo', { usrData: usrData })}>
-              <Typography mode="body2" color="gray500">
-                회원정보
-              </Typography>
-              <Icon source="chevron-right" size={16} color={theme.colors.gray400} />
-            </Pressable>
+            <View style={styles.listMenu}>
+              <Pressable
+                style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
+                onPress={() => navigation.navigate('EditCheck', { usrData: usrData, flg: 'usrInfo' })}>
+                <Typography mode="subtitle2" color="gray900">
+                  회원정보 변경
+                </Typography>
+                <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
+              </Pressable>
+
+              <Divider style={{ backgroundColor: theme.colors.gray100, marginHorizontal: 18 }} />
+
+              <Pressable
+                style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
+                onPress={() => navigation.navigate('EditCheck', { usrData: usrData, flg: 'pinNo' })}>
+                <Typography mode="subtitle2" color="gray900">
+                  간편 비밀번호 변경
+                </Typography>
+                <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
+              </Pressable>
+            </View>
           </View>
-        </View>
 
-        {/* 계정관리 메뉴 */}
-        <View style={styles.section}>
-          <Typography mode="subtitle3" color="gray500" style={styles.sectionTitle}>
-            계정관리
-          </Typography>
-
-          <View style={styles.listMenu}>
-            <Pressable
-              style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
-              onPress={() => navigation.navigate('EditCheck', { usrData: usrData, flg: 'usrInfo' })}>
-              <Typography mode="subtitle2" color="gray900">
-                회원정보 변경
-              </Typography>
-              <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
-            </Pressable>
-
-            <Divider style={{ backgroundColor: theme.colors.gray100, marginHorizontal: 18 }} />
-
-            <Pressable
-              style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
-              onPress={() => navigation.navigate('EditCheck', { usrData: usrData, flg: 'pinNo' })}>
-              <Typography mode="subtitle2" color="gray900">
-                간편 비밀번호 변경
-              </Typography>
-              <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
-            </Pressable>
-          </View>
-        </View>
-
-        {/* 계좌관리 메뉴 */}
-        <View style={styles.section}>
-          <Typography mode="subtitle3" color="gray500" style={styles.sectionTitle}>
-            계좌관리
-          </Typography>
-
-          <View style={styles.listMenu}>
-            <Pressable
-              style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
-              onPress={() => navigation.navigate('AcntManage')}>
-              <Typography mode="subtitle2" color="gray900">
-                계좌관리
-              </Typography>
-              <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
-            </Pressable>
-          </View>
-        </View>
-
-        {/* 이용내역 메뉴 */}
-        <View style={styles.section}>
-          <Typography mode="subtitle3" color="gray500" style={styles.sectionTitle}>
-            이용내역
-          </Typography>
-
-          <View style={styles.listMenu}>
-            <Pressable
-              style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
-              onPress={() => navigation.navigate('UseList')}>
-              <Typography mode="subtitle2" color="gray900">
-                이용내역 조회
-              </Typography>
-              <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
-            </Pressable>
-          </View>
-        </View>
-
-        {/* 고객지원 메뉴 */}
-        <View style={styles.section}>
-          <Typography mode="subtitle3" color="gray500" style={styles.sectionTitle}>
-            고객지원
-          </Typography>
-
-          <View style={styles.listMenu}>
-            <Pressable
-              style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
-              onPress={() => navigation.navigate('TermList')}>
-              <Typography mode="subtitle2" color="gray900">
-                이용약관
-              </Typography>
-              <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
-            </Pressable>
-
-            <Divider style={{ backgroundColor: theme.colors.gray100, marginHorizontal: 18 }} />
-
-            <Pressable
-              style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
-              onPress={() => navigation.navigate('Service')}>
-              <Typography mode="subtitle2" color="gray900">
-                고객센터
-              </Typography>
-              <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
-            </Pressable>
-
-            <Divider style={{ backgroundColor: theme.colors.gray100, marginHorizontal: 18 }} />
-
-            <Pressable
-              style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
-              onPress={() => navigation.navigate('Setting')}>
-              <Typography mode="subtitle2" color="gray900">
-                설정
-              </Typography>
-              <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
-            </Pressable>
-          </View>
-        </View>
-
-        {/* 로그아웃 메뉴 */}
-        <View style={styles.listMenu}>
-          <Pressable
-            style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
-            onPress={() => setLogoutModal(true)}>
-            <Typography mode="subtitle2" color="gray900">
-              로그아웃
+          {/* 계좌관리 메뉴 */}
+          <View style={styles.section}>
+            <Typography mode="subtitle3" color="gray500" style={styles.sectionTitle}>
+              계좌관리
             </Typography>
-            <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
-          </Pressable>
-        </View>
-      </ScrollView>
 
-      {/* 로그아웃 팝업 */}
-      <PopupModal
-        title="로그아웃"
-        visible={logoutModal}
-        close={() => setLogoutModal(false)}
-        message1={'로그아웃 하시겠습니까?'}
-        button1Label={'로그아웃'}
-        button2Label={'아니오'}
-        button1Event={handleLogout}
-        button2Event={() => setLogoutModal(false)}
-      />
-    </ScreenWrapper>
+            <View style={styles.listMenu}>
+              <Pressable
+                style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
+                onPress={() => navigation.navigate('AcntManage')}>
+                <Typography mode="subtitle2" color="gray900">
+                  계좌관리
+                </Typography>
+                <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
+              </Pressable>
+            </View>
+          </View>
+
+          {/* 이용내역 메뉴 */}
+          <View style={styles.section}>
+            <Typography mode="subtitle3" color="gray500" style={styles.sectionTitle}>
+              이용내역
+            </Typography>
+
+            <View style={styles.listMenu}>
+              <Pressable
+                style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
+                onPress={() => navigation.navigate('UseList')}>
+                <Typography mode="subtitle2" color="gray900">
+                  이용내역 조회
+                </Typography>
+                <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
+              </Pressable>
+            </View>
+          </View>
+
+          {/* 고객지원 메뉴 */}
+          <View style={styles.section}>
+            <Typography mode="subtitle3" color="gray500" style={styles.sectionTitle}>
+              고객지원
+            </Typography>
+
+            <View style={styles.listMenu}>
+              <Pressable
+                style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
+                onPress={() => navigation.navigate('TermList')}>
+                <Typography mode="subtitle2" color="gray900">
+                  이용약관
+                </Typography>
+                <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
+              </Pressable>
+
+              <Divider style={{ backgroundColor: theme.colors.gray100, marginHorizontal: 18 }} />
+
+              <Pressable
+                style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
+                onPress={() => navigation.navigate('Service')}>
+                <Typography mode="subtitle2" color="gray900">
+                  고객센터
+                </Typography>
+                <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
+              </Pressable>
+
+              <Divider style={{ backgroundColor: theme.colors.gray100, marginHorizontal: 18 }} />
+
+              <Pressable
+                style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
+                onPress={() => navigation.navigate('Setting')}>
+                <Typography mode="subtitle2" color="gray900">
+                  설정
+                </Typography>
+                <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
+              </Pressable>
+            </View>
+          </View>
+
+          {/* 로그아웃 메뉴 */}
+          <View style={styles.listMenu}>
+            <Pressable
+              style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
+              onPress={() => setLogoutModal(true)}>
+              <Typography mode="subtitle2" color="gray900">
+                로그아웃
+              </Typography>
+              <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
+            </Pressable>
+          </View>
+        </ScrollView>
+
+        {/* 로그아웃 팝업 */}
+        <PopupModal
+          title="로그아웃"
+          visible={logoutModal}
+          close={() => setLogoutModal(false)}
+          message1={'로그아웃 하시겠습니까?'}
+          button1Label={'로그아웃'}
+          button2Label={'아니오'}
+          button1Event={handleLogout}
+          button2Event={() => setLogoutModal(false)}
+        />
+      </ScreenWrapper>
+    </Animated.View>
   );
 };
 
