@@ -610,7 +610,7 @@ function App(): React.JSX.Element {
                   name="Service"
                   component={ServiceScreen}
                   options={{
-                    header: () => <Header title="고객센터" bgColor="white" leftButton />,
+                    header: () => <Header title="고객센터" bgColor={theme.colors.bg} leftButton />,
                   }}
                 />
                 <Stack.Screen
