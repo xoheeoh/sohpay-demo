@@ -33,10 +33,18 @@ on conflict (qr_token) do update
        supply_amount = excluded.supply_amount, vat = excluded.vat,
        expires_at = excluded.expires_at, reusable = true, status = 'OPEN';
 
+-- 공지 본문은 HTML 문자열이다. (전신 내부 앱에서 관리자가 HTML 편집기로 작성·저장했고, 앱은 그 형식을 RenderHtml 로 그린다)
+-- 평문에 줄 바꿈 문자를 넣으면 HTML 규칙상 띄어쓰기로 합쳐져 화면에서 줄이 나뉘지 않으므로, 문단은 <p> 로 감싼다.
 insert into public.notices (title, body, is_pinned, published_at) values
-  ('서비스 점검 안내', E'더 나은 서비스를 위해 정기 점검을 진행합니다.\n\n· 일시: 매월 둘째 주 화요일 02:00~04:00\n· 영향: 충전 및 결제 일시 중단', true, now() - interval '2 days'),
-  ('QR 결제 한도 상향 안내', E'1회 결제 한도가 30만원에서 50만원으로 상향되었습니다.\n1일 한도는 200만원으로 유지됩니다.', false, now() - interval '9 days'),
-  ('계좌 간편등록 기능 추가', E'1원 인증으로 환불 계좌를 등록할 수 있습니다.\n마이페이지 > 계좌 관리에서 이용해 주세요.', false, now() - interval '21 days')
+  ('서비스 점검 안내',
+   '<p>더 나은 서비스를 위해 정기 점검을 진행합니다.</p><p>· 일시: 매월 둘째 주 화요일 02:00~04:00<br>· 영향: 충전 및 결제 일시 중단</p>',
+   true, now() - interval '2 days'),
+  ('QR 결제 한도 상향 안내',
+   '<p>1회 결제 한도가 30만원에서 50만원으로 상향되었습니다.</p><p>1일 한도는 200만원으로 유지됩니다.</p>',
+   false, now() - interval '9 days'),
+  ('계좌 간편등록 기능 추가',
+   '<p>1원 인증으로 환불 계좌를 등록할 수 있습니다.</p><p>마이페이지 &gt; 계좌 관리에서 이용해 주세요.</p>',
+   false, now() - interval '21 days')
 on conflict do nothing;
 
 insert into public.faqs (category, question, answer, sort_no) values
