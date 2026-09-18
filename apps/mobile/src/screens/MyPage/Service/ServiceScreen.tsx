@@ -1,6 +1,6 @@
-import { Pressable, ScrollView, View, Linking, StyleSheet } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Icon } from 'react-native-paper';
+import { Divider, Icon } from 'react-native-paper';
 
 import type { RootStackParamList } from '@typ/navigation';
 import { formatPhoneNumber } from '@utils/formatter';
@@ -10,119 +10,120 @@ import { layout, theme } from '@styles';
 
 type ServiceScreenProps = NativeStackScreenProps<RootStackParamList, 'Service'>;
 
-const ServiceScreen: React.FC<ServiceScreenProps> = ({ navigation }) => {
-  /** TODO: 고객센터 정보 바뀔 예정 */
-  const telNo = '00000000';
+/** TODO: 고객센터 정보 바뀔 예정 */
+const CS_TEL_NO = '00000000';
+const CS_EMAIL = 'cs@service.com';
 
-  // Dialog
+/** 상담 안내 카드 안의 "라벨 : 값" 한 줄 */
+const InfoLine = ({ label, value }: { label: string; value: string }) => (
+  <View style={styles.infoLine}>
+    <Typography mode="body2" color="gray500" style={styles.infoLabel}>
+      {label}
+    </Typography>
+    <Typography mode="body2" color="gray900" style={{ flex: 1 }}>
+      {value}
+    </Typography>
+  </View>
+);
+
+/** 위쪽 바로가기 타일 (공지사항 / FAQ / 1:1 상담) */
+const QuickMenuTile = ({ icon, label, onPress }: { icon: string; label: string; onPress: () => void }) => (
+  <Pressable style={({ pressed }) => [styles.tile, pressed && styles.pressed]} onPress={onPress}>
+    <View style={styles.iconCircle}>
+      <Icon source={icon} size={22} color={theme.colors.primary} />
+    </View>
+    <Typography mode="subtitle3" color="gray900">
+      {label}
+    </Typography>
+  </Pressable>
+);
+
+const ServiceScreen: React.FC<ServiceScreenProps> = ({ navigation }) => {
   const { confirm } = useDialog();
 
-  // 전화 연결 함수
+  // 전화 연결
   const handleCall = () => {
-    const telScheme = `tel:${telNo.replace(/-/g, '')}`; // 전화번호에서 하이픈 제거 후 스키마 생성
-    Linking.openURL(telScheme).catch((error) => {
-      console.error('전화 연결 실패', error);
+    confirm({
+      title: '통화연결',
+      message1: `${formatPhoneNumber(CS_TEL_NO)} 통화 연결하시겠습니까?`,
+      confirmText: '확인',
+      cancelText: '아니오',
+    }).then((ok) => {
+      if (!ok) return;
+      Linking.openURL(`tel:${CS_TEL_NO.replace(/-/g, '')}`).catch((error) => {
+        console.error('전화 연결 실패', error);
+      });
+    });
+  };
+
+  // 메일 앱 열기
+  const handleEmail = () => {
+    Linking.openURL(`mailto:${CS_EMAIL}`).catch((error) => {
+      console.error('메일 앱 열기 실패', error);
     });
   };
 
   return (
-    <ScreenWrapper backgroundColor={'white'} topComponent={true}>
+    <ScreenWrapper backgroundColor={theme.colors.bg} topComponent={false}>
       <ScrollView contentContainerStyle={styles.wrap}>
-        <View style={styles.container}>
-          {/* 화면 이동 메뉴 */}
-          <View style={styles.menuBox}>
-            <Pressable style={styles.menu} onPress={() => navigation.navigate('Notice')}>
-              <View style={layout.rowBetween}>
-                <Icon source={'bullhorn-variant-outline'} size={24} color={theme.colors.gray900} />
-                <Icon source={'chevron-right'} size={24} color={theme.colors.gray900} />
-              </View>
+        {/* 바로가기 타일 */}
+        <View style={styles.tileRow}>
+          <QuickMenuTile
+            icon="bullhorn-variant-outline"
+            label="공지사항"
+            onPress={() => navigation.navigate('Notice')}
+          />
+          <QuickMenuTile icon="message-question-outline" label="FAQ" onPress={() => navigation.navigate('FAQ')} />
+          <QuickMenuTile icon="email-edit-outline" label="1:1 상담" onPress={() => navigation.navigate('Inquiry')} />
+        </View>
 
-              <Typography mode="subtitle3" color="gray900">
-                공지사항
-              </Typography>
-            </Pressable>
+        {/* 상담 안내 - TODO: 추후 내용 바뀔 예정 */}
+        <View style={styles.section}>
+          <Typography mode="subtitle3" color="gray500" style={styles.sectionTitle}>
+            상담 안내
+          </Typography>
 
-            <Pressable style={styles.menu} onPress={() => navigation.navigate('FAQ')}>
-              <View style={layout.rowBetween}>
-                <Icon source={'message-question-outline'} size={24} color={theme.colors.gray900} />
-                <Icon source={'chevron-right'} size={24} color={theme.colors.gray900} />
-              </View>
-
-              <Typography mode="subtitle3" color="gray900">
-                FAQ
-              </Typography>
-            </Pressable>
-
-            <Pressable style={styles.menu} onPress={() => navigation.navigate('Inquiry')}>
-              <View style={layout.rowBetween}>
-                <Icon source={'email-edit-outline'} size={24} color={theme.colors.gray900} />
-                <Icon source={'chevron-right'} size={24} color={theme.colors.gray900} />
-              </View>
-
-              <Typography mode="subtitle3" color="gray900">
-                1:1 상담
-              </Typography>
-            </Pressable>
-          </View>
-
-          {/* 고객센터 정보 - TODO: 추후 내용 바뀔 예정 */}
-          <View style={{ gap: 12 }}>
-            <View
-              style={[
-                styles.menu,
-                { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-              ]}>
-              <View style={{ gap: 12 }}>
-                <Typography mode="subtitle2" color="gray900">
-                  전화 상담
-                </Typography>
-
-                <View style={{ gap: 4 }}>
-                  <Typography mode="body2" color="gray900">
-                    <Typography mode="subtitle3">평일:</Typography> 9시 ~ 12시, 13 ~ 18시
-                  </Typography>
-
-                  <Typography mode="body2" color="gray900">
-                    <Typography mode="subtitle3">주말/공휴일:</Typography> 휴무
-                  </Typography>
-
-                  <Typography mode="body2" color="gray900">
-                    <Typography mode="subtitle3">상담번호:</Typography> {formatPhoneNumber(telNo)}
+          <View style={styles.card}>
+            {/* 전화 상담 */}
+            <View style={styles.cardRow}>
+              <View style={styles.cardRowHeader}>
+                <View style={[layout.rowCenter, { gap: 10 }]}>
+                  <View style={styles.iconCircleSmall}>
+                    <Icon source="phone-outline" size={18} color={theme.colors.primary} />
+                  </View>
+                  <Typography mode="subtitle2" color="gray900">
+                    전화 상담
                   </Typography>
                 </View>
+                <SecondaryButton label="전화하기" onPress={handleCall} size="small" />
               </View>
 
-              <SecondaryButton
-                label={'통화'}
-                onPress={() => {
-                  confirm({
-                    title: '통화연결',
-                    message1: `${telNo} 통화 연결하시겠습니까?`,
-                    confirmText: '확인',
-                    cancelText: '아니오',
-                  }).then((ok) => {
-                    if (ok) {
-                      handleCall();
-                    }
-                  });
-                }}
-                size={'medium'}
-              />
+              <View style={styles.infoLines}>
+                <InfoLine label="평일" value="09:00 ~ 12:00, 13:00 ~ 18:00" />
+                <InfoLine label="주말·공휴일" value="휴무" />
+                <InfoLine label="상담번호" value={formatPhoneNumber(CS_TEL_NO)} />
+              </View>
             </View>
 
-            <View style={styles.menu}>
-              <Typography mode="subtitle2" color="gray900">
-                이메일 상담
-              </Typography>
+            <Divider style={styles.divider} />
 
-              <View style={{ gap: 4 }}>
-                <Typography mode="subtitle3" color="gray900">
-                  48시간 이내 답변
-                </Typography>
+            {/* 이메일 상담 */}
+            <View style={styles.cardRow}>
+              <View style={styles.cardRowHeader}>
+                <View style={[layout.rowCenter, { gap: 10 }]}>
+                  <View style={styles.iconCircleSmall}>
+                    <Icon source="email-outline" size={18} color={theme.colors.primary} />
+                  </View>
+                  <Typography mode="subtitle2" color="gray900">
+                    이메일 상담
+                  </Typography>
+                </View>
+                <SecondaryButton label="메일 보내기" onPress={handleEmail} size="small" />
+              </View>
 
-                <Typography mode="body2" color="gray900">
-                  <Typography mode="subtitle3">상담 이메일 주소:</Typography> cs@service.com
-                </Typography>
+              <View style={styles.infoLines}>
+                <InfoLine label="답변 시간" value="접수 후 48시간 이내" />
+                <InfoLine label="이메일" value={CS_EMAIL} />
               </View>
             </View>
           </View>
@@ -133,17 +134,55 @@ const ServiceScreen: React.FC<ServiceScreenProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  wrap: { backgroundColor: theme.colors.gray50, flexGrow: 1 },
-  container: { backgroundColor: 'white', gap: 24, paddingVertical: 24, paddingHorizontal: 16, flex: 1 },
-  menuBox: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  menu: {
-    backgroundColor: 'white',
-    padding: 16,
+  // 마이페이지(MyPageScreen)와 같은 화면 여백·섹션 간격
+  wrap: { paddingHorizontal: 16, paddingVertical: 24, gap: 24 },
+  section: { gap: 8 },
+  sectionTitle: { paddingHorizontal: 4 },
+
+  // 바로가기 타일
+  tileRow: { flexDirection: 'row', gap: 8 },
+  tile: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 18,
+    backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
     boxShadow: theme.shadow.card,
-    gap: 12,
-    flex: 1,
   },
+  pressed: { backgroundColor: theme.colors.gray50 },
+  iconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: theme.colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // 상담 안내 카드
+  card: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.lg,
+    boxShadow: theme.shadow.card,
+    overflow: 'hidden',
+  },
+  cardRow: { paddingHorizontal: 18, paddingVertical: 18, gap: 14 },
+  cardRowHeader: { ...layout.rowBetween, gap: 12 },
+  iconCircleSmall: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: theme.colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  divider: { backgroundColor: theme.colors.gray100, marginHorizontal: 18 },
+
+  // 라벨 : 값 줄
+  infoLines: { gap: 6 },
+  infoLine: { flexDirection: 'row', gap: 12 },
+  infoLabel: { width: 76 },
 });
 
 export default ServiceScreen;
