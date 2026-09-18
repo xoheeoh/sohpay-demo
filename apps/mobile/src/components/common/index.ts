@@ -9,6 +9,7 @@ export * from './SecondaryButton';
 export * from './PopupModal';
 export * from './BottomBtnBox';
 export * from './Header';
+export * from './NavIconButton';
 export * from './BottomSheet';
 export * from './TabBar';
 export * from './Dropdown';
