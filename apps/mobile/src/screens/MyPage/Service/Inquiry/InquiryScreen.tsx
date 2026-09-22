@@ -77,7 +77,10 @@ const InquiryScreen: React.FC<InquiryScreenProps> = ({ navigation }) => {
       {alertShow ? (
         <View style={styles.alertContainer}>
           <View style={styles.alertBox}>
-            <Icon source={'information'} size={20} color={theme.colors.gray600} />
+            {/* 아이콘(20px)을 첫 줄 글자 높이(16px)에 맞춰 세로 중앙 정렬 */}
+            <View style={styles.alertIconAlignFirstLine}>
+              <Icon source={'information'} size={20} color={theme.colors.gray600} />
+            </View>
 
             <View style={{ gap: 8, flex: 1 }}>
               <Typography mode="caption1" color="gray600" style={{ textAlign: 'left' }}>
@@ -165,6 +168,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   textButton: { height: 24, justifyContent: 'center', alignSelf: 'baseline' },
+  // 높이를 caption1 lineHeight(16)와 같게 두고, 그 안에서 아이콘을 중앙에 놓는다
+  alertIconAlignFirstLine: { height: 16, justifyContent: 'center' },
 });
 
 export default InquiryScreen;
