@@ -11,7 +11,7 @@
  *
  * config.toml 에서 verify_jwt = false 로 둔다 (브라우저가 직접 여는 주소).
  */
-import { asService, DEEP_LINK } from '../_shared/clients.ts';
+import { asService, DEEP_LINK, FUNCTIONS_URL } from '../_shared/clients.ts';
 import { html } from '../_shared/http.ts';
 import { bridgePage } from '../_shared/bridge.ts';
 import { verify } from '../_shared/signature.ts';
@@ -99,6 +99,9 @@ Deno.serve(async (req) => {
   }
 
   // ── 결제창 ─────────────────────────────────────────────────────────
+  // 앱은 이 HTML 을 fetch 로 받아 WebView 에 직접 넣으므로(GET 응답이 text/plain 으로 바뀌는 문제 우회),
+  // 폼 제출 주소를 절대 주소로 명시해야 한다. (identity/index.ts 와 같은 이유)
+  const checkoutUrl = `${FUNCTIONS_URL}/charge-checkout?tx=${tx}&sig=${sig}`;
   return html(
     shell(
       '소페이 충전',
@@ -111,7 +114,7 @@ Deno.serve(async (req) => {
          <div class="row"><dt>주문번호</dt><dd>${esc(trx.order_no)}</dd></div>
          <div class="row"><dt>결제금액</dt><dd class="amount">${won(trx.amount)}</dd></div>
        </dl>
-       <form method="post" class="actions">
+       <form method="post" class="actions" action="${esc(checkoutUrl)}">
          <button class="primary" name="action" value="approve">결제 승인</button>
          <button class="danger"  name="action" value="decline">승인 거절 (한도 초과 등)</button>
          <button class="ghost"   name="action" value="cancel">결제 취소</button>

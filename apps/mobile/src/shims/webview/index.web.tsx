@@ -24,7 +24,10 @@ export function WebView(props: WebViewProps) {
   useEffect(() => {
     if (!onMessage) return;
     const handler = (e: MessageEvent) => {
-      if (frame.current && e.source !== frame.current.contentWindow) return;
+      // 우리 iframe 이 보낸 메시지만 넘긴다. iframe 이 없는 순간(마운트 전/해제 중)에 온 메시지도 버린다.
+      // 주의: 보안 프로그램·확장 프로그램이 iframe 안에 끼워 넣은 스크립트가 보낸 메시지({"uniConnect":true} 등)는
+      // 출처가 iframe 이라 여기서 걸러지지 않는다. 받는 쪽 화면에서 결과 형태인지 확인해야 한다.
+      if (!frame.current || e.source !== frame.current.contentWindow) return;
       const data = typeof e.data === 'string' ? e.data : JSON.stringify(e.data);
       onMessage({ nativeEvent: { data } });
     };
