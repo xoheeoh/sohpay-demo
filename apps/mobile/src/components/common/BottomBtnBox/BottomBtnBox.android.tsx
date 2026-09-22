@@ -101,7 +101,7 @@ const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({ buttonKey, disabled, label,
         disabled={disabled}
         label={label}
         onPress={onPress}
-        size={'large'}
+        size={'lg'}
         keyboardVisible={keyboardVisible}
       />
     </Animated.View>

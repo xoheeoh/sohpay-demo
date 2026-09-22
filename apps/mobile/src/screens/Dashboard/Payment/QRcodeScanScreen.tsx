@@ -107,7 +107,7 @@ const QRcodeScanScreen: React.FC<QRcodeScanScreenProps> = ({ navigation }) => {
           <Typography mode="body2" color="gray600" style={{ textAlign: 'center' }}>
             카메라 권한이 허용되지 않았습니다.{'\n'}설정에서 권한을 허용해 주세요.
           </Typography>
-          <SecondaryButton label={'권한 설정'} onPress={() => Linking.openSettings()} size={'large'} />
+          <SecondaryButton label={'권한 설정'} onPress={() => Linking.openSettings()} size={'lg'} />
         </View>
       </ScreenWrapper>
     );
@@ -141,7 +141,7 @@ const QRcodeScanScreen: React.FC<QRcodeScanScreenProps> = ({ navigation }) => {
               style={{ alignSelf: 'center' }}
               label={'결제코드 입력'}
               onPress={() => navigation.navigate('CodeInput')}
-              size={'large'}
+              size={'lg'}
             />
           </View>
         </View>

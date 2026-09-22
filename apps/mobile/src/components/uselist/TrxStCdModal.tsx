@@ -69,7 +69,7 @@ const TrxStCdModal: React.FC<TrxStCdModalProps> = ({ handleSelectedTrxStCd, onTr
           disabled={isButtonDisabled}
           label={'선택'}
           onPress={handleSelectTrxStCdWithValues}
-          size={'large'}
+          size={'lg'}
         />
       </View>
     </>

@@ -241,7 +241,7 @@ const FindScreen: React.FC<FindScreenProps> = ({ navigation }) => {
               <SecondaryButton
                 label={authSuc ? '인증완료' : '휴대폰 본인인증'}
                 onPress={() => handleAuth('01')}
-                size={'large'}
+                size={'lg'}
                 style={{ flex: 1 }}
                 disabled={authSuc}
               />
@@ -287,7 +287,7 @@ const FindScreen: React.FC<FindScreenProps> = ({ navigation }) => {
               <SecondaryButton
                 label={authSuc ? '인증완료' : '휴대폰 본인인증'}
                 onPress={() => handleAuth('01')}
-                size={'large'}
+                size={'lg'}
                 style={{ flex: 1 }}
                 disabled={authSuc}
               />

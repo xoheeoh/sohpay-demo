@@ -12,6 +12,7 @@ import { getData, removeData } from '@storages/asyncStorage';
 import { useDialog } from '@contexts/DialogContext';
 import {
   BottomBtnBox,
+  BOTTOM_BTN_BOX_HEIGHT,
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
   KeyboardAwareScrollView,
   ScreenWrapper,
@@ -44,10 +45,10 @@ const PREVIEW_USER: IUserData = {
  * 내용을 "버튼 위 영역"의 가운데에 놓기 위한 추가 아래 여백.
  * 하단 버튼 상자는 화면 위에 떠 있어(absolute) 스크롤 영역이 그 뒤까지 이어진다. 그래서 그냥 가운데 정렬하면
  * 버튼까지 포함한 높이의 가운데에 놓여 아래로 치우쳐 보인다.
- *  - 버튼 상자 높이(위 16 + 버튼 48 + 아래 24 = 88) 중 스크롤뷰가 이미 더해 주는 몫(BOTTOM_BTN_BOX_KEYBOARD_INSET)을 뺀 나머지
+ *  - 버튼 상자 높이(BOTTOM_BTN_BOX_HEIGHT) 중 스크롤뷰가 이미 더해 주는 몫(BOTTOM_BTN_BOX_KEYBOARD_INSET)을 뺀 나머지
  *  - 아래쪽에 무게가 실리는 구성(카드)이라 기하학적 중앙보다 살짝 위에 보이도록 24 를 더한다
  */
-const CENTERING_EXTRA_BOTTOM_PADDING = 88 - BOTTOM_BTN_BOX_KEYBOARD_INSET + 24;
+const CENTERING_EXTRA_BOTTOM_PADDING = BOTTOM_BTN_BOX_HEIGHT - BOTTOM_BTN_BOX_KEYBOARD_INSET + 24;
 
 const JoinCompletedScreen: React.FC<JoinCompletedScreenProps> = ({ navigation }) => {
   /**

@@ -72,7 +72,7 @@ const UsrInfoScreen: React.FC<UsrInfoScreenProps> = ({ navigation, route }) => {
             style={{ alignSelf: 'flex-end' }}
             label={'잔액환급'}
             onPress={() => navigation.navigate('Refund')}
-            size={'large'}
+            size={'lg'}
           />
         </View>
 
@@ -136,7 +136,7 @@ const UsrInfoScreen: React.FC<UsrInfoScreenProps> = ({ navigation, route }) => {
 
         {/* 회원 탈퇴 */}
         <View style={{ paddingHorizontal: 16, marginTop: 48 }}>
-          <SecondaryButton label={'회원탈퇴'} onPress={() => navigation.navigate('Withdrawal')} size={'large'} />
+          <SecondaryButton label={'회원탈퇴'} onPress={() => navigation.navigate('Withdrawal')} size={'lg'} />
         </View>
       </ScrollView>
     </ScreenWrapper>

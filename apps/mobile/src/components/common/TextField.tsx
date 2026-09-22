@@ -71,7 +71,7 @@ const TextField: React.FC<TextFieldProps> = ({
             disabled={buttonDisabled}
             label={buttonLabel}
             onPress={buttonEvent}
-            size={'xlarge'}
+            size={'lg'}
           />
         )}
       </View>

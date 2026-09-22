@@ -190,12 +190,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
         {/* 액션 */}
         <View style={{ gap: 16 }}>
-          <PrimaryButton label="로그인" onPress={handleLogin} size="xlarge" />
+          <PrimaryButton label="로그인" onPress={handleLogin} size="lg" />
 
           <View style={styles.btnBox}>
-            <TextButton label="아이디/비밀번호 찾기" onPress={() => navigation.navigate('Find')} size="small" />
+            <TextButton label="아이디/비밀번호 찾기" onPress={() => navigation.navigate('Find')} size="sm" />
             <View style={styles.line} />
-            <TextButton label="회원가입" onPress={() => navigation.navigate('JoinOne')} size="small" />
+            <TextButton label="회원가입" onPress={() => navigation.navigate('JoinOne')} size="sm" />
           </View>
         </View>
       </ScrollView>

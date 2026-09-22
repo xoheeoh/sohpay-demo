@@ -4,13 +4,14 @@ import { Icon, Portal } from 'react-native-paper';
 import { useFocusEffect } from '@react-navigation/native';
 
 import Typography from './Typography';
-import { theme } from '@styles';
+import { controlSize, theme } from '@styles';
 
 interface DropdownProps {
   placeholder: string;
   options: string[];
   onSelect?: (selectedOption: string) => void; // 선택한 옵션을 부모로 전달
-  size?: 'default' | 'small';
+  /** 크기 단계. lg 는 입력칸·검색창과 나란히 놓이는 기본, md 는 목록 위 필터처럼 작은 자리용 */
+  size?: 'lg' | 'md';
   onOpen?: 'options' | 'modal';
   openEvent?: () => void;
   dismissKeyboardOnOpen?: boolean;
@@ -22,7 +23,7 @@ interface DropDownHandle {
 
 const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
   (
-    { placeholder, options, onSelect, size = 'default', onOpen = 'options', openEvent, dismissKeyboardOnOpen = true },
+    { placeholder, options, onSelect, size = 'lg', onOpen = 'options', openEvent, dismissKeyboardOnOpen = true },
     ref,
   ) => {
     // 드롭다운 셀렉트 박스 열림 상태
@@ -103,7 +104,8 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
             {
               borderColor: isOpen ? theme.colors.primary : theme.colors.line, // 평소에도 연한 테두리 (입력칸과 동일)
               backgroundColor: isOpen ? theme.colors.white : theme.colors.gray50,
-              height: size === 'default' ? 52 : 44, // default 는 SearchBox(52) 와 나란히 놓였을 때 높이가 같아야 한다
+              height: controlSize[size].height,
+              borderRadius: controlSize[size].radius,
             },
           ]}
           onPress={onOpen === 'options' ? handlePress : handleModalOpen}>
@@ -158,7 +160,6 @@ const OPTION_BOX_BORDER_WIDTH = 1;
 const styles = StyleSheet.create({
   select: {
     borderWidth: 1.5,
-    borderRadius: theme.radius.md,
     paddingLeft: 16,
     paddingRight: 12,
     gap: 8,

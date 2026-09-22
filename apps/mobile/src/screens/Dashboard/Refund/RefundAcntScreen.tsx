@@ -98,7 +98,7 @@ const RefundAcntScreen: React.FC<RefundAcntScreenProps> = ({ navigation, route }
                 style={{ width: '100%' }}
                 label={'계좌 변경하기'}
                 onPress={() => navigation.navigate('RefundAuth', { flg: 'edit' })}
-                size={'xlarge'}
+                size={'lg'}
               />
             </View>
           ) : (
@@ -113,7 +113,7 @@ const RefundAcntScreen: React.FC<RefundAcntScreenProps> = ({ navigation, route }
                 style={{ width: '100%' }}
                 label={'계좌 등록하기'}
                 onPress={() => navigation.navigate('RefundAuth', { flg: 'first' })}
-                size={'xlarge'}
+                size={'lg'}
               />
             </View>
           )}

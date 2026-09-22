@@ -1,4 +1,4 @@
-import { theme } from '@styles';
+import { controlSize, theme } from '@styles';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
@@ -165,9 +165,9 @@ AnimatedTextInput.displayName = 'AnimatedTextInput';
 const styles = StyleSheet.create({
   inputContainer: {
     position: 'relative',
-    borderRadius: theme.radius.md,
+    borderRadius: controlSize.lg.radius,
     borderWidth: 1,
-    height: 56,
+    height: controlSize.lg.height,
     justifyContent: 'center',
     paddingTop: 14,
     paddingBottom: 10,
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: Platform.select({ ios: 12, web: 12, default: 20 }),
     // 컨테이너(56) 안에 테두리 1.5px 이 있어 안쪽 높이는 53. 웹은 넘치면 어긋나 보이므로 53 으로 맞춘다.
-    height: Platform.OS === 'web' ? 53 : 56,
+    height: Platform.OS === 'web' ? controlSize.lg.height - 3 : controlSize.lg.height,
     includeFontPadding: false, // 안드로이드 기본 패딩 제거
     // 브라우저 기본 포커스 외곽선(outline)을 없앤다. 포커스 표시는 컨테이너 테두리 색(primary)이 담당한다.
     // RN 타입에는 'none' 이 없지만 react-native-web 은 CSS outline-style 로 그대로 넘긴다.

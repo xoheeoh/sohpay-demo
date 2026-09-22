@@ -369,7 +369,7 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
               <SecondaryButton
                 label={identifySuc ? '인증완료' : '휴대폰 본인인증'}
                 onPress={() => handleAuth('01')}
-                size={'large'}
+                size={'lg'}
                 style={{ flex: 1 }}
                 disabled={identifySuc}
               />

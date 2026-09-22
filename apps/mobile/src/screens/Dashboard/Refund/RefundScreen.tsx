@@ -78,7 +78,7 @@ const RefundScreen: React.FC<RefundScreenProps> = ({ navigation }) => {
               <SecondaryButton
                 label={'전액 입력'}
                 onPress={() => setWithdrawalAmt(rmnAmt.toString())}
-                size={'medium'}
+                size={'md'}
               />
             </View>
           </View>

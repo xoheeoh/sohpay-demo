@@ -50,7 +50,7 @@ const GetCdModal: React.FC<GetCdModalProps> = ({ handleSelectedGetCd, onGetCdCha
           disabled={isButtonDisabled}
           label={'선택'}
           onPress={handleSelectGetCdWithValues}
-          size={'large'}
+          size={'lg'}
         />
       </View>
     </>

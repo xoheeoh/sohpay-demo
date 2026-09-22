@@ -116,7 +116,7 @@ const ChargeAmtScreen: React.FC<ChargeAmtScreenProps> = ({ navigation }) => {
                   setChargeAmt(maxChargeAmount.toString());
                 }
               }}
-              size={'medium'}
+              size={'md'}
             />
           </View>
         </View>

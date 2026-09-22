@@ -7,7 +7,7 @@ interface ScreenWrapperProps {
   children: React.ReactNode;
   backgroundColor: string;
   keyboardOffsetOverride?: number; // per-screen override when headers vary
-  /** BottomBtnBox 등 하단 고정 버튼 높이만큼 iOS KeyboardAvoidingView 보정 (PrimaryButton large = 48) */
+  /** BottomBtnBox 등 하단 고정 버튼 높이만큼 iOS KeyboardAvoidingView 보정 (BOTTOM_BTN_BOX_KEYBOARD_INSET) */
   keyboardBottomInset?: number;
 }
 

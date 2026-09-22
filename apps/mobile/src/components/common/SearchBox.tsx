@@ -1,7 +1,7 @@
 import { Dispatch, useState } from 'react';
 import { Platform, StyleSheet, TextInput, View } from 'react-native';
 import { Icon } from 'react-native-paper';
-import { theme } from '@styles';
+import { controlSize, theme } from '@styles';
 
 import { typographyStyles } from './Typography';
 
@@ -49,11 +49,11 @@ const styles = StyleSheet.create({
     // 주의: 여기에 flex: 1 을 주면 웹에서 브라우저가 height 대신 글자 한 줄 높이로 줄여 버려 모양이 깨진다.
     // 가로 폭은 바깥 View(flex: 1)가 잡아 주므로 입력창 자체는 높이만 고정한다.
     borderWidth: 1.5,
-    borderRadius: theme.radius.md,
+    borderRadius: controlSize.lg.radius,
     paddingLeft: 48,
     paddingRight: 16,
     paddingVertical: Platform.OS === 'ios' ? 14 : 0,
-    height: 52,
+    height: controlSize.lg.height, // 드롭다운·입력칸과 나란히 놓여도 높이가 같다 (lg)
     position: 'relative',
     ...typographyStyles.body2, // 입력 글자는 타입 스케일의 body2 (다른 입력칸과 동일)
     color: theme.colors.gray900,

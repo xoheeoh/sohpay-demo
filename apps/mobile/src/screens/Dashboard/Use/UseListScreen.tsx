@@ -261,7 +261,7 @@ const UseListScreen: React.FC<UseListScreenProps> = () => {
           <View style={{ width: selectWidth }}>
             <Dropdown
               key={`period-${dropdownKey1}`}
-              size="small"
+              size="md"
               onOpen="modal"
               placeholder={periodPlaceholder}
               options={[]}
@@ -273,7 +273,7 @@ const UseListScreen: React.FC<UseListScreenProps> = () => {
           <View style={{ width: selectWidth }}>
             <Dropdown
               key={`getCd-${dropdownKey2}`}
-              size="small"
+              size="md"
               onOpen="modal"
               placeholder={getCdPlaceholder}
               options={[]}
@@ -285,7 +285,7 @@ const UseListScreen: React.FC<UseListScreenProps> = () => {
           <View style={{ width: selectWidth }}>
             <Dropdown
               key={`trxStCd-${dropdownKey3}`}
-              size="small"
+              size="md"
               onOpen="modal"
               placeholder={trxStCdPlaceholder}
               options={[]}
@@ -294,7 +294,7 @@ const UseListScreen: React.FC<UseListScreenProps> = () => {
           </View>
         </View>
 
-        <PrimaryButton label={'조회'} onPress={handleLoadList} size={'large'} />
+        <PrimaryButton label={'조회'} onPress={handleLoadList} size={'lg'} />
       </View>
 
       {/* 조회 결과 리스트 */}

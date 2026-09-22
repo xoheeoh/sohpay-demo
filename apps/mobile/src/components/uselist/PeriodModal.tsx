@@ -205,7 +205,7 @@ const PeriodModal: React.FC<PeriodModalProps> = ({ radioValue, frDt, toDt, handl
           disabled={isButtonDisabled}
           label={'선택'}
           onPress={handleSelectPeriodWithValues}
-          size={'large'}
+          size={'lg'}
         />
       </View>
     </>
