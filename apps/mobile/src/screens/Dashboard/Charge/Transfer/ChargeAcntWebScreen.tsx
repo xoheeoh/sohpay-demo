@@ -19,8 +19,12 @@ import {
   parseBankPayReturnUrl,
   parseWebViewPaymentMessage,
 } from '@utils/paymentCallback';
+import { fetchWebViewHtml, WebViewHtmlSource } from '@utils/webViewHtml';
 import { ScreenWrapper } from '@components/common';
 import { theme } from '@styles';
+
+// 결제창 HTML 본문(모의 PG) 또는 주소(뱅크페이 복귀 등 외부 페이지)
+type ChargeWebViewSource = WebViewHtmlSource | { uri: string };
 
 type ChargeAcntWebScreenProps = NativeStackScreenProps<RootStackParamList, 'ChargeAcntWeb'>;
 
@@ -28,7 +32,8 @@ const ChargeAcntWebScreen: React.FC<ChargeAcntWebScreenProps> = ({ navigation, r
   const { chargeAmt } = route.params;
   const { confirm } = useDialog();
 
-  const [url, setUrl] = useState<string>('');
+  // 결제창 HTML 은 주소를 바로 열지 않고 본문을 받아 넣는다. 이유는 utils/webViewHtml.ts 참고
+  const [source, setSource] = useState<ChargeWebViewSource | null>(null);
   const [isUrlLoading, setIsUrlLoading] = useState<boolean>(true);
   const [isWebViewLoading, setIsWebViewLoading] = useState<boolean>(false);
   const isResultHandledRef = useRef(false);
@@ -71,7 +76,7 @@ const ChargeAcntWebScreen: React.FC<ChargeAcntWebScreenProps> = ({ navigation, r
     if (bankPayRedirectUrl) {
       isResultHandledRef.current = false;
       setIsWebViewLoading(true);
-      setUrl(bankPayRedirectUrl);
+      setSource({ uri: bankPayRedirectUrl });
       return true;
     }
 
@@ -97,12 +102,12 @@ const ChargeAcntWebScreen: React.FC<ChargeAcntWebScreenProps> = ({ navigation, r
 
   useEffect(() => {
     requestChargeUrl(Number(chargeAmt), ChargeTypeEnum.Transfer)
-      .then((data) => {
+      .then(async (data) => {
         console.log('충전 url 발급 결과:', data);
 
         if (data?.resultCd === '0000' && data.returnUrl) {
           setIsWebViewLoading(true);
-          setUrl(data.returnUrl);
+          setSource(await fetchWebViewHtml(data.returnUrl)); // 실패하면 아래 catch 로 간다
         } else {
           confirm({
             title: '충전 실패',
@@ -115,10 +120,11 @@ const ChargeAcntWebScreen: React.FC<ChargeAcntWebScreenProps> = ({ navigation, r
           });
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('충전 결제창 준비 실패:', error);
         confirm({
           title: '충전 실패',
-          message1: '충전 URL 발급 중 오류가 발생했습니다.',
+          message1: '충전 결제창을 불러오지 못했습니다.',
           confirmText: '확인',
         }).then((ok) => {
           if (ok) {
@@ -257,14 +263,14 @@ const ChargeAcntWebScreen: React.FC<ChargeAcntWebScreenProps> = ({ navigation, r
   `;
 
   const showLoading = isUrlLoading || isWebViewLoading;
-  const showWebView = Boolean(url) && !isUrlLoading;
+  const showWebView = source !== null && !isUrlLoading;
 
   return (
     <ScreenWrapper backgroundColor="white" topComponent={false}>
       {showWebView && (
         <WebView
           ref={webViewRef}
-          source={{ uri: url }}
+          source={source}
           style={[styles.webView, { opacity: isWebViewLoading ? 0 : 1 }]}
           originWhitelist={['*']}
           onMessage={handleWebViewMessage}

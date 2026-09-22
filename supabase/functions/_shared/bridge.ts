@@ -22,14 +22,14 @@ export function bridgePage(title: string, badge: string, heading: string, sub: s
          var payload = ${json};
          function send() {
            try {
-             var isAndroid = /Android/i.test(navigator.userAgent);
-             var msg = JSON.stringify(isAndroid ? ['result', payload] : payload);
              if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
-               window.ReactNativeWebView.postMessage(msg);
+               // 네이티브 Android WebView 만 배열 형식을 기대한다 (Android 브라우저로 여는 웹 앱은 해당 없음)
+               var isAndroid = /Android/i.test(navigator.userAgent);
+               window.ReactNativeWebView.postMessage(JSON.stringify(isAndroid ? ['result', payload] : payload));
                return;
              }
              if (window.parent && window.parent !== window) {
-               window.parent.postMessage(msg, '*');
+               window.parent.postMessage(JSON.stringify(payload), '*');
                return;
              }
            } catch (e) {}
