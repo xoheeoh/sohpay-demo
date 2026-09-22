@@ -86,7 +86,8 @@ const RefundAuthScreen = ({ navigation, route }: RefundAuthScreenProps) => {
 
           {/* 은행 선택 */}
           <Pressable onPress={() => setOnBankModal(true)} style={styles.selectDropdown}>
-            <Typography mode="body2" color="gray900" style={{ width: '80%' }}>
+            {/* 선택 전 안내 문구는 입력칸의 자리표시자 라벨과 같은 색으로 */}
+            <Typography mode="body2" color={bankCd ? 'gray900' : 'gray400'} style={{ width: '80%' }}>
               {bankCd ? getBankName(bankCd) : '은행을 선택해주세요.'}
             </Typography>
 
@@ -162,13 +163,14 @@ const RefundAuthScreen = ({ navigation, route }: RefundAuthScreenProps) => {
 
 const styles = StyleSheet.create({
   wrap: { paddingVertical: 24, paddingHorizontal: 16 },
+  // 아래 입력칸(TextField)과 같은 모서리·배경·테두리를 써서 한 묶음으로 보이게 한다
   selectDropdown: {
-    borderRadius: 8,
+    borderRadius: theme.radius.md,
     paddingHorizontal: 16,
     height: 56,
-    backgroundColor: 'white',
+    backgroundColor: theme.colors.gray50,
     borderWidth: 1,
-    borderColor: theme.colors.gray150,
+    borderColor: theme.colors.line,
     ...layout.rowBetween,
   },
   divider: { backgroundColor: theme.colors.gray100, height: 1, marginHorizontal: 16 },

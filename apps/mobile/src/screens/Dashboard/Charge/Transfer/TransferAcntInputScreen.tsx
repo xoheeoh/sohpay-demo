@@ -70,7 +70,8 @@ const TransferAcntInputScreen = ({ navigation, route }: TransferAcntInputScreenP
 
           {/* 은행 선택 */}
           <Pressable onPress={() => setOnBankModal(true)} style={styles.selectDropdown}>
-            <Typography mode="body2" color="gray900" style={{ width: '80%' }}>
+            {/* 선택 전 안내 문구는 입력칸의 자리표시자 라벨과 같은 색으로 */}
+            <Typography mode="body2" color={bankCd ? 'gray900' : 'gray400'} style={{ width: '80%' }}>
               {bankCd ? getBankName(bankCd) : '은행을 선택해주세요.'}
             </Typography>
 
@@ -128,8 +129,9 @@ const TransferAcntInputScreen = ({ navigation, route }: TransferAcntInputScreenP
             <Icon source={'information'} size={24} color={theme.colors.gray600} />
 
             <Typography mode="caption1" color="gray600" style={{ flexShrink: 1 }}>
-              입력하신 계좌 정보는 충전에 1회 사용되며 '내 계좌' 정보에 저장되지 않습니다. 저장된 계좌 정보 수정을
-              원하시는 경우, '마이페이지 {'>'} 계좌관리' 메뉴에서 업데이트 해주세요.
+              {
+                "입력하신 계좌 정보는 충전에 1회 사용되며 '내 계좌' 정보에 저장되지 않습니다. 저장된 계좌 정보 수정을 원하시는 경우, '마이페이지 > 계좌관리' 메뉴에서 업데이트 해주세요."
+              }
             </Typography>
           </View>
         </View>
@@ -155,13 +157,14 @@ const TransferAcntInputScreen = ({ navigation, route }: TransferAcntInputScreenP
 
 const styles = StyleSheet.create({
   wrap: { paddingVertical: 24, paddingHorizontal: 16 },
+  // 아래 입력칸(TextField)과 같은 모서리·배경·테두리를 써서 한 묶음으로 보이게 한다
   selectDropdown: {
-    borderRadius: 8,
+    borderRadius: theme.radius.md,
     paddingHorizontal: 16,
     height: 56,
-    backgroundColor: 'white',
+    backgroundColor: theme.colors.gray50,
     borderWidth: 1,
-    borderColor: theme.colors.gray150,
+    borderColor: theme.colors.line,
     ...layout.rowBetween,
   },
   divider: { backgroundColor: theme.colors.gray100, height: 1, marginHorizontal: 16 },
