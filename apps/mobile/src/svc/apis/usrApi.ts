@@ -12,6 +12,12 @@ export const memberLogin = async (mbUid: string, pwd: string) => {
   const res = await supabase.auth.signInWithPassword({ email: emailFor(mbUid), password: pwd });
   if (res.error) return fail(res.error.code ?? res.error.message);
 
+  // 비밀번호 찾기로 받은 임시 비밀번호면 로그인시키지 않고 비밀번호 변경으로 보낸다 (원본 코드 9003)
+  if (res.data.user?.user_metadata?.temp_password) {
+    await supabase.auth.signOut();
+    return fail('TEMP_PASSWORD');
+  }
+
   const { data: profile } = await supabase.from('profiles').select('status').maybeSingle();
   if (profile?.status === 'WITHDRAWN') {
     await supabase.auth.signOut();
@@ -42,9 +48,13 @@ export const validationPwd = async (
 };
 
 export const changeTempPwd = async (uid: string, tempPwd: string, newPwd: string) => {
-  const login = await memberLogin(uid, tempPwd);
-  if (login.resultCd !== '0000') return login;
-  const res = await supabase.auth.updateUser({ password: newPwd });
+  // memberLogin 은 임시 비밀번호를 9003 으로 막으므로 여기서는 직접 로그인한다
+  const login = await supabase.auth.signInWithPassword({ email: emailFor(uid), password: tempPwd });
+  if (login.error) return fail(login.error.code ?? login.error.message);
+
+  // 새 비밀번호로 바꾸고 임시 비밀번호 표시를 끈다. 변경 후에는 새 비밀번호로 다시 로그인하게 한다.
+  const res = await supabase.auth.updateUser({ password: newPwd, data: { temp_password: false } });
+  await supabase.auth.signOut();
   if (res.error) return fail(res.error.code ?? res.error.message);
   return ok();
 };
@@ -55,11 +65,36 @@ export const reissuedToken = async () => {
   return data.session ? { at: data.session.access_token, rt: data.session.refresh_token } : null;
 };
 
-/* ── 아이디/비밀번호 찾기: 데모 범위 밖 ─────────────────────── */
-export const findUserId = async (_email: string, _usrNm: string) =>
-  fail('NOT_SUPPORTED', '데모에서는 지원하지 않는 기능입니다.');
-export const findUserPw = async (_email: string, _mbUid: string, _usrNm: string) =>
-  fail('NOT_SUPPORTED', '데모에서는 지원하지 않는 기능입니다.');
+/* ── 아이디/비밀번호 찾기 ───────────────────────────────────────
+ * 본인인증(certData = verificationId)을 마친 뒤에만 가능하다.
+ * 서버(account-recovery)가 인증된 이름·입력한 이름·회원 이름이 같은지 대조하고, 쓴 인증은 소진시킨다.
+ */
+export const findUserId = async (email: string, usrNm: string) => {
+  const verificationId = await getData<string>('certData');
+  if (!verificationId) return fail('IDENTITY_NOT_VERIFIED');
+
+  const res = await callFunction<{ mbUid: string; joinedAt: string }>(
+    'account-recovery/find-id',
+    { email, name: usrNm, verificationId },
+    false,
+  );
+  if (res.resultCd !== '0000') return res;
+  return ok({ mbUid: res.mbUid, regDnt: res.joinedAt });
+};
+
+/** 임시 비밀번호 발급. 실제 서비스는 이메일로 보내지만 데모는 응답으로 받아 화면에 보여준다. */
+export const findUserPw = async (email: string, mbUid: string, usrNm: string) => {
+  const verificationId = await getData<string>('certData');
+  if (!verificationId) return fail('IDENTITY_NOT_VERIFIED');
+
+  const res = await callFunction<{ mbUid: string; tempPassword: string }>(
+    'account-recovery/reset-password',
+    { email, mbUid, name: usrNm, verificationId },
+    false,
+  );
+  if (res.resultCd !== '0000') return res;
+  return ok({ mbUid: res.mbUid, tempPwd: res.tempPassword });
+};
 
 /* ── 본인인증 ─────────────────────────────────────────────────── */
 /** 인증 화면 URL 발급. 화면은 data.returnUrl 을 웹뷰로 연다. */

@@ -65,5 +65,6 @@ profiles ─1:1─ wallets ─1:N─ ledger_entries
 | 기능 | 파일 | 대체 후보 |
 |---|---|---|
 | 본인인증 | `functions/identity` | Firebase Auth 전화번호 인증 |
+| 아이디/비밀번호 찾기 | `functions/account-recovery` | 임시 비밀번호 이메일 발송 (데모는 화면에 표시) |
 | 계좌 1원 인증 | `functions/account-verify` | 금융결제원 오픈뱅킹 테스트베드 |
 | 결제창 | `functions/charge-checkout` | 실제 PG (사업자 심사 필요) |

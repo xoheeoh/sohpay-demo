@@ -1,18 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { BackHandler, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useFocusEffect } from '@react-navigation/native';
-
-import LottieView from 'lottie-react-native';
-import checksucess from '@images/animation/checksuccess.json';
 
 import type { RootStackParamList } from '@typ/navigation';
-import { formatYYYYMMDDDate, maskUid } from '@utils/formatter';
+import { formatYYYYMMDDDate } from '@utils/formatter';
 import {
   BottomBtnBox,
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
   KeyboardAwareScrollView,
   ScreenWrapper,
+  SuccessAnimation,
   Typography,
 } from '@components/common';
 import styles from './FindScreen.styles';
@@ -22,14 +19,6 @@ type FindIdScreenProps = NativeStackScreenProps<RootStackParamList, 'FindId'>;
 const FindIdScreen: React.FC<FindIdScreenProps> = ({ navigation, route }) => {
   // 이전 화면에서 얻은 회원 ID 및 가입일시 값
   const { mbUid, regDnt } = route.params;
-
-  // 화면 재진입 시, 애니메이션 다시 재생
-  const [play, setPlay] = useState<boolean>(false);
-  useFocusEffect(
-    useCallback(() => {
-      setPlay(true);
-    }, []),
-  );
 
   // 제스처 뒤로가기 방지
   useEffect(() => {
@@ -57,63 +46,45 @@ const FindIdScreen: React.FC<FindIdScreenProps> = ({ navigation, route }) => {
       <KeyboardAwareScrollView
         contentContainerStyle={[styles.wrap, styles.successWrap]}
         keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
-        {/* 결과 메시지 */}
-        <View style={{ gap: 12 }}>
-          <View style={{ alignItems: 'center' }}>
-            <Typography mode="subtitle1" color="gray900">
-              ID 찾기에
-            </Typography>
-            <Typography mode="subtitle1" color="gray900">
-              성공하였습니다.
-            </Typography>
-          </View>
+        {/* 애니메이션 → 제목 → 결과 카드를 한 덩어리로 묶어, 성공 문구와 찾은 아이디가 바로 이어져 보이게 한다 */}
+        <View style={styles.successBody}>
+          <SuccessAnimation size={200} style={styles.successAnimation} />
 
-          <View style={{ alignItems: 'center' }}>
-            <Typography mode="body2" color="gray900" style={{ textAlign: 'center' }}>
-              개인정보 도용 방지를 위하여 ID 가운데 5자리를 음영처리 합니다.
+          {/* 결과 메시지 */}
+          <View style={{ alignItems: 'center', gap: 6 }}>
+            <Typography mode="heading3" color="gray900">
+              ID 찾기에 성공하였습니다.
             </Typography>
-            <Typography mode="body2" color="gray900">
-              <Typography mode="subtitle3" color="gray900">
-                등록된 이메일로 ID 찾기 결과 메일이 발송
-              </Typography>
-              되었습니다.
+            <Typography mode="body2" color="gray600" style={{ textAlign: 'center' }}>
+              아래 ID로 로그인해 주세요.
             </Typography>
           </View>
-        </View>
 
-        {/* 성공 애니메이션 */}
-        <LottieView
-          source={checksucess}
-          autoPlay={play}
-          loop={false}
-          style={{ width: 180, height: 180, alignSelf: 'center' }}
-        />
-
-        {/* 회원 정보 */}
-        <View style={{ alignItems: 'center', gap: 16 }}>
-          <Typography mode="subtitle2" color="gray900">
-            회원정보
-          </Typography>
-
-          <View style={{ gap: 8 }}>
-            <View style={styles.userInfoBox}>
-              <Typography mode="body2" color="gray900" style={{ width: 55 }}>
+          {/* 회원 정보 카드. 본인인증을 거친 뒤라 ID 를 가리지 않고 그대로 보여준다 */}
+          <View style={styles.infoCard}>
+            <View style={styles.infoRow}>
+              <Typography mode="body2" color="gray600">
                 ID
               </Typography>
-              <Typography mode="body2" color="gray600">
-                {maskUid(mbUid)}
+              <Typography mode="subtitle2" color="gray900" selectable>
+                {mbUid}
               </Typography>
             </View>
-
-            <View style={styles.userInfoBox}>
-              <Typography mode="body2" color="gray900" style={{ width: 55 }}>
+            <View style={styles.infoDivider} />
+            <View style={styles.infoRow}>
+              <Typography mode="body2" color="gray600">
                 가입일자
               </Typography>
-              <Typography mode="body2" color="gray600">
+              <Typography mode="subtitle3" color="gray900">
                 {formatYYYYMMDDDate(regDnt)}
               </Typography>
             </View>
           </View>
+
+          {/* 데모 전용 안내: 실제 서비스는 이메일로도 결과를 보내지만 데모는 메일을 보내지 않는다 */}
+          <Typography mode="caption1" color="gray500" style={{ textAlign: 'center' }}>
+            데모 환경은 메일을 보내지 않아 결과를 화면에만 표시합니다.
+          </Typography>
         </View>
       </KeyboardAwareScrollView>
 

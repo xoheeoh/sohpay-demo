@@ -13,7 +13,7 @@ export type RootStackParamList = {
   Find: undefined;
   FindAuthWeb: { uri: string };
   FindId: { mbUid: string; regDnt: string };
-  FindPw: { mbUid: string };
+  FindPw: { mbUid: string; tempPwd?: string }; // tempPwd: 데모는 메일 대신 화면에 임시 비밀번호를 표시
 
   JoinOne: undefined;
   AuthWeb: { uri: string };

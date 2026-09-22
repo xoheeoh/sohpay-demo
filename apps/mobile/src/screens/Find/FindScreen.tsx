@@ -72,11 +72,11 @@ const FindScreen: React.FC<FindScreenProps> = ({ navigation }) => {
         // 아이디 찾기 성공
         navigation.navigate('FindId', { mbUid: data.mbUid, regDnt: data.regDnt });
       } else {
-        // 아이디 찾기 실패 (등록된 정보x)
+        // 아이디 찾기 실패. 가입자 없음이면 정보 확인 안내, 그 외(인증 만료 등)는 서버 문구를 그대로 보여준다
         alert({
           title: 'ID 찾기',
-          message1: '일치하는 가입자가 존재하지 않습니다.',
-          message2: '입력하신 정보를 다시 한 번 확인해주세요.',
+          message1: data.resultMsg,
+          message2: data.resultCd === 'MEMBER_NOT_FOUND' ? '입력하신 정보를 다시 한 번 확인해주세요.' : undefined,
         });
       }
     });
@@ -88,14 +88,14 @@ const FindScreen: React.FC<FindScreenProps> = ({ navigation }) => {
       console.log('비밀번호 찾기 결과:', data);
 
       if (data.resultCd === '0000') {
-        // 비밀번호 찾기 성공
-        navigation.navigate('FindPw', { mbUid: data.mbUid });
+        // 비밀번호 찾기 성공. 데모는 임시 비밀번호를 메일 대신 화면에 보여준다
+        navigation.navigate('FindPw', { mbUid: data.mbUid, tempPwd: data.tempPwd });
       } else {
-        // 비밀번호 찾기 실패 (등록된 정보x)
+        // 비밀번호 찾기 실패. 가입자 없음이면 정보 확인 안내, 그 외(인증 만료 등)는 서버 문구를 그대로 보여준다
         alert({
           title: 'PW 찾기',
-          message1: '일치하는 가입자가 존재하지 않습니다.',
-          message2: '입력하신 정보를 다시 한 번 확인해주세요.',
+          message1: data.resultMsg,
+          message2: data.resultCd === 'MEMBER_NOT_FOUND' ? '입력하신 정보를 다시 한 번 확인해주세요.' : undefined,
         });
       }
     });
