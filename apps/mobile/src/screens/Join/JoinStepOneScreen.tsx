@@ -4,6 +4,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { IconButton } from 'react-native-paper';
 
 import type { RootStackParamList } from '@typ/navigation';
+import { IUserData } from '@typ/userType';
+import { storeData } from '@storages/asyncStorage';
 import {
   BottomBtnBox,
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
@@ -58,6 +60,14 @@ const JoinStepOneScreen: React.FC<JoinStepOneScreenProps> = ({ navigation }) => 
 
   // 버튼 활성화 상태 계산 (필수 약관 체크 완료 시)
   const isButtonDisabled = !(term1Checkbox && term2Checkbox);
+
+  // 선택 약관(광고 수신) 동의 여부를 가입 정보에 담고 다음 단계로 이동.
+  // 새 가입의 첫 단계이므로 이전에 중단된 가입 정보가 남아 있으면 덮어쓴다.
+  const handleNext = async () => {
+    const firstStepData: Partial<IUserData> = { optionAgree: term3Checkbox };
+    await storeData('userData', firstStepData);
+    navigation.navigate('JoinTwo');
+  };
 
   // 약관 목록
   const termList = [
@@ -198,7 +208,7 @@ const JoinStepOneScreen: React.FC<JoinStepOneScreenProps> = ({ navigation }) => 
         buttonKey={isButtonDisabled.toString()}
         disabled={isButtonDisabled}
         label={'다음'}
-        onPress={() => navigation.navigate('JoinTwo')}
+        onPress={handleNext}
       />
     </ScreenWrapper>
   );

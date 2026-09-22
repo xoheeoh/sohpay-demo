@@ -23,8 +23,8 @@ export const filterAlphanumericWithSpecial = (input: string): string => {
  * @returns 필터링된 문자열
  */
 export const filterUserId = (input: string): string => {
-  // 영문 대소문자, 숫자, -, _, .만 허용
-  return input.replace(/[^a-zA-Z0-9-_\.]/g, '');
+  // 서버 아이디 규칙과 같게: 영문 소문자, 숫자, _ 만 허용. 대문자는 소문자로 바꾼다
+  return input.toLowerCase().replace(/[^a-z0-9_]/g, '');
 };
 
 /**

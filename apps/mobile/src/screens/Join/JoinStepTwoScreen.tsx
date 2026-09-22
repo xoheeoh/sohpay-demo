@@ -70,16 +70,16 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
 
       chkDuplicateUid(usrId, storedNonce)
         .then((data) => {
-          if (data.resultCd === 'CP02') {
-            // 회원 정보 없음
+          if (data.resultCd === '0000') {
+            // 사용 가능한 아이디
             setIdDuplicate(false); // 중복된 아이디가 아님
 
             alert({
               title: '중복확인',
               message1: '사용할 수 있는 ID입니다!',
             });
-          } else if (data.resultCd === '0000') {
-            // 회원 정보 있음
+          } else if (data.resultCd === 'MB_UID_TAKEN') {
+            // 이미 쓰고 있는 아이디
             setIdDuplicate(true);
             alert({
               title: '중복확인',
@@ -87,12 +87,11 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
               message2: 'ID를 다시 입력해 주세요.',
             });
           } else {
-            // 요청 횟수 초과
+            // 아이디 규칙 위반, 네트워크 오류 등. 서버가 준 문구를 그대로 보여준다
             setIdDuplicate(true);
             alert({
               title: '중복확인',
-              message1: '요청 횟수가 초과되었습니다.',
-              message2: '잠시 후 다시 시도해주세요.',
+              message1: data.resultMsg,
             });
           }
         })
@@ -409,6 +408,7 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
                 // 입력값 필터링
                 const filtered = filterUserId(text);
                 setUsrId(filtered);
+                setIdDuplicate(true); // 아이디가 바뀌면 중복확인을 다시 받아야 한다
 
                 if (filtered.length > 0) {
                   if (filtered.length < 6) {
@@ -418,7 +418,6 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
                   }
                 } else {
                   setIdError(false);
-                  setIdDuplicate(true); // 중복확인 여부 리셋
                 }
               }}
               placeholder={'아이디를 입력해 주세요.'}
@@ -426,7 +425,7 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
               descMessage={
                 idError
                   ? '최소 6자리 이상 입력해 주세요.'
-                  : '최소 6자리 이상 입력해 주세요. (영문, 숫자, 특수기호 입력 가능)'
+                  : '최소 6자리 이상 입력해 주세요. (영문 소문자, 숫자, _ 입력 가능)'
               }
               buttonDisabled={isDupIdButtonDisabled}
               buttonLabel="중복확인"
