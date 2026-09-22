@@ -111,45 +111,32 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 /* 토스트 알림 정의 ==================================== */
 const width = getAppWidth();
 
+/**
+ * 성공·오류 토스트 공통 모양.
+ * 아이콘은 글자 블록(한 줄이든 여러 줄이든) 전체의 세로 가운데에 맞춘다.
+ * 글자 영역이 남는 폭을 다 차지하도록 flex: 1 을 줘서 긴 문장은 줄바꿈되고 상자를 넘치지 않는다.
+ */
+const ToastItem = ({ text1, text2, tone }: ToastConfigParams<any> & { tone: 'success' | 'error' }) => (
+  <View style={styles.toast}>
+    <View style={[styles.toastIcon, tone === 'error' && { backgroundColor: theme.colors.red500 }]}>
+      <Icon source={tone === 'error' ? 'close' : 'check'} size={16} color="#fff" />
+    </View>
+    <View style={styles.toastText}>
+      <Typography mode="body2" color="gray50">
+        {text1}
+      </Typography>
+      {text2 && (
+        <Typography mode="caption1" color="gray200">
+          {text2}
+        </Typography>
+      )}
+    </View>
+  </View>
+);
+
 const toastConfig = {
-  success: ({ text1, text2 }: ToastConfigParams<any>) => (
-    <View style={styles.toast}>
-      <View style={{ gap: 8, alignItems: 'flex-start', flexDirection: 'row' }}>
-        <View style={styles.check}>
-          <Icon source={'check'} size={18} color="#fff" />
-        </View>
-        <View>
-          <Typography mode="body2" color="gray50">
-            {text1}
-          </Typography>
-          {text2 && (
-            <Typography mode="caption1" color="gray200">
-              {text2}
-            </Typography>
-          )}
-        </View>
-      </View>
-    </View>
-  ),
-  error: ({ text1, text2 }: ToastConfigParams<any>) => (
-    <View style={styles.toast}>
-      <View style={{ gap: 8, alignItems: 'flex-start', flexDirection: 'row' }}>
-        <View style={[styles.check, { backgroundColor: theme.colors.red500 }]}>
-          <Icon source={'close'} size={18} color="#fff" />
-        </View>
-        <View style={{ flexShrink: 1 }}>
-          <Typography mode="body2" color="gray50">
-            {text1}
-          </Typography>
-          {text2 && (
-            <Typography mode="caption1" color="gray200">
-              {text2}
-            </Typography>
-          )}
-        </View>
-      </View>
-    </View>
-  ),
+  success: (props: ToastConfigParams<any>) => <ToastItem {...props} tone="success" />,
+  error: (props: ToastConfigParams<any>) => <ToastItem {...props} tone="error" />,
 };
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -624,7 +611,7 @@ function App(): React.JSX.Element {
                   name="FAQ"
                   component={FAQScreen}
                   options={{
-                    header: () => <Header title="FAQ" bgColor="white" leftButton />,
+                    header: () => <Header title="FAQ" bgColor={theme.colors.bg} leftButton />,
                   }}
                 />
                 <Stack.Screen
@@ -662,17 +649,22 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: theme.radius.lg,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
+    alignItems: 'center', // 아이콘을 글자 블록의 세로 가운데에
+    gap: 10,
     boxShadow: theme.shadow.float,
   },
-  check: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+  // 아이콘 동그라미. 글자 한 줄 높이(20)와 같게 해서 한 줄 메시지일 때 딱 맞는다
+  toastIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: theme.colors.green500,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  toastText: {
+    flex: 1,
+    gap: 2,
   },
 });
 
