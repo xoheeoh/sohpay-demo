@@ -21,5 +21,6 @@ export * from './PinPad';
 export * from './DatePicker';
 export * from './KeyboardAwareScrollView';
 export * from './SuccessAnimation';
+export { toastConfig } from './AppToast';
 export { Wordmark } from './Wordmark';
 export { usePressScale } from './usePressScale';

@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Platform, StatusBar, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Platform, StatusBar, View } from 'react-native';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Toast, { ToastConfigParams } from 'react-native-toast-message';
-import { Icon } from 'react-native-paper';
+import Toast from 'react-native-toast-message';
 
 import { loadingController } from '@utils/loadingController';
 import { goBackToDashboard } from '@utils/navigationHelpers';
@@ -18,7 +17,7 @@ import { DialogProvider } from '@contexts/DialogContext';
 import { LoadingProvider, useLoading } from '@contexts/LoadingContext';
 import { NavigationProvider } from '@contexts/navigationContext';
 
-import { Header, Typography } from '@components/common';
+import { Header, toastConfig } from '@components/common';
 import { DashboardNav } from '@components/dashboard';
 import {
   AcntManageScreen,
@@ -74,7 +73,6 @@ import {
   WithdrawalSucScreen,
 } from '@screens';
 import { theme } from '@styles';
-import { getAppWidth } from '@utils/dimensions';
 
 /* 글로벌 로딩 정의 ==================================== */
 const GlobalLoading = () => {
@@ -107,37 +105,6 @@ const GlobalLoading = () => {
 
 // Stack Navigator 생성
 const Stack = createNativeStackNavigator<RootStackParamList>();
-
-/* 토스트 알림 정의 ==================================== */
-const width = getAppWidth();
-
-/**
- * 성공·오류 토스트 공통 모양.
- * 아이콘은 글자 블록(한 줄이든 여러 줄이든) 전체의 세로 가운데에 맞춘다.
- * 글자 영역이 남는 폭을 다 차지하도록 flex: 1 을 줘서 긴 문장은 줄바꿈되고 상자를 넘치지 않는다.
- */
-const ToastItem = ({ text1, text2, tone }: ToastConfigParams<any> & { tone: 'success' | 'error' }) => (
-  <View style={styles.toast}>
-    <View style={[styles.toastIcon, tone === 'error' && { backgroundColor: theme.colors.red500 }]}>
-      <Icon source={tone === 'error' ? 'close' : 'check'} size={16} color="#fff" />
-    </View>
-    <View style={styles.toastText}>
-      <Typography mode="body2" color="gray50">
-        {text1}
-      </Typography>
-      {text2 && (
-        <Typography mode="caption1" color="gray200">
-          {text2}
-        </Typography>
-      )}
-    </View>
-  </View>
-);
-
-const toastConfig = {
-  success: (props: ToastConfigParams<any>) => <ToastItem {...props} tone="success" />,
-  error: (props: ToastConfigParams<any>) => <ToastItem {...props} tone="error" />,
-};
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -640,32 +607,5 @@ function App(): React.JSX.Element {
     </GestureHandlerRootView>
   );
 }
-
-const styles = StyleSheet.create({
-  toast: {
-    width: width - 48,
-    backgroundColor: theme.colors.gray900,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: theme.radius.lg,
-    flexDirection: 'row',
-    alignItems: 'center', // 아이콘을 글자 블록의 세로 가운데에
-    gap: 10,
-    boxShadow: theme.shadow.float,
-  },
-  // 아이콘 동그라미. 글자 한 줄 높이(20)와 같게 해서 한 줄 메시지일 때 딱 맞는다
-  toastIcon: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: theme.colors.green500,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  toastText: {
-    flex: 1,
-    gap: 2,
-  },
-});
 
 export default App;
