@@ -214,7 +214,7 @@ const PeriodModal: React.FC<PeriodModalProps> = ({ radioValue, frDt, toDt, handl
 
 const styles = StyleSheet.create({
   specificBox: { ...layout.rowBetween, gap: 12, marginTop: 8 },
-  // Dropdown 선택 상자와 같은 규칙: 회색 배경 + 투명 테두리, 열리면 흰 배경 + 파란 테두리
+  // Dropdown 선택 상자와 같은 규칙: 회색 배경 + 연한 테두리(line), 열리면 흰 배경 + 파란 테두리
   dateBox: {
     flex: 1,
     height: 60,
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     paddingRight: 12,
     gap: 8,
     borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderColor: theme.colors.line,
     borderRadius: theme.radius.md,
     backgroundColor: theme.colors.gray50,
     ...layout.rowBetween,

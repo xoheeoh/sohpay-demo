@@ -3,6 +3,8 @@ import { Platform, StyleSheet, TextInput, View } from 'react-native';
 import { Icon } from 'react-native-paper';
 import { theme } from '@styles';
 
+import { typographyStyles } from './Typography';
+
 interface SearchBoxProps {
   searchQuery: string;
   setSearchQuery: Dispatch<React.SetStateAction<string>>;
@@ -28,7 +30,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ searchQuery, setSearchQuery, onPr
         style={[
           styles.container,
           {
-            borderColor: isActive ? theme.colors.primary : 'transparent',
+            borderColor: isActive ? theme.colors.primary : theme.colors.line, // 평소에도 연한 테두리 (다른 입력칸과 동일)
             backgroundColor: isActive ? 'white' : theme.colors.gray50,
           },
         ]}
@@ -44,7 +46,8 @@ const SearchBox: React.FC<SearchBoxProps> = ({ searchQuery, setSearchQuery, onPr
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // 주의: 여기에 flex: 1 을 주면 웹에서 브라우저가 height 대신 글자 한 줄 높이로 줄여 버려 모양이 깨진다.
+    // 가로 폭은 바깥 View(flex: 1)가 잡아 주므로 입력창 자체는 높이만 고정한다.
     borderWidth: 1.5,
     borderRadius: theme.radius.md,
     paddingLeft: 48,
@@ -52,12 +55,11 @@ const styles = StyleSheet.create({
     paddingVertical: Platform.OS === 'ios' ? 14 : 0,
     height: 52,
     position: 'relative',
-    fontFamily: 'Pretendard-Regular',
-    fontSize: 15,
-    letterSpacing: -0.2,
-    lineHeight: 22,
+    ...typographyStyles.body2, // 입력 글자는 타입 스케일의 body2 (다른 입력칸과 동일)
     color: theme.colors.gray900,
     includeFontPadding: false, // 안드로이드 기본 패딩 제거
+    // 웹 브라우저가 포커스 시 그리는 기본 파란 테두리를 끈다 (우리 테두리 색으로 대신 표시)
+    ...(Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : {}),
   },
   magnifyIcon: {
     position: 'absolute',
