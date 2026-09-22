@@ -105,6 +105,16 @@ const AnimatedTextInput = React.forwardRef<TextInput, AnimatedTextInputProps>((p
         ? theme.colors.white
         : theme.colors.gray50;
 
+  // 라벨 색. 자리표시자 자리에 있을 때(값 없음·비포커스)는 입력값(gray900)과 구분되도록 한 단계 더 연하게 한다.
+  const isLabelFloating = isFocused || !!value;
+  const labelColor = error
+    ? theme.colors.red500
+    : isFocused
+      ? theme.colors.primary
+      : isLabelFloating
+        ? theme.colors.gray500
+        : theme.colors.gray400;
+
   // 클리어 버튼 클릭 이벤트
   const handleClear = () => {
     setValue(''); // 입력값 초기화
@@ -113,11 +123,7 @@ const AnimatedTextInput = React.forwardRef<TextInput, AnimatedTextInputProps>((p
   return (
     <View style={[styles.inputContainer, { borderColor, backgroundColor }]}>
       <Animated.Text
-        style={[
-          styles.label,
-          labelStyle,
-          { color: error ? theme.colors.red500 : isFocused ? theme.colors.primary : theme.colors.gray500 },
-        ]}>
+        style={[styles.label, labelStyle, { color: labelColor }]}>
         {label}
       </Animated.Text>
       <TextInput
@@ -152,6 +158,9 @@ const AnimatedTextInput = React.forwardRef<TextInput, AnimatedTextInputProps>((p
     </View>
   );
 });
+
+// forwardRef 로 감싼 컴포넌트는 이름이 자동으로 붙지 않아 개발 도구·경고 메시지에 익명으로 나온다. 이름을 직접 붙인다.
+AnimatedTextInput.displayName = 'AnimatedTextInput';
 
 const styles = StyleSheet.create({
   inputContainer: {
