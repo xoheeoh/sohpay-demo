@@ -124,45 +124,6 @@ export function formatDateTimeKr(value: string) {
 }
 
 /**
- * 마스킹 처리: 사용자 아이디 마스킹
- * @param mbUid 처리할 문자열
- * @returns 가운데 5자리가 '*'로 대체된 문자열
- */
-export function maskUid(mbUid: string): string {
-  // if (mbUid.length < 5) {
-  //   throw new Error('최소 5글자 이상을 입력해야함.');
-  // }
-
-  const start = Math.floor((mbUid.length - 5) / 2); // 중앙에서 5자리를 시작하는 인덱스
-  const end = start + 5; // 5자리 뒤의 인덱스
-
-  // 음영 처리
-  return (
-    mbUid.slice(0, start) + // 앞부분
-    '*'.repeat(5) + // 5개의 별
-    mbUid.slice(end) // 뒷부분
-  );
-}
-
-/**
- * 마스킹 처리: 사용자 이름 마스킹
- * @param name 처리할 문자열
- * @returns 첫 글자, 마지막 글자 제외 나머지 부분이 '*'로 대체된 문자열
- */
-export function maskName(name: string) {
-  // 이름이 2글자 이하일 경우 첫 글자만 남기고 나머지 '*'
-  if (name.length <= 2) {
-    return name[0] + '*'.repeat(name.length - 1);
-  }
-
-  const firstChar = name[0]; // 첫 글자
-  const lastChar = name[name.length - 1]; // 마지막 글자
-  const maskedMiddle = '*'.repeat(name.length - 2); // 가운데를 마스킹
-
-  return `${firstChar}${maskedMiddle}${lastChar}`;
-}
-
-/**
  * 오늘로부터 일주일 전 날짜 구하기
  * @returns 'YYYY-MM-DD' 형식의 문자열
  */

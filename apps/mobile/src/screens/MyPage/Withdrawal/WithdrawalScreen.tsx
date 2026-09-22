@@ -4,7 +4,6 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '@typ/navigation';
 import { getData } from '@storages/asyncStorage';
-import { maskUid } from '@utils/formatter';
 import { useDialog } from '@contexts/DialogContext';
 import { checkUsrPwd } from '@apis/usrApi';
 import {
@@ -80,12 +79,13 @@ const WithdrawalScreen: React.FC<WithdrawalScreenProps> = ({ navigation }) => {
         </View>
 
         <View style={{ gap: 24 }}>
+          {/* 로그인한 본인만 들어오는 화면이라 ID 를 가리지 않는다. 어느 계정을 탈퇴하는지 보여 주는 역할 */}
           <TextField
             disabled
             id={'uid'}
             inputMode={'none'}
             label={'ID'}
-            value={maskUid(uid)}
+            value={uid}
             onChangeText={() => undefined}
             placeholder={''}
           />

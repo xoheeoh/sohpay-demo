@@ -4,7 +4,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '@typ/navigation';
-import { maskUid } from '@utils/formatter';
 import { getData, removeData } from '@storages/asyncStorage';
 import { useDialog } from '@contexts/DialogContext';
 import { checkUsrPwd, handleCertifyResult, requestCertifyUrl } from '@apis/usrApi';
@@ -185,12 +184,13 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
         </View>
 
         <View style={{ gap: 24 }}>
+          {/* 로그인한 본인만 들어오는 화면이라 ID 를 가리지 않는다. 어느 계정의 비밀번호를 묻는지 보여 주는 역할 */}
           <TextField
             disabled
             id={'uid'}
             inputMode={'none'}
             label={'ID'}
-            value={maskUid(usrData!.mbUid)}
+            value={usrData?.mbUid ?? ''}
             onChangeText={() => undefined}
             placeholder={''}
           />
