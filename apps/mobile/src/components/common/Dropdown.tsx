@@ -1,5 +1,5 @@
 import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
-import { Keyboard, findNodeHandle, FlatList, Pressable, StyleSheet, UIManager, View } from 'react-native';
+import { Keyboard, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { Icon, Portal } from 'react-native-paper';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -29,11 +29,12 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [selectedOption, setSelectedOption] = useState<string>(placeholder); // 선택된 옵션
     const [activeOption, setActiveOption] = useState<string | null>(null); // 현재 active 상태인 옵션
-    const [dropdownLayout, setDropdownLayout] = useState<{ width: number; top: number; height: number }>({
+    const [dropdownLayout, setDropdownLayout] = useState<{ left: number; width: number; top: number; height: number }>({
+      left: 0,
       width: 0,
       top: 0,
       height: 0,
-    }); // 드롭다운 크기 및 위치
+    }); // 옵션 목록의 화면상 위치와 크기
 
     // 내부 ref 생성
     const localRef = useRef<View | null>(null);
@@ -56,8 +57,8 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
 
     const handlePress = () => {
       if (dismissKeyboardOnOpen) Keyboard.dismiss();
-      if (!dropdownLayout.width) {
-        measureDropdown(); // 드롭다운 위치와 크기 계산
+      if (!isOpen) {
+        measureDropdown(); // 열 때마다 다시 잰다 (스크롤로 위치가 바뀌었을 수 있음)
       }
       setIsOpen((prev) => !prev);
     };
@@ -67,25 +68,25 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
       openEvent?.();
     };
 
+    // 셀렉트 박스의 화면상 위치를 재서 옵션 목록을 그 바로 아래에 띄운다.
+    // 주의: findNodeHandle + UIManager.measure 는 웹(react-native-web)에서 에러를 던진다.
+    // View ref 의 measureInWindow 는 앱·웹 모두에서 동작하고, Portal 도 창(window) 기준으로 그리므로 좌표가 그대로 맞는다.
     const measureDropdown = () => {
-      if (localRef.current) {
-        const handle = findNodeHandle(localRef.current);
-        if (handle) {
-          UIManager.measure(handle, (x, y, width, height, pageX, pageY) => {
-            // 옵션 개수에 따른 높이 계산
-            const optionHeight = 48; // 각 옵션의 높이 (optionItem의 padding 포함)
-            const verticalPadding = 16; // optionBox의 paddingVertical (8 + 8)
-            const maxHeight = 200; // 최대 높이
-            const calculatedHeight = Math.min(options.length * optionHeight + verticalPadding, maxHeight);
+      localRef.current?.measureInWindow((x, y, width, height) => {
+        // 옵션 개수에 따른 높이 계산
+        const optionHeight = 48; // 각 옵션의 높이 (optionItem의 padding 포함)
+        const verticalPadding = 16; // optionBox의 paddingVertical (8 + 8)
+        const verticalBorder = OPTION_BOX_BORDER_WIDTH * 2; // optionBox 테두리 위아래 (높이에 포함되므로 더해줘야 옵션이 잘리지 않음)
+        const maxHeight = 200; // 최대 높이
+        const calculatedHeight = Math.min(options.length * optionHeight + verticalPadding + verticalBorder, maxHeight);
 
-            setDropdownLayout({
-              width,
-              top: pageY + height + 12, // 드롭다운 y 좌표 + 높이 + 간격
-              height: calculatedHeight,
-            });
-          });
-        }
-      }
+        setDropdownLayout({
+          left: x,
+          width,
+          top: y + height + 8, // 셀렉트 박스 아래 + 간격
+          height: calculatedHeight,
+        });
+      });
     };
 
     const handleSelectOption = (option: string) => {
@@ -100,13 +101,14 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
           style={[
             styles.select,
             {
-              borderColor: isOpen ? theme.colors.primary : 'transparent',
+              borderColor: isOpen ? theme.colors.primary : theme.colors.line, // 평소에도 연한 테두리 (입력칸과 동일)
               backgroundColor: isOpen ? theme.colors.white : theme.colors.gray50,
-              height: size === 'default' ? 56 : 44,
+              height: size === 'default' ? 52 : 44, // default 는 SearchBox(52) 와 나란히 놓였을 때 높이가 같아야 한다
             },
           ]}
           onPress={onOpen === 'options' ? handlePress : handleModalOpen}>
-          <Typography mode="subtitle3" color="gray900" numberOfLines={1} style={{ flexShrink: 1 }}>
+          {/* 다른 입력칸(TextInput)과 같은 body2. 옵션 목록 글자와도 동일 */}
+          <Typography mode="body2" color="gray900" numberOfLines={1} style={{ flexShrink: 1 }}>
             {selectedOption}
           </Typography>
 
@@ -120,6 +122,7 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
               style={[
                 styles.optionBox,
                 {
+                  left: dropdownLayout.left,
                   width: dropdownLayout.width,
                   top: dropdownLayout.top,
                   height: dropdownLayout.height,
@@ -149,6 +152,9 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
   },
 );
 
+// 옵션 리스트 상자의 테두리 두께 (높이 계산에도 쓰이므로 상수로 분리)
+const OPTION_BOX_BORDER_WIDTH = 1;
+
 const styles = StyleSheet.create({
   select: {
     borderWidth: 1.5,
@@ -163,8 +169,9 @@ const styles = StyleSheet.create({
   optionBox: {
     position: 'absolute',
     backgroundColor: 'white',
-    left: 16,
     borderRadius: theme.radius.lg,
+    borderWidth: OPTION_BOX_BORDER_WIDTH,
+    borderColor: theme.colors.line, // 셀렉트 박스의 평소 테두리와 같은 색
     paddingHorizontal: 8,
     paddingVertical: 8,
     overflow: 'hidden',
