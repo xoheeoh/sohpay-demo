@@ -63,6 +63,10 @@ const MESSAGES: Record<string, string> = {
   PIN_LOCKED: '간편 비밀번호를 5회 잘못 입력해 10분간 잠겼습니다.',
   IDENTITY_NOT_VERIFIED: '본인인증을 먼저 완료해 주세요.',
   IDENTITY_EXPIRED: '본인인증이 만료되었습니다. 다시 진행해 주세요.',
+  IDENTITY_NAME_MISMATCH: '본인 인증 정보가 입력하신 이름과 일치하지 않습니다.',
+  MEMBER_NOT_FOUND: '일치하는 가입자가 존재하지 않습니다.',
+  RESET_PASSWORD_FAILED: '임시 비밀번호 발급에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+  TEMP_PASSWORD: '임시 비밀번호입니다. 비밀번호를 변경해 주세요.',
   INVALID_AMOUNT: '금액을 확인해 주세요.',
   MAX_BALANCE_EXCEEDED: '보유 한도(200만 원)를 초과합니다.',
   INSUFFICIENT_BALANCE: '잔액이 부족합니다.',
@@ -95,6 +99,7 @@ const MESSAGES: Record<string, string> = {
 /** 원본 앱이 분기에 쓰던 특수 코드는 유지한다. 그 외는 코드 문자열을 그대로 resultCd 로 돌려준다. */
 const LEGACY_CODES: Record<string, string> = {
   PIN_LOCKED: '9004', // 핀 5회 초과
+  TEMP_PASSWORD: '9003', // 임시 비밀번호로 로그인 → 비밀번호 변경 화면으로
 };
 
 export const fail = (code: string, msg?: string): ApiResult =>

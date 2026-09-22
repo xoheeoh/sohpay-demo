@@ -142,6 +142,7 @@ GET /rest/v1/transactions
 | 화면 플로우 | 사용하는 API |
 |---|---|
 | 회원가입 (약관 → 본인인증 → 계정 → PIN) | `identity/start` → 웹뷰 → `identity/result` → Auth signup → `complete_signup` |
+| 아이디/비밀번호 찾기 (본인인증 → 조회) | `identity/start` → 웹뷰 → `identity/result` → `account-recovery/find-id` 또는 `account-recovery/reset-password` (임시 비밀번호는 데모라 화면에 표시) |
 | 홈 (잔액 · 최근 이력) | `wallets`, `recent_transactions` |
 | 충전 | `charges` → 결제창 웹뷰 → `transactions` 상태 폴링 |
 | QR 결제 | `resolve_payment_request` → `execute_payment` |
