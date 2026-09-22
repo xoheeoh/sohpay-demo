@@ -128,7 +128,12 @@ export const handleCertifyResult = async (usrNm: string, msg: string) => {
 };
 
 /* ── 가입 ─────────────────────────────────────────────────────── */
+/** 서버(complete_signup)가 받아주는 아이디 규칙. 여기서 먼저 걸러야 "이미 있는 아이디"와 "규칙 위반"을 구분해 안내할 수 있다. */
+const MB_UID_RULE = /^[a-z0-9_]{6,20}$/;
+
+/** 아이디 사용 가능 여부. 사용 가능 → 0000, 이미 있음 → MB_UID_TAKEN, 규칙 위반 → INVALID_MB_UID */
 export const chkDuplicateUid = async (id: string, _nonce: string) => {
+  if (!MB_UID_RULE.test(id)) return fail('INVALID_MB_UID');
   try {
     const data = unwrap(await supabase.rpc('is_mb_uid_available', { p_mb_uid: id })) as { available: boolean };
     return data.available ? ok() : fail('MB_UID_TAKEN');
@@ -173,6 +178,14 @@ export const joinService = async (userData: IUserData) => {
   } catch (e) {
     await supabase.auth.signOut();
     return toFail(e);
+  }
+
+  // complete_signup 은 프로필 이메일을 로그인용 주소(아이디@demo.sohpay.app)로 채운다.
+  // 가입 화면에서 입력받은 실제 이메일로 바꿔 둔다. 아이디 찾기가 이 이메일로 회원을 찾는다.
+  // 계정은 이미 만들어졌으므로 여기서 실패해도 가입 자체는 성공으로 본다.
+  if (userData.email) {
+    const { error } = await supabase.from('profiles').update({ email: userData.email.trim().toLowerCase() }).select('id').single();
+    if (error) console.warn('가입 이메일 저장 실패:', error.message);
   }
 
   // 가입 완료 화면은 로그인 상태를 가정하지 않는다(다시 로그인). 세션은 정리한다.

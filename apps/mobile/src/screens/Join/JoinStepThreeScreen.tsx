@@ -146,7 +146,6 @@ const JoinStepThreeScreen: React.FC<JoinStepThreeScreenProps> = ({ navigation, r
         onKeyPress={handleKeyPress}
         onShuffle={handleShuffle}
         onDelete={handleDelete}
-
         topSlot={
           <View style={styles.stepBox}>
             <View style={styles.stepBadge}>
@@ -172,7 +171,7 @@ const JoinStepThreeScreen: React.FC<JoinStepThreeScreenProps> = ({ navigation, r
             </View>
           </View>
         }
-      />{' '}
+      />
     </ScreenWrapper>
   );
 };

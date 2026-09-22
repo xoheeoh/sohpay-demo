@@ -71,7 +71,7 @@ const JoinCompletedScreen: React.FC<JoinCompletedScreenProps> = ({ navigation })
 
           confirm({
             title: '회원가입 실패',
-            message1: '회원가입에 실패했습니다.',
+            message1: data.resultMsg, // 실패 사유 (본인인증 만료, 이미 가입된 사용자 등)
             message2: '처음부터 다시 시도해 주세요.',
             confirmText: '확인',
           }).then((ok) => {
