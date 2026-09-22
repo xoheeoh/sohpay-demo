@@ -1,10 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-
-import LottieView from 'lottie-react-native';
-import checksucess from '@images/animation/checksuccess.json';
 
 import type { RootStackParamList } from '@typ/navigation';
 import { goToLogin } from '@utils/navigationHelpers';
@@ -14,21 +11,13 @@ import {
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
   KeyboardAwareScrollView,
   ScreenWrapper,
+  SuccessAnimation,
   Typography,
 } from '@components/common';
 
 type WithdrawalSucScreenProps = NativeStackScreenProps<RootStackParamList, 'WithdrawalSuc'>;
 
 const WithdrawalSucScreen: React.FC<WithdrawalSucScreenProps> = ({ navigation }) => {
-  // 화면 재진입 시, 애니메이션 다시 재생
-  const [play, setPlay] = useState<boolean>(false);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      setPlay(true);
-    }, []),
-  );
-
   // 저장되어 있던 회원 정보 삭제
   useEffect(() => {
     const fetchData = async () => {
@@ -83,13 +72,8 @@ const WithdrawalSucScreen: React.FC<WithdrawalSucScreenProps> = ({ navigation })
           </View>
         </View>
 
-        {/* 성공 애니메이션 */}
-        <LottieView
-          source={checksucess}
-          autoPlay={play}
-          loop={false}
-          style={{ width: 180, height: 180, alignSelf: 'center' }}
-        />
+        {/* 성공 애니메이션 (웹에서도 보이도록 공용 컴포넌트 사용) */}
+        <SuccessAnimation size={140} />
       </KeyboardAwareScrollView>
 
       <BottomBtnBox buttonKey={'confirm'} disabled={false} label={'확인'} onPress={() => goToLogin(navigation)} />
