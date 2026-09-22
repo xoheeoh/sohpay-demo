@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RootStackParamList } from '@typ/navigation';
 import { IRefundAcnt } from '@typ/paymentType';
 import { getBankName } from '@dt/bankCd';
-import { maskAccountNumber, maskName, maskUid } from '@utils/formatter';
+import { maskAccountNumber } from '@utils/formatter';
 import { validateEmail, isMaskedEmail } from '@utils/validator';
 import { getData } from '@storages/asyncStorage';
 import { useDialog } from '@contexts/DialogContext';
@@ -153,13 +153,13 @@ const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigati
           회원정보 변경
         </Typography>
 
-        {/* 회원정보 상세 */}
+        {/* 회원정보 상세. 앞 화면에서 비밀번호로 본인 확인을 마친 뒤라 이름·ID 는 가리지 않고 그대로 보여 준다 */}
         <View style={{ gap: 24, paddingBottom: 0 }}>
           <TextField
             id={'name'}
             inputMode={'none'}
             label={'이름'}
-            value={(usrData && maskName(usrData.usrNm)) || ''}
+            value={usrData?.usrNm ?? ''}
             disabled
             onChangeText={() => undefined}
             placeholder={''}
@@ -196,7 +196,7 @@ const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigati
             id={'uid'}
             inputMode={'none'}
             label={'ID'}
-            value={(usrData && maskUid(usrData.mbUid)) || ''}
+            value={usrData?.mbUid ?? ''}
             disabled
             onChangeText={() => undefined}
             placeholder={''}
