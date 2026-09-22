@@ -261,15 +261,17 @@ export function formatBusinessNumber(str: string) {
 
 /**
  * 계좌번호 마스킹 함수
- *  - 최소 10자리 이상
- *  - 4번째부터 9번째 숫자까지 * 로 마스킹
+ *  - 숫자만 10자리 이상인 원본 계좌번호: 4번째부터 9번째 숫자까지 * 로 마스킹
+ *  - 서버가 이미 마스킹해서 내려준 값(예: 110*****6789)이나 그 외 형식: 그대로 반환
+ *    (화면을 그리는 도중 에러를 던지면 화면 전체가 비어버리므로 절대 throw 하지 않는다)
  * @param accountNumber 계좌번호 문자열
  * @returns 마스킹된 계좌번호 문자열
  */
-export function maskAccountNumber(accountNumber: string): string {
-  if (!/^\d{10,}$/.test(accountNumber)) {
-    throw new Error('계좌번호는 숫자로만 구성된 10자리 이상이어야 합니다.');
-  }
+export function maskAccountNumber(accountNumber: string | null | undefined): string {
+  if (!accountNumber) return '';
+
+  const isRawAccountNumber = /^\d{10,}$/.test(accountNumber);
+  if (!isRawAccountNumber) return accountNumber;
 
   const start = accountNumber.slice(0, 3); // 앞 3자리
   const masked = '*'.repeat(6); // 4~9번째는 마스킹
