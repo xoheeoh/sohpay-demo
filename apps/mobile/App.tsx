@@ -11,6 +11,7 @@ import { loadingController } from '@utils/loadingController';
 import { goBackToDashboard } from '@utils/navigationHelpers';
 import { getData } from '@storages/asyncStorage';
 import { hasSession } from '@apis/client';
+import { DEV_START_SCREEN } from '@env';
 import type { RootStackParamList } from '@typ/navigation';
 
 import { DialogProvider } from '@contexts/DialogContext';
@@ -152,6 +153,8 @@ function App(): React.JSX.Element {
   }
 
   const getInitialRoute = (): keyof RootStackParamList => {
+    // 개발 중 특정 화면만 바로 열어 보기 (.env 의 EXPO_PUBLIC_DEV_START_SCREEN). 없는 화면 이름을 넣으면 시작 시 오류가 난다.
+    if (DEV_START_SCREEN) return DEV_START_SCREEN as keyof RootStackParamList;
     if (!hasSeenPermissionNotice) return 'PermissionNotice';
     return isLoggedIn ? 'Dashboard' : 'Login';
   };
