@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Keyboard, Platform, StyleSheet, TextInput, View } from 'react-native';
+import { Keyboard, Platform, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Icon } from 'react-native-paper';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { RootStackParamList } from '@typ/navigation';
 import { useDialog } from '@contexts/DialogContext';
@@ -15,6 +14,7 @@ import {
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
   KeyboardAwareScrollView,
   ScreenWrapper,
+  TextField,
   Typography,
 } from '@components/common';
 import { layout, theme } from '@styles';
@@ -29,14 +29,7 @@ const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenP
   const [certNum, setCertNum] = useState<string>(''); // 인증번호 숫자 3자리
 
   const scrollViewRef = useRef<any>(null);
-  const certNumRef = useRef<TextInput>(null);
   const [keyboardVisible, setKeyboardVisible] = useState<boolean>(false);
-
-  const insets = useSafeAreaInsets();
-
-  // 인증번호 입력 Input 포커스
-  const [isFocused, setIsFocused] = useState<boolean>(false);
-  const borderColor = isFocused ? theme.colors.primary : theme.colors.gray150;
 
   // 다음 버튼 활성화 유무
   const isButtonDisabled = !(certNum.length >= 3);
@@ -60,14 +53,13 @@ const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenP
   useEffect(() => {
     // iOS는 키보드 프레임 변화/레이아웃 타이밍 편차가 커서,
     // 공통 KeyboardAwareScrollView가 해도 가끔 덜 올라오는 기기가 있어
-    // 이 화면은 "포커스 + 키보드 visible"일 때 한 번 더 아래로 밀어줌.
+    // 이 화면은 키보드가 올라올 때 한 번 더 아래로 밀어줌. (입력칸이 하나뿐이라 키보드가 보이면 곧 그 입력칸에 포커스된 상태다)
     if (Platform.OS !== 'ios') return;
-    if (!isFocused) return;
     if (!keyboardVisible) return;
     const sv = scrollViewRef.current;
     if (!sv?.scrollToEnd) return;
     setTimeout(() => sv.scrollToEnd({ animated: true }), 50);
-  }, [isFocused, keyboardVisible]);
+  }, [keyboardVisible]);
 
   // 1원 인증번호 검증
   const handleCertifyNo = () => {
@@ -172,24 +164,15 @@ const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenP
         </View>
 
         <View style={{ gap: 12 }}>
-          <Typography mode="body2" color="gray900">
-            숫자 3자리
-          </Typography>
-
-          <View style={[styles.inputContainer, { borderColor: borderColor }]}>
-            <TextInput
-              ref={certNumRef}
-              onFocus={() => {
-                setIsFocused(true);
-              }}
-              onBlur={() => setIsFocused(false)}
-              inputMode="numeric"
-              style={styles.input}
-              id="certNum"
-              value={certNum}
-              onChangeText={(x: string) => setCertNum(x)}
-            />
-          </View>
+          {/* 다른 화면과 같은 공용 입력칸. 라벨이 안에서 떠오르고, 포커스 표시는 컨테이너 테두리 색이 담당한다 */}
+          <TextField
+            id={'certNum'}
+            inputMode={'numeric'}
+            label={'숫자 3자리'}
+            value={certNum}
+            onChangeText={(x: string) => setCertNum(x)}
+            placeholder={''}
+          />
 
           {/* 1원 인증 실패 시 보이는 오류 메시지 박스 */}
           {errorCode && (
@@ -238,22 +221,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     alignSelf: 'baseline',
     backgroundColor: 'white',
-  },
-  inputContainer: {
-    borderRadius: 8,
-    height: 56,
-    justifyContent: 'center',
-    flex: 1,
-    borderWidth: 1,
-  },
-  input: {
-    fontSize: 18,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    height: 56,
-    color: theme.colors.gray600,
-    fontFamily: 'Pretendard-Regular',
-    includeFontPadding: false, // 안드로이드 기본 패딩 제거
   },
   errorBox: {
     borderWidth: 1,
