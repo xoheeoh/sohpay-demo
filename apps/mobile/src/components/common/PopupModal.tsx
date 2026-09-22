@@ -59,9 +59,9 @@ const PopupModal: React.FC<PopupModalProps> = ({
         {/* 버튼 - 두 개면 가로로 나란히 (보조 왼쪽 · 기본 오른쪽) */}
         <View style={styles.buttons}>
           {button2Label && button2Event && (
-            <SecondaryButton label={button2Label} onPress={button2Event} size={'large'} style={{ flex: 1 }} />
+            <SecondaryButton label={button2Label} onPress={button2Event} size={'lg'} style={{ flex: 1 }} />
           )}
-          <PrimaryButton label={button1Label} onPress={button1Event} size={'large'} style={{ flex: 1 }} />
+          <PrimaryButton label={button1Label} onPress={button1Event} size={'lg'} style={{ flex: 1 }} />
         </View>
       </Modal>
     </Portal>

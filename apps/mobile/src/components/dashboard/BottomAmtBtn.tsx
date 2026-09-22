@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Keyboard, Platform, Pressable, StyleSheet } from 'react-native';
 
-import { Typography } from '@components/common';
+import { BOTTOM_BTN_BOX_KEYBOARD_INSET, Typography } from '@components/common';
 import { theme } from '@styles';
 
 interface BottomAmtBtnProps {
@@ -60,9 +60,11 @@ const BottomAmtBtn: React.FC<BottomAmtBtnProps> = ({ add, keyboardHeight, keyboa
   }, [keyboardHeight, keyboardVisible, keyboardWillHide]);
 
   const targetBottom = useMemo(() => {
-    // iOS: 키보드 위 + 약간 여유, Android: 키보드 위 + BottomBtnBox 높이 정도 여유
+    // iOS: 키보드 위 + 약간 여유, Android: 키보드 위 + 키보드 위에 붙은 BottomBtnBox(버튼 높이만 남음) 만큼 여유
     // Android에서도 키보드 높이를 더해줘야(특히 adjustPan 환경) 키보드에 가려지지 않음.
-    return Platform.OS === 'ios' ? effectiveKeyboardHeight + 14 : effectiveKeyboardHeight + 48;
+    return Platform.OS === 'ios'
+      ? effectiveKeyboardHeight + 14
+      : effectiveKeyboardHeight + BOTTOM_BTN_BOX_KEYBOARD_INSET;
   }, [effectiveKeyboardHeight]);
 
   useEffect(() => {

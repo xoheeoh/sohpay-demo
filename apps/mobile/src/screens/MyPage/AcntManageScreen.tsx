@@ -50,7 +50,7 @@ const AcntManageScreen: React.FC<AcntManageScreenProps> = ({ navigation }) => {
               style={{ width: '100%' }}
               label={'계좌 등록하기'}
               onPress={() => navigation.navigate('RefundAuth', { flg: 'first' })}
-              size={'xlarge'}
+              size={'lg'}
             />
           </View>
         ) : acntData && acntData.rfndAcntNo !== null ? (

@@ -1,18 +1,19 @@
 import { Pressable, StyleSheet, ViewStyle } from 'react-native';
 
 import Typography from './Typography';
-import { theme } from '@styles';
+import { controlSize, ControlSize } from '@styles';
 
 interface TextButtonProps {
   label: string;
   onPress: () => void;
-  size: 'large' | 'medium' | 'small';
+  /** 크기 단계. 배경이 없어도 높이·모서리·여백·글자는 다른 버튼과 같은 표를 따른다 */
+  size?: ControlSize;
   style?: ViewStyle;
 }
 
 /** 배경 없는 텍스트 버튼 */
-const TextButton: React.FC<TextButtonProps> = ({ label, onPress, size = 'large', style }) => {
-  const height = size === 'large' ? 48 : size === 'medium' ? 40 : 32;
+const TextButton: React.FC<TextButtonProps> = ({ label, onPress, size = 'md', style }) => {
+  const control = controlSize[size];
 
   return (
     <Pressable
@@ -21,10 +22,15 @@ const TextButton: React.FC<TextButtonProps> = ({ label, onPress, size = 'large',
       hitSlop={4}
       style={({ pressed }) => [
         styles.base,
-        { height, paddingHorizontal: size === 'small' ? 8 : 12, opacity: pressed ? 0.5 : 1 },
+        {
+          height: control.height,
+          paddingHorizontal: control.paddingX,
+          borderRadius: control.radius,
+          opacity: pressed ? 0.5 : 1,
+        },
         style,
       ]}>
-      <Typography mode={size === 'small' ? 'body2' : 'subtitle3'} color="gray600">
+      <Typography mode={control.text} color="gray600">
         {label}
       </Typography>
     </Pressable>
@@ -32,7 +38,7 @@ const TextButton: React.FC<TextButtonProps> = ({ label, onPress, size = 'large',
 };
 
 const styles = StyleSheet.create({
-  base: { alignItems: 'center', justifyContent: 'center', borderRadius: theme.radius.sm },
+  base: { alignItems: 'center', justifyContent: 'center' },
 });
 
 export default TextButton;

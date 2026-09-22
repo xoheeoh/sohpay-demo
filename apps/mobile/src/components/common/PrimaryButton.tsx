@@ -2,12 +2,13 @@ import { Animated, Pressable, StyleSheet, ViewStyle } from 'react-native';
 
 import Typography from './Typography';
 import { usePressScale } from './usePressScale';
-import { theme } from '@styles';
+import { controlSize, ControlSize, theme } from '@styles';
 
 interface PrimaryButtonProps {
   label: string;
   onPress: () => void;
-  size: 'xlarge' | 'large' | 'medium' | 'small';
+  /** 크기 단계. 높이·모서리·여백·글자는 styles/controls 의 표를 따른다 */
+  size?: ControlSize;
   disabled?: boolean;
   /** 배경색 오버라이드 (흰색을 넘기면 글자는 진한 회색으로) */
   buttonColor?: string;
@@ -16,19 +17,11 @@ interface PrimaryButtonProps {
   keyboardVisible?: boolean;
 }
 
-const HEIGHT = { xlarge: 56, large: 52, medium: 40, small: 32 } as const;
-const RADIUS = {
-  xlarge: theme.radius.lg,
-  large: theme.radius.md,
-  medium: theme.radius.sm,
-  small: theme.radius.sm,
-} as const;
-
 /** 채워진 기본 액션 버튼 */
 const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   label,
   onPress,
-  size = 'large',
+  size = 'lg',
   disabled,
   buttonColor = theme.colors.primary,
   style,
@@ -37,7 +30,7 @@ const PrimaryButton: React.FC<PrimaryButtonProps> = ({
   const press = usePressScale();
   const isWhite = buttonColor === theme.colors.white;
   const textColor = disabled ? 'gray400' : isWhite ? 'gray900' : 'white';
-  const textMode = size === 'small' ? 'subtitle4' : size === 'medium' ? 'subtitle3' : 'subtitle2';
+  const control = controlSize[size];
 
   return (
     <Animated.View style={[!disabled && press.style, style]}>
@@ -51,9 +44,9 @@ const PrimaryButton: React.FC<PrimaryButtonProps> = ({
         style={({ pressed }) => [
           styles.base,
           {
-            height: HEIGHT[size],
-            paddingHorizontal: size === 'small' ? 12 : 20,
-            borderRadius: keyboardVisible ? 0 : RADIUS[size],
+            height: control.height,
+            paddingHorizontal: control.paddingX,
+            borderRadius: keyboardVisible ? 0 : control.radius,
             backgroundColor: disabled
               ? theme.colors.disabled
               : pressed && !isWhite
@@ -62,7 +55,7 @@ const PrimaryButton: React.FC<PrimaryButtonProps> = ({
           },
           isWhite && !disabled && styles.whiteBorder,
         ]}>
-        <Typography mode={textMode} color={textColor}>
+        <Typography mode={control.text} color={textColor}>
           {label}
         </Typography>
       </Pressable>

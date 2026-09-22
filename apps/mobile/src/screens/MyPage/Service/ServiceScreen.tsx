@@ -95,7 +95,7 @@ const ServiceScreen: React.FC<ServiceScreenProps> = ({ navigation }) => {
                     전화 상담
                   </Typography>
                 </View>
-                <SecondaryButton label="전화하기" onPress={handleCall} size="small" />
+                <SecondaryButton label="전화하기" onPress={handleCall} size="sm" />
               </View>
 
               <View style={styles.infoLines}>
@@ -118,7 +118,7 @@ const ServiceScreen: React.FC<ServiceScreenProps> = ({ navigation }) => {
                     이메일 상담
                   </Typography>
                 </View>
-                <SecondaryButton label="메일 보내기" onPress={handleEmail} size="small" />
+                <SecondaryButton label="메일 보내기" onPress={handleEmail} size="sm" />
               </View>
 
               <View style={styles.infoLines}>

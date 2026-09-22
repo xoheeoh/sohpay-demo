@@ -77,7 +77,7 @@ const SettingScreen: React.FC<SettingScreenProps> = () => {
                 확인 중...
               </Typography>
             ) : isUpdateAvailable ? (
-              <SecondaryButton label="업데이트" onPress={handleUpdatePress} size="medium" />
+              <SecondaryButton label="업데이트" onPress={handleUpdatePress} size="md" />
             ) : (
               <Typography mode="caption1" color="blue500">
                 최신버전 사용중
