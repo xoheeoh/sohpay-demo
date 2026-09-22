@@ -15,9 +15,10 @@ import {
   SecondaryButton,
   TextField,
   Typography,
+  typographyStyles,
 } from '@components/common';
 import { BottomAmtBtn } from '@components/dashboard';
-import { layout, theme } from '@styles';
+import { theme } from '@styles';
 
 type ChargeAmtScreenProps = NativeStackScreenProps<RootStackParamList, 'ChargeAmt'>;
 
@@ -83,24 +84,25 @@ const ChargeAmtScreen: React.FC<ChargeAmtScreenProps> = ({ navigation }) => {
             }}
             placeholder={''}
           />
-          <View
-            style={{
-              marginTop: 10,
-              ...layout.rowBetween,
-            }}>
+          {/* 왼쪽 문구는 입력칸의 설명(desc)이므로 입력칸 바로 아래 위에 붙인다. 버튼과 세로 가운데를 맞추지 않는다. */}
+          <View style={styles.descRow}>
             {validation.isValid ? (
-              <View style={{ flexDirection: 'row', gap: 4, alignItems: 'center' }}>
-                <Icon source={'information'} color={theme.colors.gray900} size={18} />
+              <View style={styles.desc}>
+                <View style={styles.descIcon}>
+                  <Icon source={'information'} color={theme.colors.gray900} size={18} />
+                </View>
 
-                <Typography mode="caption1" color="gray600">
+                <Typography mode="caption1" color="gray600" style={styles.descText}>
                   충전 가능 한도 금액은 200만 원 입니다.
                 </Typography>
               </View>
             ) : (
-              <View style={{ flexDirection: 'row', gap: 4, alignItems: 'center' }}>
-                <Icon source={'information'} color={theme.colors.red500} size={18} />
+              <View style={styles.desc}>
+                <View style={styles.descIcon}>
+                  <Icon source={'information'} color={theme.colors.red500} size={18} />
+                </View>
 
-                <Typography mode="caption1" color="red500">
+                <Typography mode="caption1" color="red500" style={styles.descText}>
                   {validation.errorMessage}
                 </Typography>
               </View>
@@ -143,6 +145,20 @@ const ChargeAmtScreen: React.FC<ChargeAmtScreenProps> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   wrap: { paddingVertical: 24, paddingHorizontal: 16, gap: 16 },
+  // 설명 문구(왼쪽)와 전액 입력 버튼(오른쪽). 문구는 위에 붙고, 버튼은 자기 높이만 차지한다.
+  descRow: { marginTop: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
+  // 아이콘과 문구를 위 정렬로 나란히 둔다. 남는 폭만 써서 문구가 길어지면 버튼을 밀지 않고 줄바꿈된다.
+  desc: { flex: 1, flexDirection: 'row', gap: 4, alignItems: 'flex-start' },
+  // 아이콘을 "글자 한 줄 높이"짜리 상자에 가운데로 넣는다. 그래서 문구가 여러 줄이 되어도 아이콘은 항상 첫 줄의 가운데에 온다.
+  // (alignItems: 'center' 는 문구 블록 전체의 가운데라서 줄바꿈되면 첫 줄에서 벗어난다)
+  // 상자 기준으로는 정확히 가운데지만, 한글 획은 줄 상자에서 약 0.25px 위에, 아이콘 원은 약 0.25px 아래에 그려진다(글꼴 metric).
+  // 합쳐서 0.5px 어긋나 화면에서 1px 차이로 보이므로 아이콘을 0.5px 올려 "보이는 획" 기준으로 맞춘다.
+  descIcon: {
+    height: typographyStyles.caption1.lineHeight,
+    justifyContent: 'center',
+    transform: [{ translateY: -0.5 }],
+  },
+  descText: { flexShrink: 1 },
 });
 
 export default ChargeAmtScreen;
