@@ -28,6 +28,7 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
+      "name": "SohPay | 충전하고, 스캔하고, 끝.",
       "output": "single",
       "favicon": "./assets/images/favicon.png",
       "bundler": "metro"
