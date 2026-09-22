@@ -72,7 +72,8 @@ export const InquiryNotice = async () => {
   }
 };
 
-const FAQ_CTGR_NM: Record<string, string> = { CHARGE: '충전', PAYMENT: '결제', REFUND: '출금', ACCOUNT: '계정' };
+/** FAQ 카테고리 코드 → 표시 이름. FAQ 화면의 카테고리 선택 옵션도 이 표를 그대로 쓴다 (코드 불일치 방지) */
+export const FAQ_CTGR_NM: Record<string, string> = { CHARGE: '충전', PAYMENT: '결제', REFUND: '출금', ACCOUNT: '계정' };
 
 /* FAQ 조회 */
 export const InquiryFAQ = async (title?: string, ctgr?: string) => {
