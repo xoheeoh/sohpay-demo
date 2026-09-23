@@ -463,7 +463,7 @@ function App(): React.JSX.Element {
                   name="UsrInfo"
                   component={UsrInfoScreen}
                   options={{
-                    header: () => <Header title="회원정보" bgColor="white" leftButton />,
+                    header: () => <Header title="회원정보" bgColor={theme.colors.bg} leftButton />,
                   }}
                 />
 
