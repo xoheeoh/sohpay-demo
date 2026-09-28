@@ -306,7 +306,7 @@ function App(): React.JSX.Element {
                   name="TransferAcntCharge"
                   component={TransferAcntChargeScreen}
                   options={{
-                    header: () => <Header title="충전하기" bgColor="white" leftButton />,
+                    header: () => <Header title="충전하기" bgColor={theme.colors.bg} leftButton />,
                   }}
                 />
                 <Stack.Screen
@@ -359,7 +359,7 @@ function App(): React.JSX.Element {
                   name="RefundAcnt"
                   component={RefundAcntScreen}
                   options={{
-                    header: () => <Header title="출금하기" bgColor="white" leftButton />,
+                    header: () => <Header title="출금하기" bgColor={theme.colors.bg} leftButton />,
                   }}
                 />
                 <Stack.Screen

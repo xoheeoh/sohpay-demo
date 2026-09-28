@@ -16,9 +16,10 @@ import { html } from '../_shared/http.ts';
 import { bridgePage } from '../_shared/bridge.ts';
 import { verify } from '../_shared/signature.ts';
 import { shell, won, esc } from '../_shared/page.ts';
+import { bankName } from '../_shared/banks.ts';
 
 const METHOD_LABEL: Record<string, string> = {
-  BANK_TRANSFER: '계좌이체',
+  BANK_TRANSFER: '실시간 계좌이체',
   VIRTUAL_ACCOUNT: '가상계좌',
 };
 
@@ -28,7 +29,7 @@ function errorPage(message: string) {
       '결제창 오류',
       '모의 결제창',
       `<h1>결제창을 열 수 없습니다</h1><p class="sub">${esc(message)}</p>
-       <div class="actions"><button class="ghost" onclick="location.href='${DEEP_LINK}charge/result?status=ERROR'">앱으로 돌아가기</button></div>`
+       <div class="actions"><button class="ghost center" onclick="location.href='${DEEP_LINK}charge/result?status=ERROR'">앱으로 돌아가기</button></div>`
     ),
     400
   );
@@ -46,12 +47,17 @@ Deno.serve(async (req) => {
   const supabase = asService();
   const { data: trx } = await supabase
     .from('transactions')
-    .select('id, amount, status, order_no, charge_method')
+    .select('id, amount, status, order_no, charge_method, bank_account_id')
     .eq('id', tx)
     .eq('type', 'CHARGE')
     .maybeSingle();
 
   if (!trx) return errorPage('거래를 찾을 수 없습니다.');
+
+  // 출금 계좌(있으면 결제창에 함께 보여준다). 계좌번호는 DB 에 마스킹된 값만 저장되어 있다.
+  const { data: acnt } = trx.bank_account_id
+    ? await supabase.from('bank_accounts').select('bank_code, account_no_masked').eq('id', trx.bank_account_id).maybeSingle()
+    : { data: null };
 
   // ── 승인 처리 ──────────────────────────────────────────────────────
   if (req.method === 'POST') {
@@ -93,7 +99,7 @@ Deno.serve(async (req) => {
         '결제 완료',
         '모의 결제창',
         `<h1>이미 처리된 거래입니다</h1><p class="sub">상태: ${esc(trx.status)}</p>
-         <div class="actions"><button class="primary" onclick="location.href='${DEEP_LINK}charge/result?tx=${esc(tx)}&status=${esc(trx.status)}'">앱으로 돌아가기</button></div>`
+         <div class="actions"><button class="primary center" onclick="location.href='${DEEP_LINK}charge/result?tx=${esc(tx)}&status=${esc(trx.status)}'">앱으로 돌아가기</button></div>`
       )
     );
   }
@@ -102,22 +108,26 @@ Deno.serve(async (req) => {
   // 앱은 이 HTML 을 fetch 로 받아 WebView 에 직접 넣으므로(GET 응답이 text/plain 으로 바뀌는 문제 우회),
   // 폼 제출 주소를 절대 주소로 명시해야 한다. (identity/index.ts 와 같은 이유)
   const checkoutUrl = `${FUNCTIONS_URL}/charge-checkout?tx=${tx}&sig=${sig}`;
+  const accountRow = acnt
+    ? `<div class="row"><dt>출금 계좌</dt><dd>${esc(bankName(acnt.bank_code))} ${esc(acnt.account_no_masked)}</dd></div>`
+    : '';
   return html(
     shell(
-      '소페이 충전',
-      '모의 결제창 · SohPay Demo PG',
-      `<h1>충전 금액을 확인해 주세요</h1>
-       <p class="sub">아래 버튼은 결제대행사의 승인 결과를 흉내 냅니다.<br>
-       실패·취소를 눌러 앱의 예외 처리도 확인해 보세요.</p>
+      'SohPay 충전 · 모의 결제창',
+      'SohPay Demo PG · 계좌이체',
+      `<h1>결과를 골라 충전을 진행해 보세요</h1>
+       <p class="sub">실제 서비스라면 여기서 은행 앱이나 결제대행사 창이 열립니다.<br>
+       이 데모에서는 아래 버튼 중 하나를 눌러 결제대행사의 응답을 대신 만듭니다. 앱은 그 결과를 실제 연동과 같은 방식으로 받아 처리합니다.</p>
        <dl>
-         <div class="row"><dt>결제수단</dt><dd>${esc(METHOD_LABEL[trx.charge_method] ?? trx.charge_method)}</dd></div>
+         <div class="row"><dt>충전 금액</dt><dd class="amount">${won(trx.amount)}</dd></div>
+         <div class="row"><dt>결제 수단</dt><dd>${esc(METHOD_LABEL[trx.charge_method] ?? trx.charge_method)}</dd></div>
+         ${accountRow}
          <div class="row"><dt>주문번호</dt><dd>${esc(trx.order_no)}</dd></div>
-         <div class="row"><dt>결제금액</dt><dd class="amount">${won(trx.amount)}</dd></div>
        </dl>
        <form method="post" class="actions" action="${esc(checkoutUrl)}">
-         <button class="primary" name="action" value="approve">결제 승인</button>
-         <button class="danger"  name="action" value="decline">승인 거절 (한도 초과 등)</button>
-         <button class="ghost"   name="action" value="cancel">결제 취소</button>
+         <button class="primary" name="action" value="approve">결제 승인<small>충전 금액이 앱 잔액에 바로 반영됩니다</small></button>
+         <button class="danger"  name="action" value="decline">승인 거절<small>결제대행사가 거절한 상황을 재현합니다 (한도 초과 등)</small></button>
+         <button class="ghost"   name="action" value="cancel">결제 취소<small>사용자가 결제창을 닫은 상황을 재현합니다</small></button>
        </form>`
     )
   );

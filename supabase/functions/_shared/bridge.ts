@@ -17,7 +17,7 @@ export function bridgePage(title: string, badge: string, heading: string, sub: s
       title,
       badge,
       `<h1>${esc(heading)}</h1><p class="sub">${esc(sub)}</p>
-       <div class="actions"><button class="primary" onclick="send()">앱으로 돌아가기</button></div>
+       <div class="actions"><button class="primary center" onclick="send()">앱으로 돌아가기</button></div>
        <script>
          var payload = ${json};
          function send() {

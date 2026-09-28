@@ -17,6 +17,7 @@ export * from './SearchBox';
 export * from './Textarea';
 export * from './Radio';
 export * from './Badge';
+export * from './Skeleton';
 export * from './PinPad';
 export * from './DatePicker';
 export * from './KeyboardAwareScrollView';

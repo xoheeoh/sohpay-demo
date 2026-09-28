@@ -39,7 +39,8 @@ export type RootStackParamList = {
   Refund: undefined;
   RefundAcnt: { amt: number };
   PinPayRefund: { acnt: IRefundAcnt; amt: number };
-  RefundSuc: { data: IWithdrawalSuc };
+  /** acnt: 출금된 계좌. 완료 화면의 내역 카드에 은행·계좌번호를 보여주기 위해 함께 넘긴다 */
+  RefundSuc: { data: IWithdrawalSuc; acnt?: IRefundAcnt };
   // -------------------------------- 출금하기(환불) 관련 화면들
 
   // 계좌 등록 관련 화면들 ------------------------------------

@@ -178,7 +178,7 @@ const PinPayRefundScreen: React.FC<PinPayRefundScreenProps> = ({ navigation, rou
           rfndNo: data.rfndNo,
         };
 
-        navigation.navigate('RefundSuc', { data: success });
+        navigation.navigate('RefundSuc', { data: success, acnt: route.params.acnt });
       } else {
         confirm({
           title: '출금실패',

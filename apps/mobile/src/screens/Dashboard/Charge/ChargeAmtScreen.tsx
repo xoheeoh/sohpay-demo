@@ -22,6 +22,9 @@ import { theme } from '@styles';
 
 type ChargeAmtScreenProps = NativeStackScreenProps<RootStackParamList, 'ChargeAmt'>;
 
+/** 충전 금액 단위(원). 서버의 create_charge 규칙(1,000원 단위)과 같아야 한다 */
+const CHARGE_UNIT = 1000;
+
 const ChargeAmtScreen: React.FC<ChargeAmtScreenProps> = ({ navigation }) => {
   // 입력한 충전 금액 상태관리
   const [chargeAmt, setChargeAmt] = useState<string>('');
@@ -53,6 +56,14 @@ const ChargeAmtScreen: React.FC<ChargeAmtScreenProps> = ({ navigation }) => {
     const totalAmount = currentBalance + numAmount;
     if (totalAmount > 2000000) {
       return { isValid: false, errorMessage: '충전 한도를 초과했습니다. (최대 200만 원)' };
+    }
+
+    // 최소 금액·1,000원 단위 체크. 서버(create_charge)가 같은 규칙으로 거절하므로 여기서 미리 알려준다
+    if (numAmount < CHARGE_UNIT) {
+      return { isValid: false, errorMessage: '최소 충전 가능 금액은 1,000원입니다.' };
+    }
+    if (numAmount % CHARGE_UNIT !== 0) {
+      return { isValid: false, errorMessage: '충전은 1,000원 단위로 입력해 주세요.' };
     }
 
     return { isValid: true };
@@ -109,11 +120,12 @@ const ChargeAmtScreen: React.FC<ChargeAmtScreenProps> = ({ navigation }) => {
             )}
             <SecondaryButton
               label={'전액 입력'}
-              // 잔액은 최대 200만 원을 넘을 수 없음 (200만 - 현재 내 머니 잔액)
+              // 잔액은 최대 200만 원을 넘을 수 없음 (200만 - 현재 내 머니 잔액). 1,000원 단위 아래는 버린다 (예: 1,854,900 → 1,854,000)
               onPress={() => {
                 if (rmnAmtData) {
                   const maxChargeAmount = 2000000 - Number(rmnAmtData.moneyAmt);
-                  setChargeAmt(maxChargeAmount.toString());
+                  const roundedDown = Math.floor(maxChargeAmount / CHARGE_UNIT) * CHARGE_UNIT;
+                  setChargeAmt(Math.max(roundedDown, 0).toString());
                 }
               }}
               size={'md'}
@@ -151,12 +163,13 @@ const styles = StyleSheet.create({
   desc: { flex: 1, flexDirection: 'row', gap: 4, alignItems: 'flex-start' },
   // 아이콘을 "글자 한 줄 높이"짜리 상자에 가운데로 넣는다. 그래서 문구가 여러 줄이 되어도 아이콘은 항상 첫 줄의 가운데에 온다.
   // (alignItems: 'center' 는 문구 블록 전체의 가운데라서 줄바꿈되면 첫 줄에서 벗어난다)
-  // 상자 기준으로는 정확히 가운데지만, 한글 획은 줄 상자에서 약 0.25px 위에, 아이콘 원은 약 0.25px 아래에 그려진다(글꼴 metric).
-  // 합쳐서 0.5px 어긋나 화면에서 1px 차이로 보이므로 아이콘을 0.5px 올려 "보이는 획" 기준으로 맞춘다.
+  // 상자 기준으로는 정확히 가운데지만, 한글은 획이 위쪽에 몰려 있어 눈에는 글자가 아이콘보다 살짝 위에 있는 것처럼 보인다.
+  // 글리프 잉크 박스의 중심은 서로 같게 측정되지만(0.04px 차이), 4배 확대로 비교하면 아이콘을 1.5px 올린 상태가 눈으로 가장 잘 맞아 그 값을 쓴다.
+  // 출금하기(RefundScreen) 와 같은 값을 쓴다.
   descIcon: {
     height: typographyStyles.caption1.lineHeight,
     justifyContent: 'center',
-    transform: [{ translateY: -0.5 }],
+    transform: [{ translateY: -1.5 }],
   },
   descText: { flexShrink: 1 },
 });
