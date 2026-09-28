@@ -86,6 +86,7 @@ const InquiryEnrollScreen: React.FC<InquiryEnrollScreenProps> = ({
         <Textarea
           value={content}
           setValue={setContent}
+          height={200}
           onFocus={() => {
             dropdownRef?.current?.close?.();
           }}
