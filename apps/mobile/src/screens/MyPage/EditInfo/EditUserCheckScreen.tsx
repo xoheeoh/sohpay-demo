@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Keyboard, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -43,6 +43,13 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
   const [pwd, setPwd] = useState<string>('');
   const isButtonDisabled = !(pwd.length > 0);
 
+  /**
+   * 확인에 통과한 계정 비밀번호 보관용.
+   * 간편 비밀번호 변경은 본인인증 화면을 다녀온 뒤에 다음 화면으로 넘어가는데, 그 사이 입력칸(pwd)은 이미 비워지므로
+   * 입력칸 상태와 따로 들고 있어야 한다 (전에는 빈 값이 넘어가 마지막 변경 API 에서 "비밀번호가 일치하지 않습니다" 로 실패했다).
+   */
+  const verifiedPwdRef = useRef<string>('');
+
   const handleChkPwd = () => {
     checkUsrPwd(pwd).then((data) => {
       if (data.resultCd === '0000') {
@@ -58,6 +65,7 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
           Keyboard.dismiss();
         } else if (flg === 'pinNo') {
           Keyboard.dismiss();
+          verifiedPwdRef.current = pwd; // 본인인증이 끝난 뒤 EditPinNo 로 넘길 값
 
           // 핀 번호 변경 화면으로 이동 전, 본인 인증
           confirm({
@@ -147,8 +155,9 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
           if (ok) {
             navigation.navigate('EditPinNo', {
               usrData: usrData!,
-              pwd: pwd,
+              pwd: verifiedPwdRef.current, // 입력칸(pwd)은 이미 비워졌으므로 보관해 둔 값을 넘긴다
             }); // 핀 번호 입력 화면으로 이동
+            verifiedPwdRef.current = '';
           }
         });
       } else if (data.resultCd === '9999' && data.resultMsg.includes('입력하신 이름')) {
