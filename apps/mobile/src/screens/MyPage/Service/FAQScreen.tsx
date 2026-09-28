@@ -8,7 +8,7 @@ import Accordion from 'react-native-collapsible/Accordion';
 import type { RootStackParamList } from '@typ/navigation';
 import { IFAQList } from '@typ/commonType';
 import { FAQ_CTGR_NM, InquiryFAQ } from '@apis/commonApi';
-import { Badge, Dropdown, ScreenWrapper, SearchBox, Typography } from '@components/common';
+import { Dropdown, ScreenWrapper, SearchBox, Typography } from '@components/common';
 import { useAppWidth } from '@utils/dimensions';
 import { layout, theme } from '@styles';
 
@@ -22,8 +22,8 @@ const CATEGORY_CODE_BY_LABEL: Record<string, string> = {
   ...Object.fromEntries(Object.entries(FAQ_CTGR_NM).map(([code, label]) => [label, code])),
 };
 
-// 화면 여백(16) + 카드 안 여백(18) + 답변 패널 여백(14) 를 양쪽으로 뺀 값 = 답변 HTML 이 실제로 차지하는 폭
-const CONTENT_SIDE_INSET = (16 + 18 + 14) * 2;
+// 화면 여백(16) + 답변 패널 여백(14) 를 양쪽으로 뺀 값 = 답변 HTML 이 실제로 차지하는 폭
+const CONTENT_SIDE_INSET = (16 + 14) * 2;
 
 /**
  * 답변 본문 전처리. 본문은 (전신 앱의) 관리자 HTML 편집기 출력물이라 HTML 로 그린다.
@@ -109,17 +109,19 @@ const FAQScreen: React.FC<FAQScreenProps> = () => {
   );
   const renderHtmlDefaultTextProps = useMemo(() => ({ lineBreakStrategyIOS: 'hangul-word' as const }), []);
 
-  // 질문 (항상 보이는 부분)
+  // 질문 (항상 보이는 부분): 1:1 상담 문의내역과 같은 "[카테고리] 제목 / 펼침 화살표" 한 줄
   const renderHeader = (section: IFAQList, index: number, isActive: boolean) => (
     <View style={[styles.itemHeader, index > 0 && styles.itemDivider]}>
-      <View style={styles.itemTitleBox}>
-        <Badge label={section.ctgrNm} tone="blue" />
-        <Typography mode="subtitle2" color={isActive ? 'primary' : 'gray900'}>
+      <View style={[layout.rowBetween, { gap: 12 }]}>
+        <Typography mode="subtitle2" color={isActive ? 'primary' : 'gray900'} style={{ flex: 1 }}>
+          <Typography mode="subtitle2" color={isActive ? 'blue400' : 'gray500'}>
+            [{section.ctgrNm}]{' '}
+          </Typography>
           {section.title}
         </Typography>
-      </View>
 
-      <Icon source={isActive ? 'chevron-up' : 'chevron-down'} size={22} color={theme.colors.gray400} />
+        <Icon source={isActive ? 'chevron-up' : 'chevron-down'} size={22} color={theme.colors.gray400} />
+      </View>
     </View>
   );
 
@@ -127,12 +129,12 @@ const FAQScreen: React.FC<FAQScreenProps> = () => {
   const renderContent = (section: IFAQList) => (
     <View style={styles.itemBody}>
       <View style={styles.answerPanel}>
-        <Typography mode="subtitle3" color="primary">
+        <Typography mode="subtitle3" color="primary" style={styles.qaMark}>
           A.
         </Typography>
         <View style={{ flex: 1 }}>
           <RenderHtml
-            contentWidth={contentWidth - 28} // "A." 표시 폭(16) + 간격(12)
+            contentWidth={contentWidth - 28} // "A." 표시 폭(20) + 간격(8)
             source={{ html: sanitizeAnswerHtml(section.body) }}
             baseStyle={renderHtmlBaseStyle}
             defaultTextProps={renderHtmlDefaultTextProps}
@@ -143,14 +145,11 @@ const FAQScreen: React.FC<FAQScreenProps> = () => {
   );
 
   return (
-    <ScreenWrapper backgroundColor={theme.colors.bg} topComponent={false}>
-      <ScrollView
-        contentContainerStyle={styles.wrap}
-        keyboardShouldPersistTaps="handled"
-        onScrollBeginDrag={() => dropdownRef.current?.close()}>
-        {/* 검색 조건 */}
-        <View style={styles.searchCard}>
-          <View style={{ width: 104 }}>
+    <ScreenWrapper backgroundColor="white" topComponent={false}>
+      {/* 고정 영역: 검색 바 + 건수 (1:1 상담 문의내역과 같은 구성). 드롭다운 목록이 아래 스크롤 영역 위에 그려지도록 zIndex 를 준다 */}
+      <View style={styles.fixedTop}>
+        <View style={styles.search}>
+          <View style={{ width: 100 }}>
             <Dropdown
               ref={dropdownRef}
               placeholder={selectedCategoryLabel}
@@ -166,48 +165,48 @@ const FAQScreen: React.FC<FAQScreenProps> = () => {
           />
         </View>
 
-        {/* 결과 */}
+        {/* 조회 결과 건수 */}
+        {!isLoading && (
+          <Typography mode="body2" color="gray900">
+            전체{' '}
+            <Typography mode="subtitle3" color="blue500">
+              ({faqList.length}
+            </Typography>
+            건)
+          </Typography>
+        )}
+      </View>
+
+      {/* 스크롤 영역: 질문·답변 목록만 스크롤된다 */}
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.listContent}
+        keyboardShouldPersistTaps="handled"
+        onScrollBeginDrag={() => dropdownRef.current?.close()}>
         {isLoading ? (
           <View style={styles.emptyBox}>
             <ActivityIndicator color={theme.colors.primary} />
           </View>
+        ) : faqList.length > 0 ? (
+          <Accordion
+            sectionContainerStyle={styles.list}
+            sections={faqList}
+            activeSections={activeSections}
+            renderHeader={renderHeader}
+            renderContent={renderContent}
+            // 같은 값이 다시 들어와도 새 배열로 갱신해 첫 클릭이 씹히는 현상을 막는다
+            onChange={(sections) => setActiveSections(Array.isArray(sections) ? [...sections] : [])}
+            touchableComponent={Pressable}
+            expandMultiple={false} // 하나의 질문만 열리도록
+          />
         ) : (
-          <View style={styles.section}>
-            <View style={[layout.rowCenter, styles.sectionTitle, { gap: 4 }]}>
-              <Typography mode="subtitle3" color="gray500">
-                전체
-              </Typography>
-              <Typography mode="subtitle3" color="primary">
-                {faqList.length}
-              </Typography>
-              <Typography mode="subtitle3" color="gray500">
-                건
-              </Typography>
+          <View style={styles.emptyBox}>
+            <View style={styles.emptyIcon}>
+              <Icon source="message-question-outline" size={20} color={theme.colors.primary} />
             </View>
-
-            {faqList.length > 0 ? (
-              <View style={styles.card}>
-                <Accordion
-                  sections={faqList}
-                  activeSections={activeSections}
-                  renderHeader={renderHeader}
-                  renderContent={renderContent}
-                  // 같은 값이 다시 들어와도 새 배열로 갱신해 첫 클릭이 씹히는 현상을 막는다
-                  onChange={(sections) => setActiveSections(Array.isArray(sections) ? [...sections] : [])}
-                  touchableComponent={Pressable}
-                  expandMultiple={false} // 하나의 질문만 열리도록
-                />
-              </View>
-            ) : (
-              <View style={[styles.card, styles.emptyBox]}>
-                <View style={styles.emptyIcon}>
-                  <Icon source="message-question-outline" size={22} color={theme.colors.primary} />
-                </View>
-                <Typography mode="body2" color="gray500">
-                  조건에 맞는 질문이 없습니다.
-                </Typography>
-              </View>
-            )}
+            <Typography mode="body2" color="gray500">
+              조건에 맞는 질문이 없습니다.
+            </Typography>
           </View>
         )}
       </ScrollView>
@@ -215,44 +214,21 @@ const FAQScreen: React.FC<FAQScreenProps> = () => {
   );
 };
 
+// 1:1 상담 문의내역(InquiryListScreen)과 같은 여백·모양을 쓴다
 const styles = StyleSheet.create({
-  // 공지사항(NoticeScreen)·고객센터와 같은 화면 여백
-  wrap: { paddingHorizontal: 16, paddingVertical: 24, gap: 24, flexGrow: 1 },
-  section: { gap: 8 },
-  sectionTitle: { paddingHorizontal: 4 },
+  fixedTop: { paddingTop: 24, paddingHorizontal: 16, paddingBottom: 16, gap: 24, zIndex: 1 },
+  search: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  listContent: { paddingBottom: 24 },
 
-  // 검색 조건 카드 (회색 배경 위 흰 카드 → 그 안의 회색 입력칸이 보이게)
-  searchCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    padding: 12,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.lg,
-    boxShadow: theme.shadow.card,
-  },
-
-  // 질문 목록 카드
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.lg,
-    boxShadow: theme.shadow.card,
-    overflow: 'hidden',
-  },
-  itemHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-    paddingHorizontal: 18,
-    paddingVertical: 16,
-  },
+  // 질문 한 건
+  list: { paddingHorizontal: 16 },
+  itemHeader: { paddingVertical: 16 },
   itemDivider: { borderTopWidth: 1, borderTopColor: theme.colors.gray100 },
-  itemTitleBox: { flex: 1, gap: 6 },
-  itemBody: { paddingHorizontal: 18, paddingBottom: 18 },
+  itemBody: { paddingBottom: 18 },
+  qaMark: { width: 20 },
   answerPanel: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 8,
     backgroundColor: theme.colors.surfaceAlt,
     borderRadius: theme.radius.md,
     paddingHorizontal: 14,
@@ -260,7 +236,7 @@ const styles = StyleSheet.create({
   },
 
   // 비어 있음 / 불러오는 중
-  emptyBox: { alignItems: 'center', justifyContent: 'center', gap: 12, paddingVertical: 48 },
+  emptyBox: { alignItems: 'center', justifyContent: 'center', gap: 12, paddingVertical: 40 },
   emptyIcon: {
     width: 40,
     height: 40,
