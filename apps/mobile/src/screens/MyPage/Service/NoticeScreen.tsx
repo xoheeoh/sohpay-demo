@@ -15,8 +15,11 @@ import { layout, theme } from '@styles';
 
 type NoticeScreenProps = NativeStackScreenProps<RootStackParamList, 'Notice'>;
 
-// 화면 여백(16) + 카드 안 여백(18) + 본문 패널 여백(14) 를 양쪽으로 뺀 값 = 본문 HTML 이 실제로 차지하는 폭
-const CONTENT_SIDE_INSET = (16 + 18 + 14) * 2;
+// 화면 여백(16) + 본문 패널 여백(14) 를 양쪽으로 뺀 값 = 본문 HTML 이 실제로 차지하는 폭
+const CONTENT_SIDE_INSET = (16 + 14) * 2;
+
+/** 공지 구분 배지 색: "중요"는 눈에 띄게 빨강, 그 외(일반 등)는 파랑 */
+const noticeTone = (notiCdNm: string) => (notiCdNm === '중요' ? 'red' : 'blue');
 
 const NoticeScreen: React.FC<NoticeScreenProps> = () => {
   // 공지사항 리스트
@@ -60,22 +63,25 @@ const NoticeScreen: React.FC<NoticeScreenProps> = () => {
   );
   const renderHtmlDefaultTextProps = useMemo(() => ({ lineBreakStrategyIOS: 'hangul-word' as const }), []);
 
-  // 공지사항 헤더 (항상 보이는 부분)
+  // 공지사항 헤더 (항상 보이는 부분): 1:1 상담 문의내역과 같은 두 줄 구성
   const renderHeader = (section: INoticeList, index: number, isActive: boolean) => (
     <View style={[styles.itemHeader, index > 0 && styles.itemDivider]}>
-      <View style={styles.itemTitleBox}>
-        <View style={[layout.rowCenter, { gap: 8 }]}>
-          <Badge label={section.notiCdNm} tone="blue" />
-          <Typography mode="caption1" color="gray500">
-            {formatYYYYMMDDDate(section.regDt)}
-          </Typography>
-        </View>
-        <Typography mode="subtitle2" color={isActive ? 'primary' : 'gray900'}>
-          {section.title}
+      {/* 첫 줄: 공지 구분 배지(왼쪽) / 등록일(오른쪽 끝, 화살표 위까지 차지) */}
+      <View style={[layout.rowBetween, { gap: 8 }]}>
+        <Badge label={section.notiCdNm} tone={noticeTone(section.notiCdNm)} />
+        <Typography mode="caption1" color="gray400">
+          {formatYYYYMMDDDate(section.regDt)}
         </Typography>
       </View>
 
-      <Icon source={isActive ? 'chevron-up' : 'chevron-down'} size={22} color={theme.colors.gray400} />
+      {/* 둘째 줄: 제목 / 펼침 화살표 */}
+      <View style={[layout.rowBetween, { gap: 12 }]}>
+        <Typography mode="subtitle2" color={isActive ? 'primary' : 'gray900'} style={{ flex: 1 }}>
+          {section.title}
+        </Typography>
+
+        <Icon source={isActive ? 'chevron-up' : 'chevron-down'} size={22} color={theme.colors.gray400} />
+      </View>
     </View>
   );
 
@@ -94,28 +100,41 @@ const NoticeScreen: React.FC<NoticeScreenProps> = () => {
   );
 
   return (
-    <ScreenWrapper backgroundColor={theme.colors.bg} topComponent={false}>
-      <ScrollView contentContainerStyle={styles.wrap}>
+    <ScreenWrapper backgroundColor="white" topComponent={false}>
+      {/* 고정 영역: 건수 (1:1 상담 문의내역·FAQ 와 같은 구성) */}
+      {isLoaded && (
+        <View style={styles.fixedTop}>
+          <Typography mode="body2" color="gray900">
+            전체{' '}
+            <Typography mode="subtitle3" color="blue500">
+              ({noticeData.length}
+            </Typography>
+            건)
+          </Typography>
+        </View>
+      )}
+
+      {/* 스크롤 영역: 공지 목록만 스크롤된다 */}
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.listContent}>
         {!isLoaded ? (
           <View style={styles.emptyBox}>
             <ActivityIndicator color={theme.colors.primary} />
           </View>
         ) : noticeData.length > 0 ? (
-          <View style={styles.card}>
-            <Accordion
-              sections={noticeData}
-              activeSections={activeSections}
-              renderHeader={renderHeader}
-              renderContent={renderContent}
-              onChange={setActiveSections}
-              touchableComponent={Pressable}
-              expandMultiple={false} // 하나의 공지만 열리도록
-            />
-          </View>
+          <Accordion
+            sectionContainerStyle={styles.list}
+            sections={noticeData}
+            activeSections={activeSections}
+            renderHeader={renderHeader}
+            renderContent={renderContent}
+            onChange={setActiveSections}
+            touchableComponent={Pressable}
+            expandMultiple={false} // 하나의 공지만 열리도록
+          />
         ) : (
-          <View style={[styles.card, styles.emptyBox]}>
+          <View style={styles.emptyBox}>
             <View style={styles.emptyIcon}>
-              <Icon source="bullhorn-variant-outline" size={22} color={theme.colors.primary} />
+              <Icon source="bullhorn-variant-outline" size={20} color={theme.colors.primary} />
             </View>
             <Typography mode="body2" color="gray500">
               등록된 공지사항이 없습니다.
@@ -127,28 +146,16 @@ const NoticeScreen: React.FC<NoticeScreenProps> = () => {
   );
 };
 
+// 1:1 상담 문의내역(InquiryListScreen)·FAQ 와 같은 여백·모양을 쓴다
 const styles = StyleSheet.create({
-  // 고객센터(ServiceScreen)·마이페이지와 같은 화면 여백
-  wrap: { paddingHorizontal: 16, paddingVertical: 24, flexGrow: 1 },
+  fixedTop: { paddingTop: 24, paddingHorizontal: 16, paddingBottom: 16 },
+  listContent: { paddingBottom: 24 },
 
-  // 공지 목록 카드
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.lg,
-    boxShadow: theme.shadow.card,
-    overflow: 'hidden',
-  },
-  itemHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-    paddingHorizontal: 18,
-    paddingVertical: 16,
-  },
+  // 공지 한 건
+  list: { paddingHorizontal: 16 },
+  itemHeader: { gap: 8, paddingVertical: 16 },
   itemDivider: { borderTopWidth: 1, borderTopColor: theme.colors.gray100 },
-  itemTitleBox: { flex: 1, gap: 6 },
-  itemBody: { paddingHorizontal: 18, paddingBottom: 18 },
+  itemBody: { paddingBottom: 18 },
   bodyPanel: {
     backgroundColor: theme.colors.surfaceAlt,
     borderRadius: theme.radius.md,
@@ -157,7 +164,7 @@ const styles = StyleSheet.create({
   },
 
   // 비어 있음 / 불러오는 중
-  emptyBox: { alignItems: 'center', justifyContent: 'center', gap: 12, paddingVertical: 48 },
+  emptyBox: { alignItems: 'center', justifyContent: 'center', gap: 12, paddingVertical: 40 },
   emptyIcon: {
     width: 40,
     height: 40,
