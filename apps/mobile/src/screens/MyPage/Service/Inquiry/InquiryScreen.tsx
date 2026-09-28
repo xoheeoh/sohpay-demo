@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Icon } from 'react-native-paper';
 
 import type { RootStackParamList } from '@typ/navigation';
 import { useDialog } from '@contexts/DialogContext';
@@ -12,17 +11,13 @@ import {
   KeyboardAwareScrollView,
   ScreenWrapper,
   TabBar,
-  Typography,
 } from '@components/common';
 import InquiryEnrollScreen from './InquiryEnrollScreen';
 import InquiryListScreen from './InquiryListScreen';
-import { theme } from '@styles';
 
 type InquiryScreenProps = NativeStackScreenProps<RootStackParamList, 'Inquiry'>;
 
-const InquiryScreen: React.FC<InquiryScreenProps> = ({ navigation }) => {
-  // 상단 FAQ 바로가기 알림창 보이기 여부 상태관리
-  const [alertShow, setAlertShow] = useState<boolean>(true);
+const InquiryScreen: React.FC<InquiryScreenProps> = () => {
   // 활성화 된 탭 상태관리
   const [activeTab, setActiveTab] = useState<1 | 2>(1); // 1: 문의하기, 2: 문의내역
 
@@ -47,6 +42,19 @@ const InquiryScreen: React.FC<InquiryScreenProps> = ({ navigation }) => {
   const inquiryListDropdownRef = useRef<any>(null);
   const scrollRef = useRef<ScrollView | null>(null);
 
+  /**
+   * 등록 성공 후 처리: 문의하기 탭 입력값을 모두 비우고 문의내역 탭으로 이동
+   * - 카테고리 표시 문구·동의 체크는 문의하기 탭 컴포넌트 안의 상태라, 탭이 바뀌어 컴포넌트가 내려가면 함께 초기화된다
+   * - 문의내역 탭은 올라올 때 목록을 새로 불러오므로 방금 등록한 문의가 맨 위에 보인다
+   */
+  const resetFormAndShowHistory = () => {
+    setTitle('');
+    setContent('');
+    setMappedOption('');
+    setIsButtonDisabled(true);
+    setActiveTab(2);
+  };
+
   // 문의 등록하기
   const handleSubmitInquiry = () => {
     if (!isButtonDisabled) {
@@ -59,10 +67,9 @@ const InquiryScreen: React.FC<InquiryScreenProps> = ({ navigation }) => {
             message1: '1:1 상담 내용이 정상적으로 등록되었습니다.',
             message2: '문의내역에서 답변을 확인해주세요.',
             confirmText: '확인',
-          }).then((ok) => {
-            if (ok) {
-              navigation.goBack();
-            }
+          }).then(() => {
+            // 확인 버튼이든 바깥 터치든, 이미 등록된 내용이 폼에 남아 중복 등록되지 않도록 항상 비운다
+            resetFormAndShowHistory();
           });
         } else {
           console.log('문의 등록 실패:', data.resultMsg);
@@ -73,103 +80,59 @@ const InquiryScreen: React.FC<InquiryScreenProps> = ({ navigation }) => {
 
   return (
     <ScreenWrapper backgroundColor="white" keyboardBottomInset={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
-      {/* FAQ 바로가기 안내 메시지 */}
-      {alertShow ? (
-        <View style={styles.alertContainer}>
-          <View style={styles.alertBox}>
-            {/* 아이콘(20px)을 첫 줄 글자 높이(16px)에 맞춰 세로 중앙 정렬 */}
-            <View style={styles.alertIconAlignFirstLine}>
-              <Icon source={'information'} size={20} color={theme.colors.gray600} />
-            </View>
-
-            <View style={{ gap: 8, flex: 1 }}>
-              <Typography mode="caption1" color="gray600" style={{ textAlign: 'left' }}>
-                문의 전, 다른 회원들이 자주 남기신 자주 묻는 질문을 통해 궁금하신 점에 대한 답변이 있는지 먼저
-                확인해주세요.
-              </Typography>
-
-              <Pressable style={styles.textButton} onPress={() => navigation.navigate('FAQ')}>
-                <Typography mode="caption1" color="gray900">
-                  FAQ 바로가기 {'>'}
-                </Typography>
-              </Pressable>
-            </View>
-
-            <Pressable onPress={() => setAlertShow(false)}>
-              <Icon source={'close'} size={20} color={theme.colors.gray900} />
-            </Pressable>
-          </View>
-        </View>
-      ) : null}
-
-      <KeyboardAwareScrollView
-        ref={(ref) => {
-          scrollRef.current = ref;
-        }}
-        style={{ flexGrow: 1 }}
-        keyboardAccessoryHeight={activeTab === 1 ? BOTTOM_BTN_BOX_KEYBOARD_INSET : 0}
-        extraBottomPadding={60}
-        keyboardShouldPersistTaps="handled"
-        onScrollBeginDrag={() => {
-          inquiryDropdownRef.current?.close?.();
-          inquiryListDropdownRef.current?.close?.();
-        }}>
-        <View style={styles.wrap}>
-          {/* 메뉴 탭 */}
-          <TabBar
-            active={activeTab}
-            label1={'문의하기'}
-            label2={'문의내역'}
-            onPress1={() => setActiveTab(1)}
-            onPress2={() => setActiveTab(2)}
-          />
-        </View>
-
-        {activeTab === 1 ? (
-          <InquiryEnrollScreen
-            title={title}
-            setTitle={setTitle}
-            content={content}
-            setContent={setContent}
-            mappedOption={mappedOption}
-            setMappedOption={setMappedOption}
-            onButtonStateChange={handleButtonStateChange}
-            dropdownRef={inquiryDropdownRef}
-            parentScrollRef={scrollRef as React.RefObject<ScrollView>}
-          />
-        ) : (
-          <InquiryListScreen dropdownRef={inquiryListDropdownRef} />
-        )}
-      </KeyboardAwareScrollView>
-
-      {activeTab === 1 && (
-        <BottomBtnBox
-          buttonKey={isButtonDisabled.toString()}
-          disabled={isButtonDisabled}
-          label={'문의'}
-          onPress={handleSubmitInquiry}
+      {/* 메뉴 탭: 스크롤 밖에 두어 두 탭 모두에서 화면 위에 고정된다 */}
+      <View style={styles.tabWrap}>
+        <TabBar
+          active={activeTab}
+          label1={'문의하기'}
+          label2={'문의내역'}
+          onPress1={() => setActiveTab(1)}
+          onPress2={() => setActiveTab(2)}
         />
+      </View>
+
+      {activeTab === 1 ? (
+        <>
+          {/* 문의하기: 키보드가 올라오면 입력칸이 따라 올라가야 해서 키보드 대응 스크롤을 쓴다 */}
+          <KeyboardAwareScrollView
+            ref={(ref) => {
+              scrollRef.current = ref;
+            }}
+            style={{ flexGrow: 1 }}
+            keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}
+            extraBottomPadding={60}
+            keyboardShouldPersistTaps="handled"
+            onScrollBeginDrag={() => inquiryDropdownRef.current?.close?.()}>
+            <InquiryEnrollScreen
+              title={title}
+              setTitle={setTitle}
+              content={content}
+              setContent={setContent}
+              mappedOption={mappedOption}
+              setMappedOption={setMappedOption}
+              onButtonStateChange={handleButtonStateChange}
+              dropdownRef={inquiryDropdownRef}
+              parentScrollRef={scrollRef as React.RefObject<ScrollView>}
+            />
+          </KeyboardAwareScrollView>
+
+          <BottomBtnBox
+            buttonKey={isButtonDisabled.toString()}
+            disabled={isButtonDisabled}
+            label={'문의'}
+            onPress={handleSubmitInquiry}
+          />
+        </>
+      ) : (
+        /* 문의내역: 검색창·건수는 고정, 목록만 스크롤 (스크롤은 InquiryListScreen 안에 있다) */
+        <InquiryListScreen dropdownRef={inquiryListDropdownRef} />
       )}
     </ScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
-  wrap: { paddingTop: 24, paddingHorizontal: 16, gap: 24 },
-  alertContainer: { paddingHorizontal: 16, paddingTop: 24, backgroundColor: 'white' },
-  alertBox: {
-    borderRadius: 4,
-    backgroundColor: theme.colors.gray50,
-    borderWidth: 1,
-    borderColor: theme.colors.gray150,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    gap: 8,
-  },
-  textButton: { height: 24, justifyContent: 'center', alignSelf: 'baseline' },
-  // 높이를 caption1 lineHeight(16)와 같게 두고, 그 안에서 아이콘을 중앙에 놓는다
-  alertIconAlignFirstLine: { height: 16, justifyContent: 'center' },
+  tabWrap: { paddingTop: 24, paddingHorizontal: 16 },
 });
 
 export default InquiryScreen;

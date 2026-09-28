@@ -9,9 +9,11 @@ interface TextareaProps {
   setValue: (value: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
+  /** 입력칸 높이. 기본 120. 긴 글을 받는 화면에서는 더 크게 넘긴다 */
+  height?: number;
 }
 
-const Textarea: React.FC<TextareaProps> = ({ value, setValue, onFocus, onBlur }) => {
+const Textarea: React.FC<TextareaProps> = ({ value, setValue, onFocus, onBlur, height = 120 }) => {
   const [isFocused, setIsFocused] = useState<boolean>(false);
 
   return (
@@ -19,6 +21,7 @@ const Textarea: React.FC<TextareaProps> = ({ value, setValue, onFocus, onBlur })
       style={[
         styles.container,
         {
+          height,
           borderColor: isFocused ? theme.colors.primary : theme.colors.line, // 평소에도 연한 테두리 (다른 입력칸과 동일)
           backgroundColor: isFocused ? 'white' : theme.colors.gray50,
         },
@@ -43,7 +46,6 @@ const Textarea: React.FC<TextareaProps> = ({ value, setValue, onFocus, onBlur })
 const styles = StyleSheet.create({
   container: {
     borderWidth: 1.5,
-    height: 120,
     overflow: 'hidden',
     paddingHorizontal: 16,
     paddingVertical: 14,
