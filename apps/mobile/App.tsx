@@ -574,7 +574,7 @@ function App(): React.JSX.Element {
                   name="Notice"
                   component={NoticeScreen}
                   options={{
-                    header: () => <Header title="공지사항" bgColor={theme.colors.bg} leftButton />,
+                    header: () => <Header title="공지사항" bgColor="white" leftButton />,
                   }}
                 />
                 <Stack.Screen
