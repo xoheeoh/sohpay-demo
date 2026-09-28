@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '@typ/navigation';
 import { loadUserAmt } from '@apis/commonApi';
+import { AmountSummaryCard } from '@components/dashboard';
 import {
   BottomBtnBox,
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
@@ -19,60 +20,62 @@ const TransferAcntChargeScreen = ({ navigation, route }: TransferAcntChargeScree
   // 이전 화면에서 얻어온 충전 예정 금액
   const chargeAmt = route.params.amount;
 
-  // 현재 잔액 조회
-  const [balance, setBalance] = useState<number>(0);
+  // 현재 잔액 조회 (null: 아직 조회 전 → 카드에는 자리표시자가 보인다)
+  const [balance, setBalance] = useState<number | null>(null);
 
   useEffect(() => {
     loadUserAmt().then((data) => {
       console.log('회원 잔액 조회 결과:', data);
 
       if (data.resultCd === '0000') {
-        setBalance(data.sumPpRmnAmt);
+        setBalance(Number(data.sumPpRmnAmt));
       }
     });
   }, []);
 
   return (
-    <ScreenWrapper backgroundColor="white" keyboardBottomInset={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
-      <KeyboardAwareScrollView keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
-        <View style={[styles.wrap, { gap: 12 }]}>
-          <View style={styles.chargeBadge}>
-            <Typography mode="body2" color="white">
-              충전 예정 금액
-            </Typography>
-          </View>
+    <ScreenWrapper backgroundColor={theme.colors.bg} keyboardBottomInset={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.wrap}
+        keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
+        {/* 충전 금액 카드: 예정 금액과 충전 후 잔액을 한 카드에 (출금 계좌 확인 화면과 같은 구성) */}
+        <AmountSummaryCard
+          label="충전 예정 금액"
+          amount={Number(chargeAmt)}
+          icon="bank-transfer-in"
+          subLabel="충전 후 잔액"
+          subAmount={balance === null ? null : balance + Number(chargeAmt)}
+        />
 
-          <Typography mode="heading1" color="gray900">
-            {Number(chargeAmt).toLocaleString('kr-KR')} 원
-          </Typography>
-        </View>
-
-        <View style={styles.divider} />
-
-        <View style={[styles.wrap, { gap: 24 }]}>
-          <Typography mode="heading3" color="gray900">
-            충전 상세 내역
+        {/* 충전 수단 카드 */}
+        <View style={styles.card}>
+          <Typography mode="subtitle2" color="gray900">
+            충전 수단
           </Typography>
 
-          <View style={{ gap: 12 }}>
-            <View style={layout.rowBetween}>
-              <Typography mode="body2" color="gray900">
-                충전 예정 금액
-              </Typography>
-              <Typography mode="subtitle2" color="gray900">
-                {Number(chargeAmt).toLocaleString('kr-KR')} 원
-              </Typography>
+          <View style={[layout.rowCenter, styles.methodRow]}>
+            <View style={styles.methodIcon}>
+              <Image
+                source={require('@images/icon/money_transfer.png')}
+                style={{ width: 24, height: 24 }}
+                resizeMode="contain"
+              />
             </View>
 
-            <View style={layout.rowBetween}>
-              <Typography mode="body2" color="gray900">
-                └ 충전 후 잔액
+            <View style={{ gap: 2, flexShrink: 1 }}>
+              <Typography mode="subtitle2" color="gray900">
+                계좌이체
               </Typography>
               <Typography mode="body2" color="gray600">
-                {(Number(balance) + Number(chargeAmt)).toLocaleString('kr-KR')} 원
+                실시간 계좌이체 · 데모용 모의 결제창
               </Typography>
             </View>
           </View>
+
+          <Typography mode="caption1" color="gray400">
+            충전 버튼을 누르면 간편 비밀번호 확인 후 데모용 모의 결제창이 열립니다. 승인·거절·취소를 직접 골라 볼 수
+            있고, 승인하면 입력한 금액이 잔액에 반영됩니다.
+          </Typography>
         </View>
       </KeyboardAwareScrollView>
 
@@ -90,24 +93,30 @@ const TransferAcntChargeScreen = ({ navigation, route }: TransferAcntChargeScree
   );
 };
 
+// 출금 계좌 확인(RefundAcntScreen)과 같은 카드 모양
 const styles = StyleSheet.create({
-  wrap: { paddingVertical: 24, paddingHorizontal: 16 },
-  chargeBadge: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: 32,
-    alignSelf: 'baseline',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+  wrap: { paddingHorizontal: 16, paddingVertical: 24, gap: 16 },
+  card: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.lg,
+    boxShadow: theme.shadow.card,
+    padding: 20,
+    gap: 16,
   },
-  divider: { backgroundColor: theme.colors.gray100, height: 1, marginHorizontal: 16 },
-  bankInfoBox: {
-    gap: 12,
-    borderRadius: 8,
-    paddingVertical: 24,
+  methodRow: {
+    gap: 14,
+    backgroundColor: theme.colors.gray50,
+    borderRadius: theme.radius.md,
     paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.primary,
-    backgroundColor: 'rgba(45, 181, 237, 0.15)',
+    paddingVertical: 16,
+  },
+  methodIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: theme.colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
