@@ -188,7 +188,7 @@ const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigati
             descMessage={emailError ? '이메일 주소를 올바르게 입력해 주세요.' : undefined}
             placeholder={'이메일을 입력해 주세요.'}
             buttonDisabled={isEmailButtonDisabled}
-            buttonLabel={'이메일 변경'}
+            buttonLabel={'변경하기'}
             buttonEvent={handleChangeEmail}
           />
 
