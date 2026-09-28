@@ -581,7 +581,7 @@ function App(): React.JSX.Element {
                   name="FAQ"
                   component={FAQScreen}
                   options={{
-                    header: () => <Header title="FAQ" bgColor={theme.colors.bg} leftButton />,
+                    header: () => <Header title="FAQ" bgColor="white" leftButton />,
                   }}
                 />
                 <Stack.Screen
