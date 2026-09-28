@@ -112,7 +112,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
 
         {/* 하단 - 최근 이용 내역 카드 */}
         <View style={styles.recentList}>
-          <Pressable style={styles.recentHeader} onPress={() => navigation.navigate('UseList')}>
+          <Pressable style={styles.recentHeader} onPress={() => navigation.navigate('UseList', { showAll: true })}>
             <View style={[layout.rowCenter, { gap: 10 }]}>
               <View style={styles.recentIcon}>
                 <Image source={require('@images/icon/list.png')} style={styles.icon} />
@@ -139,7 +139,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             ListEmptyComponent={() => (
               <View style={styles.empty}>
                 <Typography mode="body2" color="gray500">
-                  최근 7일간 이용 내역이 없습니다.
+                  최근 이용 내역이 없습니다.
                 </Typography>
               </View>
             )}

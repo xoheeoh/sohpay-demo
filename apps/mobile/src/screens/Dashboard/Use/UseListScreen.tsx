@@ -5,7 +5,7 @@ import { Divider } from 'react-native-paper';
 
 import type { RootStackParamList } from '@typ/navigation';
 import { TransactionListItem } from '@typ/paymentType';
-import { convertDateWithoutHypen, getDateWithHypen, getOneWeekAgoDate } from '@utils/formatter';
+import { convertDateWithoutHypen, getDateMonthsAgo, getDateWithHypen, getOneWeekAgoDate } from '@utils/formatter';
 import { useDialog } from '@contexts/DialogContext';
 import { loadTransactionList } from '@apis/paymentApi';
 import { BottomSheet, Dropdown, PrimaryButton, ScreenWrapper, Typography } from '@components/common';
@@ -22,18 +22,29 @@ import { getAppWidth } from '@utils/dimensions';
 
 type UseListScreenProps = NativeStackScreenProps<RootStackParamList, 'UseList'>;
 
-const UseListScreen: React.FC<UseListScreenProps> = () => {
+const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
+  /**
+   * 처음 열릴 때의 조회 조건
+   * - 기본: 1주일 · 결제
+   * - 대시보드 "전체보기"로 들어오면(showAll): 3개월 · 모두. 대시보드 최근 목록은 기간 제한이 없어서, 같은 건들이 여기서도 보이게 넉넉히 연다
+   */
+  const showAll = route.params?.showAll ?? false;
+  const initialPeriod = showAll ? '3months' : '1week';
+  const initialFrDt = showAll ? getDateMonthsAgo(3) : getOneWeekAgoDate();
+  const initialGetCd = showAll ? 'ALL' : 'USE';
+  const initialGetCdRadio = showAll ? 'all' : 'use';
+
   /**
    * 기간 select 클릭하면 해당 BottomSheet 등장
    * 라디오 버튼 선택 값에 따라 조회 frDt, toDt 설정
    */
-  const [frDt, setFrDt] = useState<string>(convertDateWithoutHypen(getOneWeekAgoDate()));
+  const [frDt, setFrDt] = useState<string>(convertDateWithoutHypen(initialFrDt));
   const [toDt, setToDt] = useState<string>(convertDateWithoutHypen(getDateWithHypen(new Date())));
 
   const [periodModal, setPeriodModal] = useState<boolean>(false); // 기간 선택 BottomSheet
 
-  const [selectedPeriod, setSelectedPeriod] = useState<string>('1week'); // 선택된 radio value값
-  const [periodPlaceholder, setPeriodPlaceholder] = useState<string>('1주일');
+  const [selectedPeriod, setSelectedPeriod] = useState<string>(initialPeriod); // 선택된 radio value값
+  const [periodPlaceholder, setPeriodPlaceholder] = useState<string>(showAll ? '3개월' : '1주일');
   const [dropdownKey1, setDropdownKey1] = useState(0); // Dropdown 리렌더링 트리거 키
 
   // 모달로부터 값 전달받는 이벤트
@@ -70,13 +81,13 @@ const UseListScreen: React.FC<UseListScreenProps> = () => {
    * 거래 종류 select 클릭하면 해당 BottomSheet 등장
    * 라디오 버튼 선택 값에 따라 getCd 값 설정
    */
-  const [tempGetCd, setTempGetCd] = useState<string>('USE'); // 거래종류 셀렉트 박스에서 선택된 값 ALL | USE | CHRG (거래상태 모달에 전달)
-  const [actualGetCd, setActualGetCd] = useState<string>('USE'); // 실제 조회에 사용할 getCd (충전 종류에서 거래 상태를 고르면 CHRG_RFND | CHRG | RFND 로 바뀜)
-  const [getCd, setGetCd] = useState<string>('USE'); // 조회 버튼을 누른 시점의 getCd: ALL 모두 | USE 결제 | CHRG 충전 | RFND 출금 | CHRG_RFND 충전+출금
+  const [tempGetCd, setTempGetCd] = useState<string>(initialGetCd); // 거래종류 셀렉트 박스에서 선택된 값 ALL | USE | CHRG (거래상태 모달에 전달)
+  const [actualGetCd, setActualGetCd] = useState<string>(initialGetCd); // 실제 조회에 사용할 getCd (충전 종류에서 거래 상태를 고르면 CHRG_RFND | CHRG | RFND 로 바뀜)
+  const [getCd, setGetCd] = useState<string>(initialGetCd); // 조회 버튼을 누른 시점의 getCd: ALL 모두 | USE 결제 | CHRG 충전 | RFND 출금 | CHRG_RFND 충전+출금
   const [getCdModal, setGetCdModal] = useState<boolean>(false); // 거래종류 선택 BottomSheet
 
-  const [selectedGetCd, setSelectedGetCd] = useState<string>('use'); // 선택된 radio value값
-  const [getCdPlaceholder, setGetCdPlaceholder] = useState<string>('결제');
+  const [selectedGetCd, setSelectedGetCd] = useState<string>(initialGetCdRadio); // 선택된 radio value값
+  const [getCdPlaceholder, setGetCdPlaceholder] = useState<string>(showAll ? '모두' : '결제');
   const [dropdownKey2, setDropdownKey2] = useState(0); // Dropdown 리렌더링 트리거 키
 
   // 모달로부터 값 전달받는 이벤트
@@ -244,7 +255,7 @@ const UseListScreen: React.FC<UseListScreenProps> = () => {
     }, 300); // 디바운스: 300ms 후 실행
   };
 
-  // 화면 진입 시, 1주일 결제 승인 내역을 기본값으로 보여주기
+  // 화면 진입 시, 위에서 정한 초기 조건(기본 1주일·결제 / 대시보드 전체보기는 3개월·모두)으로 바로 조회
   useEffect(() => {
     handleLoadList();
   }, []);

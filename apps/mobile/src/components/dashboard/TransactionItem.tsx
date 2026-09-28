@@ -26,9 +26,9 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ data }) => {
 
   return (
     <View style={styles.container}>
-      {/* 거래일 */}
+      {/* 거래일 (MM/DD) - 점(.)으로 이으면 시각처럼 읽혀서 빗금으로 구분 */}
       <Typography mode="caption1" color="gray400" style={styles.date}>
-        {data?.trDt.slice(4, 6)}.{data?.trDt.slice(6, 8)}
+        {data?.trDt.slice(4, 6)}/{data?.trDt.slice(6, 8)}
       </Typography>
 
       {/* 가맹점 / 거래구분 */}
