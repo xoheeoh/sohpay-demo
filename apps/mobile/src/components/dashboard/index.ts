@@ -5,5 +5,7 @@ export { TransactionItem } from './TransactionItem';
 export { BottomAmtBtn } from './BottomAmtBtn';
 export { SelectBank } from './SelectBank';
 export { AmountSummaryCard } from './AmountSummaryCard';
+export { AmountEntry } from './AmountEntry';
+export type { QuickAmount } from './AmountEntry';
 export { GlassReceiptCard } from './GlassReceiptCard';
 export type { GlassReceiptRow } from './GlassReceiptCard';
