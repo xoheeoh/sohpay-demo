@@ -99,7 +99,7 @@ const RefundSucScreen: React.FC<RefundSucScreenProps> = ({ navigation, route }) 
 
 const styles = StyleSheet.create({
   // 세로 가운데 정렬. 아래 여백은 KeyboardAwareScrollView 가 덮어쓰므로 extraBottomPadding 으로 보정한다.
-  container: { paddingHorizontal: 16, paddingVertical: 24, gap: 28, flexGrow: 1, justifyContent: 'center' },
+  container: { paddingHorizontal: 16, paddingVertical: 24, gap: 50, flexGrow: 1, justifyContent: 'center' },
 
   hero: { gap: 12, alignItems: 'center' },
   // Lottie 그림은 상자 안에 위 28px, 아래 35px 투명 여백을 두고 그려지므로 음수 여백으로 상쇄해 보이는 그림 기준으로 정렬한다
