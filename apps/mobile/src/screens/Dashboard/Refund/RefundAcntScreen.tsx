@@ -15,16 +15,12 @@ import {
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
   KeyboardAwareScrollView,
   ScreenWrapper,
-  SecondaryButton,
   Skeleton,
   Typography,
 } from '@components/common';
 import { layout, theme } from '@styles';
 
 type RefundAcntScreenProps = NativeStackScreenProps<RootStackParamList, 'RefundAcnt'>;
-
-/** 금액 숫자를 '145,400' 처럼 천 단위 콤마 문자열로 */
-const formatAmount = (value: number) => value.toLocaleString('ko-KR');
 
 const RefundAcntScreen: React.FC<RefundAcntScreenProps> = ({ navigation, route }) => {
   // 이전 화면에서 얻은 출금할 금액
@@ -88,14 +84,15 @@ const RefundAcntScreen: React.FC<RefundAcntScreenProps> = ({ navigation, route }
               출금 계좌
             </Typography>
 
-            {hasRefundAccount && (
+            {/* 계좌가 있으면 변경, 없으면 등록. 자리와 모양은 같게 두어 두 상태가 한 카드로 보이게 한다 */}
+            {isAcntLoaded && (
               <Pressable
                 accessibilityRole="button"
                 hitSlop={4}
                 style={({ pressed }) => [layout.rowCenter, { gap: 2 }, pressed && { opacity: 0.5 }]}
-                onPress={() => navigation.navigate('RefundAuth', { flg: 'edit' })}>
+                onPress={() => navigation.navigate('RefundAuth', { flg: hasRefundAccount ? 'edit' : 'first' })}>
                 <Typography mode="subtitle3" color="blue500">
-                  변경하기
+                  {hasRefundAccount ? '변경하기' : '등록하기'}
                 </Typography>
                 <Icon source="chevron-right" size={18} color={theme.colors.blue500} />
               </Pressable>
@@ -131,20 +128,30 @@ const RefundAcntScreen: React.FC<RefundAcntScreenProps> = ({ navigation, route }
               </Typography>
             </>
           ) : (
-            <View style={styles.emptyBox}>
-              <View style={styles.iconCircle}>
-                <Icon source="bank-plus" size={20} color={theme.colors.primary} />
-              </View>
-              <Typography mode="body2" color="gray600" style={{ textAlign: 'center' }}>
-                등록된 출금 계좌가 없습니다.{'\n'}계좌를 등록하면 바로 출금할 수 있어요.
+            /* 계좌 없음: 계좌가 있을 때와 같은 줄 구성(아이콘 동그라미 + 두 줄 글). 줄 전체를 누르면 등록으로 간다 (계좌관리 화면과 같은 모양) */
+            <>
+              <Pressable
+                accessibilityRole="button"
+                style={({ pressed }) => [layout.rowCenter, styles.bankRow, pressed && { opacity: 0.6 }]}
+                onPress={() => navigation.navigate('RefundAuth', { flg: 'first' })}>
+                <View style={styles.emptyIcon}>
+                  <Icon source="bank-plus" size={22} color={theme.colors.gray500} />
+                </View>
+
+                <View style={{ gap: 2, flexShrink: 1 }}>
+                  <Typography mode="subtitle2" color="gray900">
+                    등록된 계좌가 없어요
+                  </Typography>
+                  <Typography mode="body2" color="gray600">
+                    출금할 계좌를 먼저 등록해 주세요.
+                  </Typography>
+                </View>
+              </Pressable>
+
+              <Typography mode="caption1" color="gray400">
+                계좌 등록에는 본인 명의 계좌의 1원 인증이 필요합니다.
               </Typography>
-              <SecondaryButton
-                style={{ width: '100%' }}
-                label={'계좌 등록하기'}
-                onPress={() => navigation.navigate('RefundAuth', { flg: 'first' })}
-                size={'lg'}
-              />
-            </View>
+            </>
           )}
         </View>
       </KeyboardAwareScrollView>
@@ -170,11 +177,12 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 16,
   },
-  iconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: theme.colors.primarySoft,
+  // 계좌 없음 줄의 아이콘 자리: 은행 로고와 같은 크기의 회색 동그라미
+  emptyIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: theme.colors.gray100,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -186,7 +194,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   bankLogo: { width: 44, height: 44, borderRadius: 22 },
-  emptyBox: { alignItems: 'center', gap: 12, paddingTop: 4 },
 });
 
 export default RefundAcntScreen;
