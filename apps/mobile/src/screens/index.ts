@@ -26,7 +26,6 @@ export { DashboardScreen } from './Dashboard/DashboardScreen';
 export { ChargeSelectMethodScreen } from './Dashboard/Charge/ChargeSelectMethod';
 export { ChargeAmtScreen } from './Dashboard/Charge/ChargeAmtScreen';
 export { TransferAcntChargeScreen } from './Dashboard/Charge/Transfer/TransferAcntChargeScreen';
-export { TransferAcntInputScreen } from './Dashboard/Charge/Transfer/TransferAcntInputScreen';
 export { ChargeAcntWebScreen } from './Dashboard/Charge/Transfer/ChargeAcntWebScreen';
 export { ChargeSucScreen } from './Dashboard/Charge/ChargeSucScreen';
 

@@ -4,7 +4,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '@typ/navigation';
 import { useDialog } from '@contexts/DialogContext';
-import { changeTempPwd, validationPwd } from '@apis/usrApi';
+import { PWD_RULE, changeTempPwd, validationPwd } from '@apis/usrApi';
 import {
   BottomBtnBox,
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
@@ -119,12 +119,12 @@ const ChangeTempPwdScreen: React.FC<ChangeTempPwdScreenProps> = ({ route, naviga
             value={newPwd}
             onChangeText={(text: string) => {
               setNewPwd(text);
-              setNewPwError(text.length > 0 ? text.length < 8 : false);
+              setNewPwError(text.length > 0 ? !PWD_RULE.test(text) : false);
             }}
             placeholder={'비밀번호를 입력해 주세요.'}
             error={newPwError ? true : false}
-            descMessage={newPwError ? '최소 8자리 이상 입력해 주세요.' : undefined}
-            maxLength={25}
+            descMessage={newPwError ? '영문·숫자·특수문자를 포함해 8~20자로 입력해 주세요.' : undefined}
+            maxLength={20}
             secure
           />
 
@@ -147,7 +147,7 @@ const ChangeTempPwdScreen: React.FC<ChangeTempPwdScreenProps> = ({ route, naviga
             placeholder={'비밀번호를 입력해 주세요.'}
             error={newPwChkError ? true : false}
             descMessage={newPwChkError ? '비밀번호가 일치하지 않습니다.' : undefined}
-            maxLength={25}
+            maxLength={20}
             secure
           />
         </View>

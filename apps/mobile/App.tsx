@@ -65,7 +65,6 @@ import {
   TermContentScreen,
   TermListScreen,
   TransferAcntChargeScreen,
-  TransferAcntInputScreen,
   UseDetailScreen,
   UseListScreen,
   UsrInfoScreen,
@@ -307,13 +306,6 @@ function App(): React.JSX.Element {
                   component={TransferAcntChargeScreen}
                   options={{
                     header: () => <Header title="충전하기" bgColor={theme.colors.bg} leftButton />,
-                  }}
-                />
-                <Stack.Screen
-                  name="TransferAcntInput"
-                  component={TransferAcntInputScreen}
-                  options={{
-                    header: () => <Header title="충전하기" bgColor="white" leftButton />,
                   }}
                 />
                 <Stack.Screen

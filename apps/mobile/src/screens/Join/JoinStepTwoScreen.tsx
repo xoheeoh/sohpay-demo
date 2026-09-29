@@ -7,7 +7,14 @@ import type { RootStackParamList } from '@typ/navigation';
 import { IUserData } from '@typ/userType';
 import { filterUserId } from '@utils/input';
 import { validateEmail } from '@utils/validator';
-import { chkDuplicateUid, chkMemberAuthKey, handleCertifyResult, requestCertifyUrl, validationPwd } from '@apis/usrApi';
+import {
+  PWD_RULE,
+  chkDuplicateUid,
+  chkMemberAuthKey,
+  handleCertifyResult,
+  requestCertifyUrl,
+  validationPwd,
+} from '@apis/usrApi';
 import { useDialog } from '@contexts/DialogContext';
 import { getData, mergeData, removeData } from '@storages/asyncStorage';
 import {
@@ -441,12 +448,12 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
               inputRef={usrPwRef}
               onChangeText={(text: string) => {
                 setUsrPw(text);
-                setPwError(text.length > 0 ? text.length < 8 : false);
+                setPwError(text.length > 0 ? !PWD_RULE.test(text) : false);
               }}
               placeholder={'비밀번호를 입력해 주세요.'}
               error={pwError ? true : false}
-              descMessage={pwError ? '최소 8자리 이상 입력해 주세요.' : undefined}
-              maxLength={25}
+              descMessage={pwError ? '영문·숫자·특수문자를 포함해 8~20자로 입력해 주세요.' : undefined}
+              maxLength={20}
               secure
             />
 
@@ -463,7 +470,7 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
               placeholder={'비밀번호를 다시 입력해 주세요.'}
               error={pwChkError ? true : false}
               descMessage={pwChkError ? '비밀번호가 일치하지 않습니다.' : undefined}
-              maxLength={25}
+              maxLength={20}
               secure
             />
           </View>

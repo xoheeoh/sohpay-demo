@@ -47,7 +47,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const [usrData, setUsrData] = useState<IUserProfile>();
 
   const fetchUserInfo = async () => {
-    loadUsrInfoData().then((data) => {
+    // return 을 붙여 당겨서 새로고침(Promise.all)이 실제 응답까지 기다리게 한다
+    return loadUsrInfoData().then((data) => {
       if (data.resultCd === '0000') {
         setUsrData(data);
         // console.log('조회된 사용자 정보:', data);
@@ -66,7 +67,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   // 회원 잔액 조회 ===================================================
   const [rmnAmtData, setRmnAmtData] = useState<IRmnAmt>();
   const fetchUserBalance = async () => {
-    loadUserAmt().then((data) => {
+    return loadUserAmt().then((data) => {
       if (data.resultCd === '0000') {
         setRmnAmtData(data);
         // console.log('회원 잔액:', data);

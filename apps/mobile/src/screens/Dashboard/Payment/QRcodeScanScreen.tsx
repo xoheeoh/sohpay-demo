@@ -30,6 +30,8 @@ const QRcodeScanScreen: React.FC<QRcodeScanScreenProps> = ({ navigation }) => {
   const [permission, requestPermission] = useCameraPermissions();
   const hasPermission = !!permission?.granted;
   const [isScanning, setIsScanning] = useState<boolean>(true);
+  // 카메라는 한 QR 을 1초에 여러 번 읽어 보낸다. state 는 리렌더 뒤에 바뀌므로 ref 로 즉시 잠가 같은 코드를 두 번 조회하지 않게 한다
+  const isHandlingRef = useRef(false);
   const isFocused = useIsFocused();
 
   // 화면 진입 시 카메라 권한을 한 번만 요청한다.
@@ -50,6 +52,7 @@ const QRcodeScanScreen: React.FC<QRcodeScanScreenProps> = ({ navigation }) => {
   useFocusEffect(
     useCallback(() => {
       setIsScanning(true);
+      isHandlingRef.current = false;
       return () => {
         setIsScanning(false);
       };
@@ -58,7 +61,8 @@ const QRcodeScanScreen: React.FC<QRcodeScanScreenProps> = ({ navigation }) => {
 
   // QR 코드 스캔 처리
   const onCodeScanned = async (codeValue: string) => {
-    if (!isScanning) return; // 중복 방지
+    if (!isScanning || isHandlingRef.current) return; // 중복 방지
+    isHandlingRef.current = true;
     setIsScanning(false);
 
     try {
@@ -79,6 +83,7 @@ const QRcodeScanScreen: React.FC<QRcodeScanScreenProps> = ({ navigation }) => {
             confirmText: '확인',
           }).then((ok) => {
             if (ok) {
+              isHandlingRef.current = false;
               setIsScanning(true); // QR 인식 재시작
             }
           });

@@ -117,7 +117,7 @@ const SettingScreen: React.FC<SettingScreenProps> = () => {
                 마케팅 정보 수신 동의
               </Typography>
               <Typography mode="caption1" color="gray500">
-                이벤트·혜택 소식을 받아요. 결제·출금 알림은 이 설정과 상관없이 보냅니다.
+                이벤트·혜택 소식 수신에 동의합니다. 데모 앱에서는 실제 알림을 보내지 않아요.
               </Typography>
             </View>
 

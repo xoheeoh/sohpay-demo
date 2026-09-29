@@ -6,7 +6,7 @@ type AutoScrollStrategy = 'focused-input';
 
 export interface KeyboardAwareScrollViewProps extends Omit<ScrollViewProps, 'contentContainerStyle'> {
   /**
-   * 화면 하단에 absolute로 떠 있는 UI(BottomBtnBox/BottomAmtBtn 등) 높이 합.
+   * 화면 하단에 absolute로 떠 있는 UI(BottomBtnBox 등) 높이 합.
    * 키보드가 올라왔을 때 입력칸이 이 영역에 가리지 않도록 스크롤 오프셋에 반영함.
    */
   keyboardAccessoryHeight?: number;
@@ -31,7 +31,7 @@ export interface KeyboardAwareScrollViewProps extends Omit<ScrollViewProps, 'con
 /**
  * 목적: 화면별로 keyboardHeight/scrollToInput/paddingBottom 튜닝을 반복하지 않기 위한 공통 ScrollView.
  * - 키보드 등장 시 "현재 포커스된 입력"을 자동으로 키보드 위로 올림
- * - BottomBtnBox/BottomAmtBtn 같이 absolute 하단 UI가 키보드 위에 뜨는 케이스를 keyboardAccessoryHeight로 반영
+ * - BottomBtnBox 같이 absolute 하단 UI가 키보드 위에 뜨는 케이스를 keyboardAccessoryHeight로 반영
  */
 const KeyboardAwareScrollView = React.forwardRef<ScrollView, KeyboardAwareScrollViewProps>(
   (

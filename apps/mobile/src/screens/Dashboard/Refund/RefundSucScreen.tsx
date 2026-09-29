@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { BackHandler, StyleSheet, View } from 'react-native';
+import { BackHandler, Platform, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -43,6 +43,8 @@ const RefundSucScreen: React.FC<RefundSucScreenProps> = ({ navigation, route }) 
         return true;
       };
 
+      // 웹에는 하드웨어 뒤로가기 버튼이 없고 BackHandler 도 지원되지 않아(콘솔 오류) 앱에서만 등록한다
+      if (Platform.OS === 'web') return;
       const subscription = BackHandler.addEventListener('hardwareBackPress', backAction);
 
       return () => {

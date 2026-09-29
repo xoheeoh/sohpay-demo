@@ -11,7 +11,7 @@ import { maskAccountNumber } from '@utils/formatter';
 import { validateEmail, isMaskedEmail } from '@utils/validator';
 import { getData } from '@storages/asyncStorage';
 import { useDialog } from '@contexts/DialogContext';
-import { editUsrProfile, validationPwd } from '@apis/usrApi';
+import { PWD_RULE, editUsrProfile, validationPwd } from '@apis/usrApi';
 import { loadRefundAcnt } from '@apis/paymentApi';
 import { KeyboardAwareScrollView, ScreenWrapper, TextField, Typography } from '@components/common';
 
@@ -57,7 +57,7 @@ const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigati
         alert({
           title: '이메일 변경',
           message1: '회원님의 이메일 주소 변경에 실패하였습니다.',
-          message2: '이메일 주소를 다시 한 번 확인해 주세요.',
+          message2: data.resultMsg,
         });
       }
     });
@@ -101,7 +101,7 @@ const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigati
             alert({
               title: 'PW 변경',
               message1: '회원님의 PW 변경에 실패하였습니다.',
-              message2: '최근 사용하신 PW는 사용하실 수 없습니다.',
+              message2: data.resultMsg, // 서버가 준 이유 (비밀번호 규칙·현재 비밀번호 불일치 등)
             });
           }
         });
@@ -210,12 +210,12 @@ const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigati
             inputRef={pwdRef}
             onChangeText={(text: string) => {
               setPwd(text);
-              setPwdError(text.length > 0 ? text.length < 8 : false);
+              setPwdError(text.length > 0 ? !PWD_RULE.test(text) : false);
             }}
             placeholder={'비밀번호를 입력해 주세요.'}
             error={pwdError ? true : false}
-            descMessage={pwdError ? '최소 8자리 이상 입력해 주세요.' : undefined}
-            maxLength={25}
+            descMessage={pwdError ? '영문·숫자·특수문자를 포함해 8~20자로 입력해 주세요.' : undefined}
+            maxLength={20}
             secure
           />
 
@@ -229,7 +229,7 @@ const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigati
             placeholder={'비밀번호를 다시 입력해 주세요.'}
             error={pwdChkError ? true : false}
             descMessage={pwdChkError ? '비밀번호가 일치하지 않습니다.' : undefined}
-            maxLength={25}
+            maxLength={20}
             secure
             buttonLabel="변경하기"
             buttonEvent={handleChangePwd}
