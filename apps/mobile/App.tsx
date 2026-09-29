@@ -597,7 +597,7 @@ function App(): React.JSX.Element {
                   name="Setting"
                   component={SettingScreen}
                   options={{
-                    header: () => <Header title="설정" bgColor="white" leftButton />,
+                    header: () => <Header title="설정" bgColor={theme.colors.bg} leftButton />,
                   }}
                 />
               </Stack.Navigator>

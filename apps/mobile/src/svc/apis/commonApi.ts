@@ -4,7 +4,37 @@
 import { IFAQList, INoticeList } from '@typ/commonType';
 import { IMidInfo, IRmnAmt } from '@typ/paymentType';
 import { IUserProfile } from '@typ/userType';
-import { ok, supabase, toFail, unwrap, ymd, ymdhms } from './client';
+import { fail, ok, supabase, toFail, unwrap, ymd, ymdhms } from './client';
+
+/* 마케팅 정보 수신 동의 조회 (설정 화면) */
+export const loadMarketingOptIn = async () => {
+  try {
+    const p = unwrap(await supabase.from('profiles').select('marketing_opt_in').single()) as {
+      marketing_opt_in: boolean;
+    };
+    return ok({ optIn: p.marketing_opt_in });
+  } catch (e) {
+    return toFail(e);
+  }
+};
+
+/**
+ * 마케팅 정보 수신 동의 변경 (설정 화면). profiles 의 marketing_opt_in 은 본인이 바꿀 수 있게 열려 있다.
+ * 주의: 서버(PostgREST)는 어느 행을 고칠지 조건(WHERE)이 없는 갱신을 거절한다 ("UPDATE requires a WHERE clause").
+ * 접근 정책이 내 행만 허용하더라도 조건은 꼭 붙여야 한다.
+ */
+export const updateMarketingOptIn = async (optIn: boolean) => {
+  try {
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) return fail('UNAUTHENTICATED');
+    unwrap(
+      await supabase.from('profiles').update({ marketing_opt_in: optIn }).eq('id', auth.user.id).select('id').single(),
+    );
+    return ok();
+  } catch (e) {
+    return toFail(e);
+  }
+};
 
 /* 선불 회원 조회 (간소화) */
 export const loadUsrInfoData = async () => {
