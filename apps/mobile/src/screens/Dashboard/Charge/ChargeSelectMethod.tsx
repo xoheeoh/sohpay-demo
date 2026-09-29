@@ -1,66 +1,22 @@
-import { useCallback, useState } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useFocusEffect } from '@react-navigation/native';
 
 import type { RootStackParamList } from '@typ/navigation';
-import { useDialog } from '@contexts/DialogContext';
-import { loadRefundAcnt } from '@apis/paymentApi';
 import { Badge, ScreenWrapper, Typography } from '@components/common';
 import { layout, theme } from '@styles';
 
 type ChargeSelectMethodScreenProps = NativeStackScreenProps<RootStackParamList, 'ChargeSelectMethod'>;
 
+/**
+ * 충전수단 선택.
+ *
+ * 전신 앱은 출금(환불) 계좌가 등록된 사용자만 충전할 수 있게 여기서 막았지만, 이 앱에서는 그 조건을 두지 않는다.
+ * 실시간 계좌이체 충전은 결제창에서 은행 인증을 거치며 이체가 일어나는 계좌 자체가 본인 확인을 대신하기 때문이다.
+ * 1원 인증으로 등록하는 출금 계좌는 돈이 나가는 출금에서만 요구한다 (RefundAcntScreen).
+ * 서버(create_charge)도 계좌 없이 충전 거래를 만들 수 있고, 등록된 계좌가 있으면 결제창에 참고로 표시만 한다.
+ */
 const ChargeSelectMethodScreen: React.FC<ChargeSelectMethodScreenProps> = ({ navigation }) => {
-  /**
-   * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 선행 조건 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   *
-   * 충전은 실시간 계좌이체로 진행됨
-   * 환불계좌가 등록되어있지 않은 사용자는 충전하기 사용 불가능
-   * 환불계좌 존재 여부를 검사 후 조건에 따라 화면 분기처리 해야함
-   *
-   * 1. 환불계좌 미존재: RefundAuth 화면으로 이동시켜서 먼저 환불계좌 등록 선행 유도
-   * 2. 환불계좌 존재: ChargeAmt 화면으로 이동 후 충전 로직 진행
-   *
-   * !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   */
-
-  const [hasRfndAcnt, setHasRfndAcnt] = useState<boolean>(false);
-  const { confirm } = useDialog();
-
-  // 등록된 환불계좌 조회
-  useFocusEffect(
-    useCallback(() => {
-      loadRefundAcnt().then((data) => {
-        console.log('환불계좌 조회 결과:', data);
-
-        if (data.resultCd === '0000') {
-          if (data.rfndAcntNo === null) {
-            setHasRfndAcnt(false);
-
-            confirm({
-              title: '알림',
-              message1: '충전하기 사용 전, 내 출금계좌 등록이 필요합니다.',
-              message2: '계좌 등록 화면으로 이동할까요?',
-              confirmText: '확인',
-              cancelText: '나중에',
-            }).then((ok) => {
-              if (ok) {
-                navigation.navigate('RefundAuth', { flg: 'first' });
-              } else {
-                if (navigation.canGoBack()) navigation.goBack();
-                else navigation.navigate('Dashboard');
-              }
-            });
-          } else {
-            setHasRfndAcnt(true);
-          }
-        }
-      });
-    }, []),
-  );
-
   return (
     <ScreenWrapper backgroundColor={theme.colors.bg}>
       <View style={styles.wrap}>
@@ -73,14 +29,7 @@ const ChargeSelectMethodScreen: React.FC<ChargeSelectMethodScreenProps> = ({ nav
           {/* 계좌이체 */}
           <Pressable
             style={({ pressed }) => [styles.selectBtn, pressed && styles.pressed]}
-            onPress={() => {
-              if (hasRfndAcnt) {
-                // 환불계좌가 있는 모든 케이스는 바로 금액 입력 화면으로 이동
-                navigation.navigate('ChargeAmt');
-              } else {
-                // 없는 경우는 화면 진입 시 뜨는 alert에서 처리
-              }
-            }}>
+            onPress={() => navigation.navigate('ChargeAmt')}>
             <View style={layout.rowBetween}>
               <View style={styles.iconCircle}>
                 <Image
