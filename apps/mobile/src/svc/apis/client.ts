@@ -57,6 +57,7 @@ const MESSAGES: Record<string, string> = {
   ALREADY_JOINED_MEMBER: '이미 가입 이력이 있는 사용자입니다.',
   MB_UID_TAKEN: '이미 사용 중인 아이디입니다.',
   INVALID_MB_UID: '아이디는 영문 소문자·숫자 6~20자로 입력해 주세요.',
+  INVALID_EMAIL: '이메일 주소 형식이 올바르지 않습니다.',
   INVALID_PIN_FORMAT: '간편 비밀번호는 숫자 6자리입니다.',
   PIN_TOO_SIMPLE: '같은 숫자를 반복한 비밀번호는 사용할 수 없습니다.',
   PIN_MISMATCH: '간편 비밀번호가 일치하지 않습니다.',
@@ -92,6 +93,7 @@ const MESSAGES: Record<string, string> = {
   invalid_credentials: '아이디 또는 비밀번호가 올바르지 않습니다.',
   'Invalid login credentials': '아이디 또는 비밀번호가 올바르지 않습니다.',
   user_already_exists: '이미 가입된 아이디입니다.',
+  SIGNUP_ACCOUNT_EXISTS: '이 아이디로 만들어진 계정이 이미 있습니다. 다른 아이디를 사용해 주세요.',
   'User already registered': '이미 가입된 아이디입니다.',
   weak_password: '비밀번호는 8자 이상으로 설정해 주세요.',
 };
