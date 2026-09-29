@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { Icon } from 'react-native-paper';
@@ -92,24 +92,15 @@ const UsrInfoScreen: React.FC<UsrInfoScreenProps> = ({ navigation, route }) => {
           <SecondaryButton label={'잔액 환급'} onPress={() => navigation.navigate('Refund')} size={'lg'} />
         </View>
 
-        {/* 프로필 + 회원 정보 카드 */}
+        {/* 회원 정보 카드. 아바타·큰 이름은 마이페이지 프로필 카드가 맡으므로 여기서는 항목 표로만 보여준다 (겹침 방지) */}
         <View style={styles.card}>
-          <View style={styles.profile}>
-            <Image source={require('@images/non_profile.png')} style={styles.avatar} resizeMode="cover" />
-
-            <View style={{ flex: 1, gap: 2 }}>
-              <Typography mode="heading3" color="gray900">
-                {usrData?.usrNm} 님
-              </Typography>
-              <Typography mode="body2" color="gray500">
-                {usrData?.mbUid}
-              </Typography>
-            </View>
-          </View>
-
-          <View style={styles.divider} />
+          <Typography mode="subtitle2" color="gray900">
+            회원정보
+          </Typography>
 
           <View style={{ gap: 14 }}>
+            <InfoRow label="이름" value={usrData?.usrNm || '-'} />
+            <InfoRow label="아이디" value={usrData?.mbUid || '-'} />
             <InfoRow label="이메일" value={usrData?.email || '-'} />
 
             {/* 등록계좌: 라벨은 눌리지 않고, 오른쪽 계좌번호·화살표만 누르면 계좌관리 화면으로 이동 (없으면 등록, 있으면 변경) */}
@@ -188,9 +179,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
-  profile: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  avatar: { width: 52, height: 52, borderRadius: 26 },
-  divider: { height: 1, backgroundColor: theme.colors.gray100 },
   infoRow: { gap: 16, minHeight: 24 },
   infoValue: { flexShrink: 1, textAlign: 'right' },
   accountLink: { gap: 6, flexShrink: 1 },
