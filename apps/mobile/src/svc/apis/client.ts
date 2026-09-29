@@ -84,6 +84,7 @@ const MESSAGES: Record<string, string> = {
   UNSUPPORTED_BANK: '지원하지 않는 은행입니다.',
   INVALID_ACCOUNT_NO: '계좌번호를 확인해 주세요.',
   INVALID_HOLDER_NAME: '예금주명을 확인해 주세요.',
+  HOLDER_NAME_MISMATCH: '본인 명의 계좌만 등록할 수 있습니다. 예금주명을 확인해 주세요.',
   CODE_MISMATCH: '인증번호가 일치하지 않습니다.',
   TOO_MANY_ATTEMPTS: '인증 시도 횟수를 초과했습니다. 처음부터 다시 진행해 주세요.',
   TOO_MANY_REQUESTS: '요청 횟수를 초과했습니다. 잠시 후 다시 시도해 주세요.',
