@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@typ/navigation';
-import { formatDateTime } from '@utils/formatter';
+import { formatDateTime, formatWon } from '@utils/formatter';
 import { GlassReceiptCard, GlassReceiptRow } from '@components/dashboard';
 import {
   BottomBtnBox,
@@ -23,9 +23,6 @@ type PayCompletedScreenProps = NativeStackScreenProps<RootStackParamList, 'PayCo
  * 하단 버튼 상자는 화면 위에 떠 있어 스크롤 영역이 그 뒤까지 이어지므로, 그냥 가운데 정렬하면 아래로 치우쳐 보인다.
  */
 const CENTERING_EXTRA_BOTTOM_PADDING = BOTTOM_BTN_BOX_HEIGHT - BOTTOM_BTN_BOX_KEYBOARD_INSET + 24;
-
-/** 금액 숫자를 '4,500' 처럼 천 단위 콤마 문자열로 */
-const formatAmount = (value: string | number) => Number(value).toLocaleString('ko-KR');
 
 const PayCompletedScreen: React.FC<PayCompletedScreenProps> = ({ navigation, route }) => {
   // 이전 화면에서 얻어온 결제 결과
@@ -57,7 +54,7 @@ const PayCompletedScreen: React.FC<PayCompletedScreenProps> = ({ navigation, rou
   const rows: GlassReceiptRow[] = [
     { label: '가맹점', value: data.coNm },
     { label: '상품명', value: data.goodsNm },
-    { label: '결제 후 잔액', value: `${formatAmount(data.ppRmnAmt)} 원` },
+    { label: '결제 후 잔액', value: formatWon(data.ppRmnAmt) },
     { label: '거래번호', value: data.tid },
     { label: '결제일시', value: formatDateTime(`${data.ediDate}`) },
   ];

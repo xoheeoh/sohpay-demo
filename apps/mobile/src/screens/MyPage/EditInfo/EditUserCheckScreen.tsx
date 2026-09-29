@@ -198,7 +198,7 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
         keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}
         keyboardShouldPersistTaps="handled">
         <View style={{ gap: 12 }}>
-          <Typography mode="subtitle2" color="gray900">
+          <Typography mode="heading3" color="gray900">
             {flg === 'usrInfo' ? '회원정보' : '간편 비밀번호'} 변경
           </Typography>
           <Typography mode="body2" color="gray600">

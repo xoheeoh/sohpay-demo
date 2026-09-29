@@ -5,9 +5,9 @@ import { Icon } from 'react-native-paper';
 
 import type { RootStackParamList } from '@typ/navigation';
 import { IMidInfo, IUseList } from '@typ/paymentType';
-import { formatDateTime } from '@utils/formatter';
+import { formatDateTime, formatWon } from '@utils/formatter';
 import { loadMidInfo } from '@apis/commonApi';
-import { Badge, Typography, getTrxTone } from '@components/common';
+import { Badge, Typography, getTrxAmountColor, getTrxTone } from '@components/common';
 import { layout, theme } from '@styles';
 
 interface UseComponentProps {
@@ -31,9 +31,9 @@ const UseComponent: React.FC<UseComponentProps> = ({ getCd, item }) => {
 
   const amountText =
     item.trxStCd === '0'
-      ? `- ${item.goodsAmt.toLocaleString('kr-KR')}원`
+      ? `- ${formatWon(item.goodsAmt)}`
       : isCancel
-        ? `+ ${(item.moneyAmt + item.pointAmt).toLocaleString('kr-KR')}원`
+        ? `+ ${formatWon(item.moneyAmt + item.pointAmt)}`
         : '';
 
   // 이전 화면에서 얻어온 결제 정보의 mid에 해당하는 가맹점 정보 구하기
@@ -69,7 +69,7 @@ const UseComponent: React.FC<UseComponentProps> = ({ getCd, item }) => {
 
       {/* 우측: 금액 / 승인번호 */}
       <View style={styles.amountBox}>
-        <Typography mode="subtitle1" color={isCancel ? 'blue500' : 'gray900'}>
+        <Typography mode="subtitle1" color={getTrxAmountColor(isCancel ? 'cancel' : 'pay')}>
           {amountText}
         </Typography>
         <Typography mode="caption2" color="gray400">

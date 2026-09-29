@@ -6,6 +6,7 @@ import type { RootStackParamList } from '@typ/navigation';
 import { formatYYYYMMDDDate } from '@utils/formatter';
 import {
   BottomBtnBox,
+  BOTTOM_BTN_BOX_HEIGHT,
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
   KeyboardAwareScrollView,
   ScreenWrapper,
@@ -13,6 +14,12 @@ import {
   Typography,
 } from '@components/common';
 import styles from './FindScreen.styles';
+
+/**
+ * 내용을 "버튼 위 영역"의 가운데에 놓기 위한 추가 아래 여백 (가입·충전·출금 완료 화면과 같은 계산).
+ * 하단 버튼 상자는 화면 위에 떠 있어 스크롤 영역이 그 뒤까지 이어지므로, 그냥 가운데 정렬하면 아래로 치우쳐 보인다.
+ */
+const CENTERING_EXTRA_BOTTOM_PADDING = BOTTOM_BTN_BOX_HEIGHT - BOTTOM_BTN_BOX_KEYBOARD_INSET + 24;
 
 type FindIdScreenProps = NativeStackScreenProps<RootStackParamList, 'FindId'>;
 
@@ -45,10 +52,11 @@ const FindIdScreen: React.FC<FindIdScreenProps> = ({ navigation, route }) => {
     <ScreenWrapper backgroundColor="white" keyboardBottomInset={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
       <KeyboardAwareScrollView
         contentContainerStyle={[styles.wrap, styles.successWrap]}
-        keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
-        {/* 애니메이션 → 제목 → 결과 카드를 한 덩어리로 묶어, 성공 문구와 찾은 아이디가 바로 이어져 보이게 한다 */}
-        <View style={styles.successBody}>
-          <SuccessAnimation size={200} style={styles.successAnimation} />
+        keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}
+        extraBottomPadding={CENTERING_EXTRA_BOTTOM_PADDING}>
+        {/* 체크 애니메이션 → 완료 문구 (다른 완료 화면과 같은 구성) */}
+        <View style={styles.hero}>
+          <SuccessAnimation size={160} style={styles.animation} />
 
           {/* 결과 메시지 */}
           <View style={{ alignItems: 'center', gap: 6 }}>
@@ -59,7 +67,9 @@ const FindIdScreen: React.FC<FindIdScreenProps> = ({ navigation, route }) => {
               아래 ID로 로그인해 주세요.
             </Typography>
           </View>
+        </View>
 
+        <View style={styles.resultBlock}>
           {/* 회원 정보 카드. 본인인증을 거친 뒤라 ID 를 가리지 않고 그대로 보여준다 */}
           <View style={styles.infoCard}>
             <View style={styles.infoRow}>

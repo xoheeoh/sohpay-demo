@@ -6,7 +6,7 @@ import Accordion from 'react-native-collapsible/Accordion';
 
 import { IMyInquiryList } from '@typ/commonType';
 import { loadMyInquiry } from '@apis/commonApi';
-import { Badge, Dropdown, SearchBox, Typography } from '@components/common';
+import { Badge, Dropdown, SearchBox, SkeletonList, Typography } from '@components/common';
 import { layout, theme } from '@styles';
 import { getAppWidth } from '@utils/dimensions';
 import { formatYYYYMMDDDate } from '@utils/formatter';
@@ -247,6 +247,13 @@ const InquiryListScreen: React.FC<InquiryListScreenProps> = ({ dropdownRef }) =>
         contentContainerStyle={styles.listContent}
         keyboardShouldPersistTaps="handled"
         onScrollBeginDrag={() => dropdownRef?.current?.close?.()}>
+        {/* 조회가 끝나기 전에는 목록 자리에 자리표시자를 보여준다 (공지·FAQ 와 같은 방식) */}
+        {isLoading && (
+          <View style={styles.list}>
+            <SkeletonList rows={5} />
+          </View>
+        )}
+
         {/* 결과가 없는 경우 메시지 표시 */}
         {!isLoading && qnaData.length === 0 && (
           <View style={styles.emptyBox}>
@@ -261,7 +268,7 @@ const InquiryListScreen: React.FC<InquiryListScreenProps> = ({ dropdownRef }) =>
 
         <Accordion
           sectionContainerStyle={styles.list}
-          sections={qnaData}
+          sections={isLoading ? [] : qnaData}
           activeSections={activeSections}
           renderHeader={renderHeader}
           renderContent={renderContent}

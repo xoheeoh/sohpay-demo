@@ -7,10 +7,10 @@ import ViewShot, { type ViewShotRef } from 'react-native-view-shot';
 import { RootStackParamList } from '@typ/navigation';
 import { IMidInfo } from '@typ/paymentType';
 import { useDialog } from '@contexts/DialogContext';
-import { formatDateTime } from '@utils/formatter';
+import { formatDateTime, formatWon } from '@utils/formatter';
 import { loadMidInfo } from '@apis/commonApi';
 import { getBankName } from '@dt/bankCd';
-import { Badge, ScreenWrapper, Typography, getTrxTone } from '@components/common';
+import { Badge, ScreenWrapper, Typography, getTrxAmountColor, getTrxTone } from '@components/common';
 import { ChargeInfo, MidInfo, PaymentInfo } from '@components/uselist';
 import { theme } from '@styles';
 
@@ -213,10 +213,14 @@ const UseDetailScreen: React.FC<UseDetailScreenProps> = ({ route }) => {
 
             <Typography
               mode="heading1"
-              color={isStruck ? 'gray400' : getCd === 'CHRG' ? 'primary' : 'gray900'}
+              color={
+                isStruck
+                  ? 'gray400'
+                  : getTrxAmountColor(getCd === 'CHRG' ? 'charge' : getCd === 'RFND' ? 'refund' : 'pay')
+              }
               style={{ textDecorationLine: isStruck ? 'line-through' : 'none' }}>
               {sign}
-              {amount.toLocaleString('ko-KR')}원
+              {formatWon(amount)}
             </Typography>
 
             <Typography mode="caption1" color="gray400">

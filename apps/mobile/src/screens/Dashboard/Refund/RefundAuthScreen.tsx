@@ -14,6 +14,7 @@ import {
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
   BottomSheet,
   CheckBox,
+  InfoBox,
   KeyboardAwareScrollView,
   ScreenWrapper,
   TextField,
@@ -139,15 +140,9 @@ const RefundAuthScreen = ({ navigation, route }: RefundAuthScreenProps) => {
           />
 
           {/* 다음 단계 안내: 1원 인증이 처음인 사용자가 "다음"을 누르면 무슨 일이 생기는지 알 수 있게 */}
-          <View style={styles.infoBox}>
-            <View style={styles.infoIcon}>
-              <Icon source="information-outline" size={18} color={theme.colors.gray600} />
-            </View>
-            <Typography mode="caption1" color="gray600" style={{ flex: 1 }}>
-              다음을 누르면 입력한 계좌로 1원을 보내드려요. 입금자명에 적힌 숫자 3자리를 다음 화면에 입력하면 인증이
-              끝납니다.{'\n'}데모에서는 실제 입금 없이 인증번호가 화면에 안내됩니다.
-            </Typography>
-          </View>
+          <InfoBox>
+            {`다음을 누르면 입력한 계좌로 1원을 보내드려요. 입금자명에 적힌 숫자 3자리를 다음 화면에 입력하면 인증이 끝납니다.\n데모에서는 실제 입금 없이 인증번호가 화면에 안내됩니다.`}
+          </InfoBox>
         </View>
 
         <View style={styles.divider} />
@@ -210,17 +205,6 @@ const styles = StyleSheet.create({
   },
   divider: { backgroundColor: theme.colors.gray100, height: 1, marginHorizontal: 16 },
   iconButton: { margin: 0, width: 24, height: 24 },
-  // 안내 상자 (1:1 상담 답변중 안내 띠와 같은 톤)
-  infoBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-    padding: 14,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.gray50,
-  },
-  // 아이콘을 첫 줄 글자 높이(16)에 맞춰 가운데에 둔다
-  infoIcon: { height: 16, justifyContent: 'center' },
 });
 
 export default RefundAuthScreen;

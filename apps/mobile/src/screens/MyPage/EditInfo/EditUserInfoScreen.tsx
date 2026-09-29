@@ -149,7 +149,7 @@ const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigati
         ref={scrollViewRef}
         contentContainerStyle={[styles.container, { gap: 16, flexGrow: 1 }]}
         keyboardShouldPersistTaps="handled">
-        <Typography mode="subtitle2" color="gray900">
+        <Typography mode="heading3" color="gray900">
           회원정보 변경
         </Typography>
 

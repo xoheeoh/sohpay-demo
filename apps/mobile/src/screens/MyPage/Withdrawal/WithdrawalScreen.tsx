@@ -70,7 +70,7 @@ const WithdrawalScreen: React.FC<WithdrawalScreenProps> = ({ navigation }) => {
         keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}
         keyboardShouldPersistTaps="handled">
         <View style={{ gap: 12 }}>
-          <Typography mode="subtitle2" color="gray900">
+          <Typography mode="heading3" color="gray900">
             회원탈퇴
           </Typography>
           <Typography mode="body2" color="gray600">

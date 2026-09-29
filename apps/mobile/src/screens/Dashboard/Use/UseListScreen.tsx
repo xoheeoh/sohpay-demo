@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Divider } from 'react-native-paper';
+import { Divider, Icon } from 'react-native-paper';
 
 import type { RootStackParamList } from '@typ/navigation';
 import { TransactionListItem } from '@typ/paymentType';
 import { convertDateWithoutHypen, getDateMonthsAgo, getDateWithHypen, getOneWeekAgoDate } from '@utils/formatter';
 import { useDialog } from '@contexts/DialogContext';
 import { loadTransactionList } from '@apis/paymentApi';
-import { BottomSheet, Dropdown, PrimaryButton, ScreenWrapper, Typography } from '@components/common';
+import { BottomSheet, Dropdown, PrimaryButton, ScreenWrapper, SkeletonList, Typography } from '@components/common';
 import {
   ChargeComponent,
   GetCdModal,
@@ -18,7 +18,6 @@ import {
   UseComponent,
 } from '@components/uselist';
 import { theme } from '@styles';
-import { getAppWidth } from '@utils/dimensions';
 
 type UseListScreenProps = NativeStackScreenProps<RootStackParamList, 'UseList'>;
 
@@ -167,9 +166,6 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
     setDropdownKey3((prevKey) => prevKey + 1);
   }, [selectedTrxStCd]);
 
-  // 각 select box의 width값 정의
-  const selectWidth = (getAppWidth() - 64) / 3;
-
   /**
    * 조회 버튼을 클릭하면 이용내역 조회
    * 조회 데이터 및 페이지 상태관리
@@ -180,6 +176,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
   const [startIdx, setStartIdx] = useState(0); // 항목 시작 번호
   const [maxCount] = useState(10); // 한 번에 가져올 최대 항목 수
   const [isLoading, setIsLoading] = useState<boolean>(false); // 로딩 상태
+  const [isLoaded, setIsLoaded] = useState<boolean>(false); // 첫 조회가 한 번이라도 끝났는지 (끝나기 전엔 자리표시자)
   const [hasMore, setHasMore] = useState<boolean>(false); // 더 가져올 데이터 존재 여부
 
   // 상태값 관리
@@ -243,6 +240,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
       setHasMore(false);
     } finally {
       setIsLoading(false);
+      setIsLoaded(true);
     }
   };
 
@@ -264,12 +262,12 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
   const { alert } = useDialog();
 
   return (
-    <ScreenWrapper backgroundColor="white">
-      {/* 조회 옵션 설정 */}
-      <View style={styles.wrap}>
+    <ScreenWrapper backgroundColor={theme.colors.bg}>
+      {/* 조회 조건 카드: 기간 · 거래 종류 · 거래 상태 + 조회 버튼 (마이페이지·고객센터 카드와 같은 모양) */}
+      <View style={styles.filterCard}>
         <View style={styles.selectBox}>
           {/* 기간 선택 */}
-          <View style={{ width: selectWidth }}>
+          <View style={{ flex: 1 }}>
             <Dropdown
               key={`period-${dropdownKey1}`}
               size="md"
@@ -281,7 +279,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
           </View>
 
           {/* 거래 종류 선택 */}
-          <View style={{ width: selectWidth }}>
+          <View style={{ flex: 1 }}>
             <Dropdown
               key={`getCd-${dropdownKey2}`}
               size="md"
@@ -293,7 +291,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
           </View>
 
           {/* 거래 상태 선택 */}
-          <View style={{ width: selectWidth }}>
+          <View style={{ flex: 1 }}>
             <Dropdown
               key={`trxStCd-${dropdownKey3}`}
               size="md"
@@ -308,42 +306,60 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
         <PrimaryButton label={'조회'} onPress={handleLoadList} size={'lg'} />
       </View>
 
-      {/* 조회 결과 리스트 */}
-      <FlatList
-        contentContainerStyle={{ paddingHorizontal: 16 }}
-        data={listData}
-        keyExtractor={(item, index) => `${item.getCd}-${'tid' in item ? item.tid : item.rfndNo}-${index}`}
-        renderItem={({ item }) => {
-          // 화면 전체 조회 조건이 아니라 각 건의 종류(item.getCd)로 행 모양을 정한다 ("모두" 조회 시 섞여 있음)
-          if (item.getCd === 'USE') {
-            return <UseComponent getCd={item.getCd} item={item} />;
-          } else if (item.getCd === 'CHRG') {
-            return <ChargeComponent item={item} getCd={item.getCd} />;
-          } else {
-            return <RefundComponent item={item} getCd={item.getCd} />;
-          }
-        }}
-        ItemSeparatorComponent={() => <Divider style={{ backgroundColor: theme.colors.gray100 }} />}
-        ListFooterComponent={() =>
-          isLoading ? <ActivityIndicator size={'small'} color={theme.colors.primary} /> : null
-        }
-        ListEmptyComponent={() =>
-          isLoading ? null : (
-            <View style={styles.empty}>
-              <Typography mode="body2" color="gray500">
-                데이터가 존재하지 않습니다.
-              </Typography>
-            </View>
-          )
-        }
-        onEndReached={() => {
-          // 빈 리스트에서도 onEndReached가 호출되며, setTimeout으로 예약된 fetch가
-          // stale closure로 첫 페이지를 한 번 더 이어붙이는 경우가 있어 초기 조회 중에는 막음
-          if (listData.length === 0) return;
-          loadMore();
-        }}
-        onEndReachedThreshold={0.1}
-      />
+      {/* 조회 결과 카드: 남은 높이를 다 쓰고 목록만 안에서 스크롤된다 */}
+      <View style={styles.listCard}>
+        {!isLoaded ? (
+          // 첫 조회가 끝나기 전에는 "없음" 문구 대신 자리표시자를 보여준다 (깜빡임 방지)
+          <View style={styles.listInner}>
+            <SkeletonList rows={5} />
+          </View>
+        ) : (
+          <FlatList
+            style={{ flex: 1 }}
+            contentContainerStyle={[styles.listInner, { flexGrow: 1 }]}
+            data={listData}
+            keyExtractor={(item, index) => `${item.getCd}-${'tid' in item ? item.tid : item.rfndNo}-${index}`}
+            renderItem={({ item }) => {
+              // 화면 전체 조회 조건이 아니라 각 건의 종류(item.getCd)로 행 모양을 정한다 ("모두" 조회 시 섞여 있음)
+              if (item.getCd === 'USE') {
+                return <UseComponent getCd={item.getCd} item={item} />;
+              } else if (item.getCd === 'CHRG') {
+                return <ChargeComponent item={item} getCd={item.getCd} />;
+              } else {
+                return <RefundComponent item={item} getCd={item.getCd} />;
+              }
+            }}
+            ItemSeparatorComponent={() => <Divider style={{ backgroundColor: theme.colors.gray100 }} />}
+            ListFooterComponent={() =>
+              isLoading && listData.length > 0 ? (
+                <ActivityIndicator size={'small'} color={theme.colors.primary} style={{ paddingVertical: 16 }} />
+              ) : null
+            }
+            ListEmptyComponent={() =>
+              isLoading ? (
+                <SkeletonList rows={5} />
+              ) : (
+                // 비어 있을 때: 다른 목록 화면과 같은 아이콘 + 문구, 카드 세로 가운데
+                <View style={styles.empty}>
+                  <View style={styles.emptyIcon}>
+                    <Icon source="receipt-text-outline" size={20} color={theme.colors.primary} />
+                  </View>
+                  <Typography mode="body2" color="gray500">
+                    조회 조건에 맞는 이용 내역이 없어요.
+                  </Typography>
+                </View>
+              )
+            }
+            onEndReached={() => {
+              // 빈 리스트에서도 onEndReached가 호출되며, setTimeout으로 예약된 fetch가
+              // stale closure로 첫 페이지를 한 번 더 이어붙이는 경우가 있어 초기 조회 중에는 막음
+              if (listData.length === 0) return;
+              loadMore();
+            }}
+            onEndReachedThreshold={0.1}
+          />
+        )}
+      </View>
 
       {/* 기간 선택 모달 */}
       <BottomSheet
@@ -393,10 +409,39 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
   );
 };
 
+// 마이페이지·고객센터 화면과 같은 카드 모양
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 20, gap: 16 },
+  filterCard: {
+    marginHorizontal: 16,
+    marginTop: 24,
+    padding: 16,
+    gap: 16,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.lg,
+    boxShadow: theme.shadow.card,
+  },
   selectBox: { flexDirection: 'row', gap: 16, alignItems: 'center', justifyContent: 'flex-start' },
-  empty: { alignItems: 'center', paddingVertical: 48 },
+  listCard: {
+    flex: 1,
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 24,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.lg,
+    boxShadow: theme.shadow.card,
+    overflow: 'hidden',
+  },
+  listInner: { paddingHorizontal: 16 },
+  // 비어 있을 때: 늘어난 내용 영역의 세로 가운데에 아이콘·문구를 둔다 (홈 최근 내역과 같은 모양)
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, paddingVertical: 40 },
+  emptyIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: theme.colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
 
 export default UseListScreen;

@@ -5,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import type { RootStackParamList } from '@typ/navigation';
 import { getBankName } from '@dt/bankCd';
-import { formatDateTime, getTodayDateTime, maskAccountNumber } from '@utils/formatter';
+import { formatDateTime, formatWon, getTodayDateTime, maskAccountNumber } from '@utils/formatter';
 import { GlassReceiptCard, GlassReceiptRow } from '@components/dashboard';
 import {
   BottomBtnBox,
@@ -24,9 +24,6 @@ type RefundSucScreenProps = NativeStackScreenProps<RootStackParamList, 'RefundSu
  * 하단 버튼 상자는 화면 위에 떠 있어 스크롤 영역이 그 뒤까지 이어지므로, 그냥 가운데 정렬하면 아래로 치우쳐 보인다.
  */
 const CENTERING_EXTRA_BOTTOM_PADDING = BOTTOM_BTN_BOX_HEIGHT - BOTTOM_BTN_BOX_KEYBOARD_INSET + 24;
-
-/** 금액 숫자를 '145,500' 처럼 천 단위 콤마 문자열로 */
-const formatAmount = (value: string | number) => Number(value).toLocaleString('ko-KR');
 
 const RefundSucScreen: React.FC<RefundSucScreenProps> = ({ navigation, route }) => {
   // 이전 화면에서 얻어온 출금 상세 정보와 출금 계좌
@@ -59,7 +56,7 @@ const RefundSucScreen: React.FC<RefundSucScreenProps> = ({ navigation, route }) 
     ...(acnt?.rfndAcntNo && acnt.rfndBankCd
       ? [{ label: '출금 계좌', value: `${getBankName(acnt.rfndBankCd)} ${maskAccountNumber(acnt.rfndAcntNo)}` }]
       : []),
-    { label: '출금 후 잔액', value: `${formatAmount(data.ppRmnAmt)} 원` },
+    { label: '출금 후 잔액', value: formatWon(data.ppRmnAmt) },
     { label: '요청일시', value: formatDateTime(getTodayDateTime()) },
   ];
 

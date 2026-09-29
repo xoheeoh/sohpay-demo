@@ -2,8 +2,8 @@ import type { RootStackParamList } from '@typ/navigation';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { Icon } from 'react-native-paper';
-import { Badge, Typography, getTrxTone } from '@components/common';
-import { formatDateTime } from '@utils/formatter';
+import { Badge, Typography, getTrxAmountColor, getTrxTone } from '@components/common';
+import { formatDateTime, formatWon } from '@utils/formatter';
 import { getBankName } from '@dt/bankCd';
 import { IRefundList } from '@typ/paymentType';
 import { layout, theme } from '@styles';
@@ -39,8 +39,8 @@ const RefundComponent: React.FC<RefundComponentProps> = ({ item, getCd }) => {
 
       {/* 우측: 금액 */}
       <View style={styles.amountBox}>
-        <Typography mode="subtitle1" color="gray900">
-          - {item.rfndAmt.toLocaleString('kr-KR')}원
+        <Typography mode="subtitle1" color={getTrxAmountColor('refund')}>
+          - {formatWon(item.rfndAmt)}
         </Typography>
       </View>
 

@@ -10,6 +10,7 @@ import {
   BottomBtnBox,
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
   CheckBox,
+  InfoBox,
   KeyboardAwareScrollView,
   ScreenWrapper,
   Typography,
@@ -112,12 +113,7 @@ const WithdrawalAgrScreen: React.FC<WithdrawalAgrScreenProps> = ({ navigation, r
           </View>
 
           {/* 잔액 조건: 서버가 잔액이 남아 있으면 탈퇴를 거절하므로 미리 알려준다 */}
-          <View style={[layout.rowCenter, styles.noticeStrip]}>
-            <Icon source="information-outline" size={16} color={theme.colors.yellow700} />
-            <Typography mode="caption1" color="gray600" style={{ flex: 1 }}>
-              잔액이 남아 있으면 탈퇴할 수 없어요. 먼저 잔액을 모두 출금해 주세요.
-            </Typography>
-          </View>
+          <InfoBox tone="yellow">잔액이 남아 있으면 탈퇴할 수 없어요. 먼저 잔액을 모두 출금해 주세요.</InfoBox>
         </View>
 
         {/* 동의 체크: 카드 밖 회색 배경 위에 둔다 */}
@@ -169,13 +165,6 @@ const styles = StyleSheet.create({
   deletedRow: { gap: 10, paddingVertical: 12 },
   deletedRowDivider: { borderTopWidth: 1, borderTopColor: theme.colors.gray100 },
   deletedLabel: { width: 64 },
-  noticeStrip: {
-    gap: 8,
-    backgroundColor: theme.colors.yellow50,
-    borderRadius: theme.radius.md,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
 });
 
 export default WithdrawalAgrScreen;

@@ -6,7 +6,7 @@ import { Icon } from 'react-native-paper';
 import { RootStackParamList } from '@typ/navigation';
 import { useDialog } from '@contexts/DialogContext';
 import { loadUserAmt } from '@apis/commonApi';
-import { formatDateTime } from '@utils/formatter';
+import { formatDateTime, formatWon } from '@utils/formatter';
 import {
   BottomBtnBox,
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
@@ -98,7 +98,7 @@ const CodeInfoScreen: React.FC<CodeInfoScreenProps> = ({ navigation, route }) =>
               <Skeleton width={88} height={14} />
             ) : (
               <Typography mode="subtitle3" color={canPay ? 'gray900' : 'red500'}>
-                {formatAmount(balance - goodsAmt)} 원
+                {formatWon(balance - goodsAmt)}
               </Typography>
             )}
           </View>
@@ -112,8 +112,8 @@ const CodeInfoScreen: React.FC<CodeInfoScreenProps> = ({ navigation, route }) =>
 
           <View style={{ gap: 14 }}>
             <InfoRow label="상품명" value={data.goodsNm} />
-            <InfoRow label="공급가액" value={`${formatAmount(data.goodsSplAmt)} 원`} />
-            <InfoRow label="부가세" value={`${formatAmount(data.goodsVat)} 원`} />
+            <InfoRow label="공급가액" value={formatWon(data.goodsSplAmt)} />
+            <InfoRow label="부가세" value={formatWon(data.goodsVat)} />
             <InfoRow label="가맹점 번호" value={data.mid} />
             <InfoRow label="요청일시" value={formatDateTime(`${data.reqDt}${data.reqTm}`)} />
           </View>
