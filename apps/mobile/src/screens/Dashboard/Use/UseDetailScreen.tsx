@@ -97,6 +97,16 @@ const UseDetailScreen: React.FC<UseDetailScreenProps> = ({ route }) => {
 
   // 다운로드 아이콘 클릭
   const handleSave = async () => {
+    // 웹에는 갤러리가 없어 저장을 지원하지 않는다. 전에는 아무 반응이 없어 고장처럼 보였으므로 안내를 띄운다
+    if (Platform.OS === 'web') {
+      alert({
+        title: '앱에서 이용할 수 있어요',
+        message1: '이미지 저장은 iOS·Android 앱에서만 지원합니다.',
+        message2: '웹에서는 화면 캡처 기능을 이용해 주세요.',
+      });
+      return;
+    }
+
     try {
       const hasPermission = await ensureGalleryPermission();
       if (!hasPermission) return;
