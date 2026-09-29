@@ -129,15 +129,19 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             </View>
           </Pressable>
 
-          {/* 리스트 */}
+          {/* 리스트. 카드가 남은 높이를 다 쓰므로, 비어 있을 때 안내가 카드 세로 가운데에 오도록 내용 영역도 늘린다 */}
           <FlatList
+            style={{ flex: 1 }}
             data={useList ? useList.slice(0, visibleCount) : []}
             renderItem={renderTransactionItem}
             keyExtractor={(item, index) => `${index}`}
             scrollEnabled={false}
-            contentContainerStyle={{ paddingBottom: 8 }}
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: 8 }}
             ListEmptyComponent={() => (
               <View style={styles.empty}>
+                <View style={styles.emptyIcon}>
+                  <Icon source="receipt-text-outline" size={20} color={theme.colors.primary} />
+                </View>
                 <Typography mode="body2" color="gray500">
                   최근 이용 내역이 없습니다.
                 </Typography>
@@ -168,9 +172,17 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: Platform.OS === 'android' ? 24 : 16, gap: 16 },
+  // flexGrow: 내용이 화면보다 짧을 때 남는 높이를 아래 카드가 채우도록 (길면 평소처럼 스크롤)
+  wrap: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: Platform.OS === 'android' ? 24 : 16,
+    gap: 16,
+    flexGrow: 1,
+  },
   icon: { width: 20, height: 20 },
   recentList: {
+    flex: 1, // 화면 아래까지 늘어나 홈이 항상 꽉 찬 모습이 되게
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.xl,
     boxShadow: theme.shadow.card,
@@ -192,7 +204,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   separator: { backgroundColor: theme.colors.gray100, marginHorizontal: 16 },
-  empty: { paddingHorizontal: 16, paddingVertical: 24, alignItems: 'center' },
+  // 비어 있을 때: 늘어난 내용 영역의 세로 가운데에 아이콘·문구를 둔다 (다른 화면의 빈 상태와 같은 모양)
+  empty: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  emptyIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: theme.colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   more: {
     flexDirection: 'row',
     alignItems: 'center',
