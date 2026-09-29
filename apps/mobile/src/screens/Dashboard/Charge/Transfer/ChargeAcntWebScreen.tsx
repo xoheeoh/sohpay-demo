@@ -48,7 +48,8 @@ const ChargeAcntWebScreen: React.FC<ChargeAcntWebScreenProps> = ({ navigation, r
       isResultHandledRef.current = true;
 
       if (success) {
-        navigation.navigate('ChargeSuc', { chargeAmt });
+        // 결제창 화면을 완료 화면으로 갈아치운다. 끝난 결제창이 스택에 남아 뒤로가기로 돌아가지 못하게 하기 위함
+        navigation.replace('ChargeSuc', { chargeAmt });
         return;
       }
 

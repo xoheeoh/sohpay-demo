@@ -120,7 +120,7 @@ const TransferAcntInputScreen = ({ navigation, route }: TransferAcntInputScreenP
               icon="chevron-right"
               size={24}
               iconColor={theme.colors.gray600}
-              onPress={() => navigation.navigate('TermContent', { flg: 0, title: '개인(신용)정보 제3자 제공 동의' })}
+              onPress={() => navigation.navigate('TermContent', { flg: 4, title: '개인(신용)정보 제3자 제공 동의' })}
               style={styles.iconButton}
             />
           </View>

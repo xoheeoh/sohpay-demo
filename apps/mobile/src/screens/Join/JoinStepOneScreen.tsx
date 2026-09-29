@@ -69,11 +69,11 @@ const JoinStepOneScreen: React.FC<JoinStepOneScreenProps> = ({ navigation }) => 
     navigation.navigate('JoinTwo');
   };
 
-  // 약관 목록
+  // 약관 목록. flg 는 약관 상세 화면(TermContent)이 여는 본문 번호로, 마이페이지 약관 목록 순서(0 서비스, 1 전자금융, 2 개인정보 수집, 3 처리방침, 4 제3자, 5 광고)를 따른다
   const termList = [
-    { title: '서비스 이용약관' },
-    { title: '개인(신용)정보 수집 및 이용 동의' },
-    { title: '이메일 및 SMS 광고성 정보 수신 동의' },
+    { title: '서비스 이용약관', flg: 0 },
+    { title: '개인(신용)정보 수집 및 이용 동의', flg: 2 },
+    { title: '이메일 및 SMS 광고성 정보 수신 동의', flg: 5 },
   ];
 
   return (
@@ -149,7 +149,7 @@ const JoinStepOneScreen: React.FC<JoinStepOneScreenProps> = ({ navigation }) => 
                   icon="chevron-right"
                   size={24}
                   iconColor={theme.colors.gray600}
-                  onPress={() => navigation.navigate('TermContent', { flg: 0, title: termList[0].title })}
+                  onPress={() => navigation.navigate('TermContent', { flg: termList[0].flg, title: termList[0].title })}
                   style={styles.iconButton}
                 />
               </View>
@@ -172,7 +172,7 @@ const JoinStepOneScreen: React.FC<JoinStepOneScreenProps> = ({ navigation }) => 
                   icon="chevron-right"
                   size={24}
                   iconColor={theme.colors.gray600}
-                  onPress={() => navigation.navigate('TermContent', { flg: 1, title: termList[1].title })}
+                  onPress={() => navigation.navigate('TermContent', { flg: termList[1].flg, title: termList[1].title })}
                   style={styles.iconButton}
                 />
               </View>
@@ -195,7 +195,7 @@ const JoinStepOneScreen: React.FC<JoinStepOneScreenProps> = ({ navigation }) => 
                   icon="chevron-right"
                   size={24}
                   iconColor={theme.colors.gray600}
-                  onPress={() => navigation.navigate('TermContent', { flg: 2, title: termList[2].title })}
+                  onPress={() => navigation.navigate('TermContent', { flg: termList[2].flg, title: termList[2].title })}
                   style={styles.iconButton}
                 />
               </View>

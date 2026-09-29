@@ -36,6 +36,19 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
   const { alert, confirm } = useDialog();
 
   /**
+   * 마이페이지가 회원 정보를 아직 못 받았거나(조회 중·세션 만료) 실패한 채로 들어오면 usrData 가 null 이다.
+   * 그대로 진행하면 usrData.usrNm 접근에서 앱이 죽으므로 안내 후 돌려보낸다.
+   */
+  useEffect(() => {
+    if (usrData) return;
+    alert({
+      title: '회원 정보 없음',
+      message1: '회원 정보를 불러오지 못했습니다.',
+      message2: '잠시 후 다시 시도해 주세요.',
+    }).then(() => navigation.goBack());
+  }, [usrData, alert, navigation]);
+
+  /**
    * 패스워드 입력 후 일치하면 다음 화면으로 이동
    * 패스워드 값이 입력되어야 다음 버튼 활성화
    * 패스워드 불일치 시, 실패 모달창 노출
@@ -51,12 +64,13 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
   const verifiedPwdRef = useRef<string>('');
 
   const handleChkPwd = () => {
+    if (!usrData) return;
     checkUsrPwd(pwd).then((data) => {
       if (data.resultCd === '0000') {
         // 비밀번호 검증 성공
         if (flg === 'usrInfo') {
           navigation.navigate('EditInfo', {
-            usrData: usrData!,
+            usrData,
             pwd: pwd,
           }); // 정보 변경 상세화면으로 이동
 
@@ -140,10 +154,10 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
   // certData가 업데이트 되었을 때 memberAuthKey 얻기
   useEffect(() => {
     const checkAuthName = async () => {
-      if (!certData) return;
+      if (!certData || !usrData) return;
 
       // 본인 인증 결과 확인
-      const data = await handleCertifyResult(usrData!.usrNm, certData);
+      const data = await handleCertifyResult(usrData.usrNm, certData);
 
       if (data.resultCd === '0000') {
         // 본인인증 정보와 계정 정보가 같음
@@ -154,7 +168,7 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
         }).then((ok) => {
           if (ok) {
             navigation.navigate('EditPinNo', {
-              usrData: usrData!,
+              usrData,
               pwd: verifiedPwdRef.current, // 입력칸(pwd)은 이미 비워졌으므로 보관해 둔 값을 넘긴다
             }); // 핀 번호 입력 화면으로 이동
             verifiedPwdRef.current = '';
@@ -175,7 +189,7 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
     };
 
     checkAuthName();
-  }, [certData, usrData!.usrNm]);
+  }, [certData, usrData]);
 
   return (
     <ScreenWrapper backgroundColor="white" keyboardBottomInset={BOTTOM_BTN_BOX_KEYBOARD_INSET}>

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { BackHandler, StyleSheet, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '@typ/navigation';
@@ -31,6 +32,29 @@ const formatAmount = (value: string | number) => Number(value).toLocaleString('k
 const ChargeSucScreen: React.FC<ChargeSucScreenProps> = ({ navigation, route }) => {
   // 이전 화면에서 얻어온 충전금액 파라미터
   const { chargeAmt } = route.params;
+
+  // 완료 화면에서 뒤로 가면 PIN 입력으로 돌아가 다시 충전할 수 있으므로 막는다 (결제·출금 완료 화면과 같은 처리)
+  useFocusEffect(
+    useCallback(() => {
+      navigation.setOptions({
+        gestureEnabled: false, // 제스처 뒤로가기 방지
+      });
+
+      const backAction = () => {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Dashboard' }], // 무조건 'Dashboard' 화면으로 이동
+        });
+        return true;
+      };
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', backAction);
+
+      return () => {
+        subscription.remove();
+      };
+    }, [navigation]),
+  );
 
   // 충전 후 잔액 조회 (null: 아직 조회 전 → 카드에는 자리표시자가 보인다)
   const [balanceAfter, setBalanceAfter] = useState<number | null>(null);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -8,6 +8,7 @@ import type { RootStackParamList } from '@typ/navigation';
 import { useDialog } from '@contexts/DialogContext';
 import { goBackToDashboard } from '@utils/navigationHelpers';
 import { chkPinNum } from '@apis/usrApi';
+import { newIdempotencyKey } from '@apis/client';
 import { requestRefundAcnt } from '@apis/paymentApi';
 import { PinPad, ScreenWrapper, Typography } from '@components/common';
 
@@ -22,6 +23,16 @@ const PinPayRefundScreen: React.FC<PinPayRefundScreenProps> = ({ navigation, rou
 
   // Dialog
   const { confirm } = useDialog();
+
+  /**
+   * 중복 방지 키(같은 요청이 두 번 와도 서버가 한 번만 처리하게 해 주는 표식).
+   * 이 화면에 들어올 때 한 번 만들어 두고, PIN 을 다시 입력해도 같은 값을 보낸다.
+   * 그래야 응답을 기다리는 동안 다시 입력해도 출금이 두 번 실행되지 않는다.
+   */
+  const idempotencyKeyRef = useRef<string>(newIdempotencyKey());
+
+  // 출금 요청이 진행 중인 동안은 키패드 입력을 받지 않는다
+  const isSubmittingRef = useRef(false);
 
   /**
    * dot 관련 설정
@@ -54,6 +65,7 @@ const PinPayRefundScreen: React.FC<PinPayRefundScreenProps> = ({ navigation, rou
 
   // 숫자 클릭 핸들러
   const handleKeyPress = (num: number) => {
+    if (isSubmittingRef.current) return;
     if (inputCount < 6) {
       const newDots = [...dots];
       newDots[inputCount] = true; // dot 활성화
@@ -65,6 +77,7 @@ const PinPayRefundScreen: React.FC<PinPayRefundScreenProps> = ({ navigation, rou
 
   // 삭제 버튼 핸들러
   const handleDelete = () => {
+    if (isSubmittingRef.current) return;
     if (inputCount > 0) {
       const newDots = [...dots];
       newDots[inputCount - 1] = false; // dot 비활성화
@@ -98,6 +111,8 @@ const PinPayRefundScreen: React.FC<PinPayRefundScreenProps> = ({ navigation, rou
       setDots(Array(6).fill(false));
       setInputCount(0);
       setEnteredNumbers([]);
+      isSubmittingRef.current = false;
+      idempotencyKeyRef.current = newIdempotencyKey(); // 새로 들어온 출금은 새 요청이므로 키도 새로 만든다
     }, []),
   );
 
@@ -114,14 +129,21 @@ const PinPayRefundScreen: React.FC<PinPayRefundScreenProps> = ({ navigation, rou
     if (enteredNumbers.length === 6) {
       const finalNumber = enteredNumbers.join('');
 
+      if (isSubmittingRef.current) return;
+      isSubmittingRef.current = true;
+
       chkPinNum(finalNumber, 'RFND').then((data) => {
         // 화면이 포커스되어 있지 않으면 처리하지 않음
         if (!isFocused) return;
 
         if (data.resultCd === '0000') {
           // 핀 번호 일치
-          handleRequestRfnd(finalNumber, data.nonce);
-        } else if (data.resultCd === '9004') {
+          handleRequestRfnd(finalNumber);
+          return; // 출금 요청이 끝날 때까지 입력 잠금 유지
+        }
+
+        isSubmittingRef.current = false;
+        if (data.resultCd === '9004') {
           // 핀 번호 5회 이상 오류
           setExceed(true);
           console.log('핀 번호 불일치!', data.resultMsg);
@@ -164,9 +186,10 @@ const PinPayRefundScreen: React.FC<PinPayRefundScreenProps> = ({ navigation, rou
   }, [error, exceed]);
 
   // 출금 요청
-  const handleRequestRfnd = async (finalNumber: string, nonce: string) => {
-    requestRefundAcnt(refundAmt.toString(), finalNumber, nonce).then((data) => {
+  const handleRequestRfnd = async (finalNumber: string) => {
+    requestRefundAcnt(refundAmt.toString(), finalNumber, idempotencyKeyRef.current).then((data) => {
       console.log('출금 요청 결과:', data);
+      isSubmittingRef.current = false;
 
       if (data.resultCd === '0000') {
         // 출금 요청 성공!
