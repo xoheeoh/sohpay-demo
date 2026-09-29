@@ -45,13 +45,17 @@ export function shell(title: string, badge: string, body: string) {
   label { display:block; font-size:12px; color:var(--muted); margin:14px 0 6px; }
   input { width:100%; padding:15px 16px; font-size:16px; border:1px solid var(--line); border-radius:12px;
           background:var(--bg); color:var(--fg); font-family:inherit; }
+  /* 자리표시자는 입력값과 구분되도록 연하게 (앱 입력칸의 placeholder 색 gray300 과 같은 값) */
+  input::placeholder { color:#AEB5C2; opacity:1; }
   input:focus { outline:none; border:1.5px solid var(--brand); background:#fff; }
 
   .actions { display:flex; flex-direction:column; gap:10px; margin-top:20px; }
+  /* 기본 버튼: 글자 가운데 정렬 (본인인증 "인증 완료", 결과 화면 "앱으로 돌아가기" 등) */
   button { width:100%; min-height:56px; padding:12px 16px; font-size:16px; font-weight:600; border-radius:12px; border:0;
-           cursor:pointer; font-family:inherit; text-align:left; display:flex; flex-direction:column; justify-content:center;
-           gap:2px; letter-spacing:-.01em; }
-  button.center { text-align:center; align-items:center; }
+           cursor:pointer; font-family:inherit; text-align:center; display:flex; flex-direction:column; justify-content:center;
+           align-items:center; gap:2px; letter-spacing:-.01em; }
+  /* 설명 줄(small)이 딸린 버튼: 제목·설명을 왼쪽에 맞춘다 (결제창의 승인/거절/취소) */
+  button.detail { text-align:left; align-items:flex-start; }
   button small { display:block; font-size:12px; font-weight:500; line-height:16px; opacity:.85; }
   button.primary { background:var(--brand); color:#fff; }
   button.primary:active { background:var(--brand-dark); }

@@ -29,7 +29,7 @@ function errorPage(message: string) {
       '결제창 오류',
       '모의 결제창',
       `<h1>결제창을 열 수 없습니다</h1><p class="sub">${esc(message)}</p>
-       <div class="actions"><button class="ghost center" onclick="location.href='${DEEP_LINK}charge/result?status=ERROR'">앱으로 돌아가기</button></div>`
+       <div class="actions"><button class="ghost" onclick="location.href='${DEEP_LINK}charge/result?status=ERROR'">앱으로 돌아가기</button></div>`
     ),
     400
   );
@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
         '결제 완료',
         '모의 결제창',
         `<h1>이미 처리된 거래입니다</h1><p class="sub">상태: ${esc(trx.status)}</p>
-         <div class="actions"><button class="primary center" onclick="location.href='${DEEP_LINK}charge/result?tx=${esc(tx)}&status=${esc(trx.status)}'">앱으로 돌아가기</button></div>`
+         <div class="actions"><button class="primary" onclick="location.href='${DEEP_LINK}charge/result?tx=${esc(tx)}&status=${esc(trx.status)}'">앱으로 돌아가기</button></div>`
       )
     );
   }
@@ -125,9 +125,9 @@ Deno.serve(async (req) => {
          <div class="row"><dt>주문번호</dt><dd>${esc(trx.order_no)}</dd></div>
        </dl>
        <form method="post" class="actions" action="${esc(checkoutUrl)}">
-         <button class="primary" name="action" value="approve">결제 승인<small>충전 금액이 앱 잔액에 바로 반영됩니다</small></button>
-         <button class="danger"  name="action" value="decline">승인 거절<small>결제대행사가 거절한 상황을 재현합니다 (한도 초과 등)</small></button>
-         <button class="ghost"   name="action" value="cancel">결제 취소<small>사용자가 결제창을 닫은 상황을 재현합니다</small></button>
+         <button class="primary detail" name="action" value="approve">결제 승인<small>충전 금액이 앱 잔액에 바로 반영됩니다</small></button>
+         <button class="danger detail"  name="action" value="decline">승인 거절<small>결제대행사가 거절한 상황을 재현합니다 (한도 초과 등)</small></button>
+         <button class="ghost detail"   name="action" value="cancel">결제 취소<small>사용자가 결제창을 닫은 상황을 재현합니다</small></button>
        </form>`
     )
   );
