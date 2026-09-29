@@ -1,18 +1,26 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Animated, Easing, Image, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { Divider, Icon } from 'react-native-paper';
+import { Icon } from 'react-native-paper';
 
 import type { RootStackParamList } from '@typ/navigation';
 import { IUserProfile } from '@typ/userType';
+import { IRmnAmt } from '@typ/paymentType';
 import { removeData, removeEncryptedToken } from '@storages/asyncStorage';
-import { loadUsrInfoData } from '@apis/commonApi';
-import { PopupModal, ScreenWrapper, Typography } from '@components/common';
+import { loadUserAmt, loadUsrInfoData } from '@apis/commonApi';
+import { PopupModal, ScreenWrapper, Skeleton, Typography } from '@components/common';
 import { layout, theme } from '@styles';
 import { getAppWidth } from '@utils/dimensions';
 
 type MyPageScreenProps = NativeStackScreenProps<RootStackParamList, 'MyPage'>;
+
+/** 메뉴 한 줄 */
+interface MenuItem {
+  icon: string;
+  label: string;
+  onPress: () => void;
+}
 
 const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
   /**
@@ -20,6 +28,9 @@ const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
    * 조회 결과 상태관리
    */
   const [usrData, setUsrData] = useState<IUserProfile | null>(null);
+
+  // 보유 잔액 (null: 아직 조회 전 → 프로필 카드의 잔액 자리에 자리표시자가 보인다)
+  const [rmnAmtData, setRmnAmtData] = useState<IRmnAmt | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -30,6 +41,12 @@ const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
           setUsrData(data);
         } else {
           console.log('사용자 정보 조회 실패!', data.resultMsg);
+        }
+      });
+
+      loadUserAmt().then((data) => {
+        if (data.resultCd === '0000') {
+          setRmnAmtData(data);
         }
       });
     }, [navigation]),
@@ -58,7 +75,8 @@ const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
    * 값 0 = 오른쪽 화면 밖, 1 = 제자리
    */
   const isWeb = Platform.OS === 'web';
-  const slideInProgress = useRef(new Animated.Value(isWeb ? 0 : 1)).current;
+  // 애니메이션 값은 한 번만 만들어 재사용한다 (렌더 중 ref 를 읽지 말라는 lint 규칙 때문에 useRef 대신 useState 초기화 함수를 쓴다)
+  const [slideInProgress] = useState(() => new Animated.Value(isWeb ? 0 : 1));
 
   useEffect(() => {
     if (!isWeb) return;
@@ -77,144 +95,134 @@ const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
       }
     : undefined;
 
+  /**
+   * 메뉴 구성. 항목이 하나뿐이던 계좌관리 섹션은 "계정" 으로 합쳐 카드 수를 줄였다.
+   * 줄마다 아이콘을 두어 고객센터 화면·최근 만든 카드들과 같은 인상을 준다.
+   */
+  const sections: { title: string; items: MenuItem[] }[] = [
+    {
+      title: '계정',
+      items: [
+        {
+          icon: 'account-edit-outline',
+          label: '회원정보 변경',
+          onPress: () => navigation.navigate('EditCheck', { usrData: usrData, flg: 'usrInfo' }),
+        },
+        {
+          icon: 'lock-outline',
+          label: '간편 비밀번호 변경',
+          onPress: () => navigation.navigate('EditCheck', { usrData: usrData, flg: 'pinNo' }),
+        },
+        { icon: 'bank-outline', label: '계좌관리', onPress: () => navigation.navigate('AcntManage') },
+      ],
+    },
+    {
+      title: '이용내역',
+      items: [{ icon: 'receipt-text-outline', label: '이용내역 조회', onPress: () => navigation.navigate('UseList') }],
+    },
+    {
+      title: '고객지원',
+      items: [
+        { icon: 'file-document-outline', label: '이용약관', onPress: () => navigation.navigate('TermList') },
+        { icon: 'headset', label: '고객센터', onPress: () => navigation.navigate('Service') },
+        { icon: 'cog-outline', label: '설정', onPress: () => navigation.navigate('Setting') },
+      ],
+    },
+  ];
+
   return (
     <Animated.View style={[{ flex: 1 }, slideInStyle]}>
       <ScreenWrapper backgroundColor={theme.colors.bg} topComponent={false}>
         <ScrollView contentContainerStyle={styles.wrap}>
-          {/* 사용자 프로필 */}
-          <View style={styles.profile}>
-            <Image source={require('@images/non_profile.png')} style={{ width: 56, height: 56 }} resizeMode="cover" />
+          {/* 프로필 카드: 회원정보 화면의 프로필 카드와 같은 모양. 아래 띠에 보유 잔액을 함께 보여준다 */}
+          <View style={styles.card}>
+            <View style={[layout.rowCenter, { gap: 14 }]}>
+              <Image source={require('@images/non_profile.png')} style={styles.avatar} resizeMode="cover" />
 
-            <View>
-              <Typography mode="heading2" color="gray900">
-                {usrData?.usrNm} 님
-              </Typography>
+              <View style={{ flex: 1, gap: 2 }}>
+                <Typography mode="heading3" color="gray900" numberOfLines={1}>
+                  {usrData?.usrNm ? `${usrData.usrNm} 님` : ' '}
+                </Typography>
+                <Typography mode="body2" color="gray500" numberOfLines={1}>
+                  {usrData?.mbUid ?? ' '}
+                </Typography>
+              </View>
 
               <Pressable
-                style={({ pressed }) => [styles.textButton, pressed && { opacity: 0.5 }]}
+                accessibilityRole="button"
+                hitSlop={4}
+                style={({ pressed }) => [layout.rowCenter, { gap: 2 }, pressed && { opacity: 0.5 }]}
                 onPress={() => navigation.navigate('UsrInfo', { usrData: usrData })}>
-                <Typography mode="body2" color="gray500">
+                <Typography mode="subtitle3" color="blue500">
                   회원정보
                 </Typography>
-                <Icon source="chevron-right" size={16} color={theme.colors.gray400} />
+                <Icon source="chevron-right" size={18} color={theme.colors.blue500} />
               </Pressable>
+            </View>
+
+            <View style={[layout.rowBetween, styles.balanceStrip]}>
+              <View style={[layout.rowCenter, { gap: 6 }]}>
+                <Icon source="wallet-outline" size={16} color={theme.colors.gray500} />
+                <Typography mode="body2" color="gray600">
+                  보유 잔액
+                </Typography>
+              </View>
+              {rmnAmtData === null ? (
+                <Skeleton width={88} height={14} />
+              ) : (
+                <Typography mode="subtitle3" color="gray900">
+                  {Number(rmnAmtData.sumPpRmnAmt).toLocaleString('ko-KR')} 원
+                </Typography>
+              )}
             </View>
           </View>
 
-          {/* 계정관리 메뉴 */}
-          <View style={styles.section}>
-            <Typography mode="subtitle3" color="gray500" style={styles.sectionTitle}>
-              계정관리
-            </Typography>
+          {/* 메뉴 섹션 */}
+          {sections.map((section) => (
+            <View key={section.title} style={styles.section}>
+              <Typography mode="subtitle3" color="gray500" style={styles.sectionTitle}>
+                {section.title}
+              </Typography>
 
-            <View style={styles.listMenu}>
-              <Pressable
-                style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
-                onPress={() => navigation.navigate('EditCheck', { usrData: usrData, flg: 'usrInfo' })}>
-                <Typography mode="subtitle2" color="gray900">
-                  회원정보 변경
-                </Typography>
-                <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
-              </Pressable>
-
-              <Divider style={{ backgroundColor: theme.colors.gray100, marginHorizontal: 18 }} />
-
-              <Pressable
-                style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
-                onPress={() => navigation.navigate('EditCheck', { usrData: usrData, flg: 'pinNo' })}>
-                <Typography mode="subtitle2" color="gray900">
-                  간편 비밀번호 변경
-                </Typography>
-                <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
-              </Pressable>
+              <View style={styles.listMenu}>
+                {section.items.map((item, index) => (
+                  <Pressable
+                    key={item.label}
+                    style={({ pressed }) => [
+                      styles.list,
+                      layout.rowBetween,
+                      index > 0 && styles.listDivider,
+                      pressed && styles.pressed,
+                    ]}
+                    onPress={item.onPress}>
+                    <View style={[layout.rowCenter, { gap: 12 }]}>
+                      <View style={styles.menuIcon}>
+                        <Icon source={item.icon} size={18} color={theme.colors.primary} />
+                      </View>
+                      <Typography mode="subtitle2" color="gray900">
+                        {item.label}
+                      </Typography>
+                    </View>
+                    <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
+                  </Pressable>
+                ))}
+              </View>
             </View>
-          </View>
+          ))}
 
-          {/* 계좌관리 메뉴 */}
-          <View style={styles.section}>
-            <Typography mode="subtitle3" color="gray500" style={styles.sectionTitle}>
-              계좌관리
-            </Typography>
-
-            <View style={styles.listMenu}>
-              <Pressable
-                style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
-                onPress={() => navigation.navigate('AcntManage')}>
-                <Typography mode="subtitle2" color="gray900">
-                  계좌관리
-                </Typography>
-                <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
-              </Pressable>
-            </View>
-          </View>
-
-          {/* 이용내역 메뉴 */}
-          <View style={styles.section}>
-            <Typography mode="subtitle3" color="gray500" style={styles.sectionTitle}>
-              이용내역
-            </Typography>
-
-            <View style={styles.listMenu}>
-              <Pressable
-                style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
-                onPress={() => navigation.navigate('UseList')}>
-                <Typography mode="subtitle2" color="gray900">
-                  이용내역 조회
-                </Typography>
-                <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
-              </Pressable>
-            </View>
-          </View>
-
-          {/* 고객지원 메뉴 */}
-          <View style={styles.section}>
-            <Typography mode="subtitle3" color="gray500" style={styles.sectionTitle}>
-              고객지원
-            </Typography>
-
-            <View style={styles.listMenu}>
-              <Pressable
-                style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
-                onPress={() => navigation.navigate('TermList')}>
-                <Typography mode="subtitle2" color="gray900">
-                  이용약관
-                </Typography>
-                <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
-              </Pressable>
-
-              <Divider style={{ backgroundColor: theme.colors.gray100, marginHorizontal: 18 }} />
-
-              <Pressable
-                style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
-                onPress={() => navigation.navigate('Service')}>
-                <Typography mode="subtitle2" color="gray900">
-                  고객센터
-                </Typography>
-                <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
-              </Pressable>
-
-              <Divider style={{ backgroundColor: theme.colors.gray100, marginHorizontal: 18 }} />
-
-              <Pressable
-                style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
-                onPress={() => navigation.navigate('Setting')}>
-                <Typography mode="subtitle2" color="gray900">
-                  설정
-                </Typography>
-                <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
-              </Pressable>
-            </View>
-          </View>
-
-          {/* 로그아웃 메뉴 */}
+          {/* 로그아웃: 화면 이동이 아니라 동작이므로 화살표 대신 나가기 아이콘만, 글자도 한 단계 연하게 */}
           <View style={styles.listMenu}>
             <Pressable
               style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
               onPress={() => setLogoutModal(true)}>
-              <Typography mode="subtitle2" color="gray900">
-                로그아웃
-              </Typography>
-              <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
+              <View style={[layout.rowCenter, { gap: 12 }]}>
+                <View style={[styles.menuIcon, styles.menuIconMuted]}>
+                  <Icon source="logout" size={18} color={theme.colors.gray500} />
+                </View>
+                <Typography mode="subtitle2" color="gray600">
+                  로그아웃
+                </Typography>
+              </View>
             </Pressable>
           </View>
         </ScrollView>
@@ -237,13 +245,39 @@ const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   wrap: { paddingHorizontal: 16, paddingVertical: 24, gap: 24 },
-  profile: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingBottom: 8 },
+
+  // 프로필 카드 (회원정보 화면과 같은 카드 모양)
+  card: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.lg,
+    boxShadow: theme.shadow.card,
+    padding: 20,
+    gap: 16,
+  },
+  avatar: { width: 52, height: 52, borderRadius: 26 },
+  balanceStrip: {
+    backgroundColor: theme.colors.gray50,
+    borderRadius: theme.radius.md,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+
+  // 메뉴
   section: { gap: 8 },
   sectionTitle: { paddingHorizontal: 4 },
-  textButton: { height: 28, flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start' },
-  list: { paddingHorizontal: 18, paddingVertical: 17, backgroundColor: theme.colors.surface },
-  pressed: { backgroundColor: theme.colors.gray50 },
   listMenu: { borderRadius: theme.radius.lg, overflow: 'hidden', boxShadow: theme.shadow.card },
+  list: { paddingHorizontal: 16, paddingVertical: 14, backgroundColor: theme.colors.surface },
+  listDivider: { borderTopWidth: 1, borderTopColor: theme.colors.gray100 },
+  pressed: { backgroundColor: theme.colors.gray50 },
+  menuIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: theme.colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuIconMuted: { backgroundColor: theme.colors.gray100 },
 });
 
 export default MyPageScreen;
