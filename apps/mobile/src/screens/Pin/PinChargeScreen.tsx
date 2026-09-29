@@ -136,7 +136,8 @@ const PinChargeScreen: React.FC<PinChargeScreenProps> = ({ navigation, route }) 
         }
       });
     }
-  });
+    // 입력된 숫자가 바뀔 때만 확인한다. 의존성 배열이 없으면 렌더마다 다시 돌아 대기 중 "재배열"만 눌러도 검증이 한 번 더 나간다
+  }, [enteredNumbers]);
 
   // 오류 토스트 표시
   useEffect(() => {

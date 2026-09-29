@@ -36,7 +36,8 @@ const PaymentInfo: React.FC<PaymentInfoProps> = ({ getCd, dateTime, item, stateN
           ? item.rfndAmt
           : 0;
 
-  const isStruck = stateNm.includes('취소') || stateNm.includes('출금성공');
+  // 취소된 거래만 취소선. 정상 완료된 출금 금액에는 긋지 않는다
+  const isStruck = stateNm.includes('취소');
 
   return (
     <>

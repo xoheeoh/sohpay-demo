@@ -30,7 +30,7 @@ const WithdrawalAgrScreen: React.FC<WithdrawalAgrScreenProps> = ({ navigation, r
   const pwd = route.params.pwd;
 
   // Dialog
-  const { alert } = useDialog();
+  const { alert, confirm } = useDialog();
 
   /**
    * 탈퇴 동의 여부 확인
@@ -38,25 +38,40 @@ const WithdrawalAgrScreen: React.FC<WithdrawalAgrScreenProps> = ({ navigation, r
    * 버튼 클릭 시 회원 탈퇴 함수 실행
    */
   const [agrChecked, setAgrChecked] = useState<boolean>(false);
-  const isButtonDisabled = !agrChecked;
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isButtonDisabled = !agrChecked || isSubmitting;
 
-  const handleWithdrawal = () => {
-    if (pwd) {
-      withdrawalUser(pwd).then((data) => {
-        if (data.resultCd === '0000') {
-          // 회원 탈퇴 성공
-          navigation.navigate('WithdrawalSuc'); // 성공 화면으로 이동
-        } else {
-          // 실패 모달 노출
-          alert({
-            title: '회원탈퇴 실패',
-            message1: '현재 고객님 계정에 잔액이 존재하여\n회원 탈퇴에 실패하였습니다.',
-            message2: '잔액 출금이 완료된 이후 다시 시도해주시기 바랍니다.',
-          });
-          navigation.pop(2);
-        }
-      });
+  const handleWithdrawal = async () => {
+    if (!pwd || isSubmitting) return;
+    setIsSubmitting(true);
+
+    const data = await withdrawalUser(pwd);
+    setIsSubmitting(false);
+
+    if (data.resultCd === '0000') {
+      // 회원 탈퇴 성공
+      navigation.navigate('WithdrawalSuc'); // 성공 화면으로 이동
+      return;
     }
+
+    if (data.resultCd === 'BALANCE_REMAINING') {
+      // 잔액이 남아 있어 서버가 거절: 출금 화면으로 바로 갈 수 있게 한다
+      const goRefund = await confirm({
+        title: '잔액이 남아 있어요',
+        message1: '잔액을 모두 출금한 뒤에 탈퇴할 수 있습니다.',
+        message2: '지금 출금 화면으로 이동할까요?',
+        confirmText: '출금하러 가기',
+      });
+      if (goRefund) navigation.navigate('Refund');
+      return;
+    }
+
+    // 그 외 실패(네트워크 등): 서버가 준 이유를 그대로 보여주고 이 화면에 남는다
+    alert({
+      title: '회원탈퇴 실패',
+      message1: data.resultMsg,
+      message2: '잠시 후 다시 시도해 주세요.',
+    });
   };
 
   return (

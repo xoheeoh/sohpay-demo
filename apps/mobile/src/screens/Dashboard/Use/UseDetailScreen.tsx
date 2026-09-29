@@ -165,8 +165,8 @@ const UseDetailScreen: React.FC<UseDetailScreenProps> = ({ route }) => {
                   ? '출금실패'
                   : '';
 
-  // 거래 상태색
-  const isStruck = stateNm.includes('취소') || stateNm.includes('출금성공');
+  // 취소된 거래만 취소선·회색으로 그린다. 정상 완료된 출금은 결제처럼 "- 금액" 으로 보여야 한다
+  const isStruck = stateNm.includes('취소');
 
   // 요약 카드 제목/부제
   const summaryTitle =

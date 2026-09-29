@@ -22,7 +22,7 @@ const InquiryScreen: React.FC<InquiryScreenProps> = () => {
   const [activeTab, setActiveTab] = useState<1 | 2>(1); // 1: 문의하기, 2: 문의내역
 
   // Dialog
-  const { confirm } = useDialog();
+  const { alert, confirm } = useDialog();
 
   /**
    * 문의하기 화면: 문의 내용 입력 상태 확인 후, 버튼 활성화
@@ -36,6 +36,9 @@ const InquiryScreen: React.FC<InquiryScreenProps> = () => {
   const handleButtonStateChange = (disabled: boolean) => {
     setIsButtonDisabled(disabled);
   };
+
+  // 등록 요청이 진행 중인 동안 버튼을 잠가 같은 문의가 두 번 등록되지 않게 한다
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 문의하기/문의내역 탭 내 드롭다운 제어용 ref (스크롤 시 드롭다운 닫기 위함)
   const inquiryDropdownRef = useRef<any>(null);
@@ -56,24 +59,31 @@ const InquiryScreen: React.FC<InquiryScreenProps> = () => {
   };
 
   // 문의 등록하기
-  const handleSubmitInquiry = () => {
-    if (!isButtonDisabled) {
-      enrollInquiry(title, content, mappedOption).then((data) => {
-        if (data.resultCd === '0000') {
-          console.log('문의 등록 성공');
+  const handleSubmitInquiry = async () => {
+    if (isButtonDisabled || isSubmitting) return;
+    setIsSubmitting(true);
 
-          confirm({
-            title: '1:1 상담 등록',
-            message1: '1:1 상담 내용이 정상적으로 등록되었습니다.',
-            message2: '문의내역에서 답변을 확인해주세요.',
-            confirmText: '확인',
-          }).then(() => {
-            // 확인 버튼이든 바깥 터치든, 이미 등록된 내용이 폼에 남아 중복 등록되지 않도록 항상 비운다
-            resetFormAndShowHistory();
-          });
-        } else {
-          console.log('문의 등록 실패:', data.resultMsg);
-        }
+    const data = await enrollInquiry(title, content, mappedOption);
+    setIsSubmitting(false);
+
+    if (data.resultCd === '0000') {
+      console.log('문의 등록 성공');
+
+      confirm({
+        title: '1:1 상담 등록',
+        message1: '1:1 상담 내용이 정상적으로 등록되었습니다.',
+        message2: '문의내역에서 답변을 확인해주세요.',
+        confirmText: '확인',
+      }).then(() => {
+        // 확인 버튼이든 바깥 터치든, 이미 등록된 내용이 폼에 남아 중복 등록되지 않도록 항상 비운다
+        resetFormAndShowHistory();
+      });
+    } else {
+      // 실패 이유를 화면에 보여준다. 입력한 내용은 그대로 남겨 다시 시도할 수 있게 한다
+      alert({
+        title: '문의 등록 실패',
+        message1: data.resultMsg,
+        message2: '잠시 후 다시 시도해 주세요.',
       });
     }
   };
@@ -117,8 +127,8 @@ const InquiryScreen: React.FC<InquiryScreenProps> = () => {
           </KeyboardAwareScrollView>
 
           <BottomBtnBox
-            buttonKey={isButtonDisabled.toString()}
-            disabled={isButtonDisabled}
+            buttonKey={(isButtonDisabled || isSubmitting).toString()}
+            disabled={isButtonDisabled || isSubmitting}
             label={'문의'}
             onPress={handleSubmitInquiry}
           />

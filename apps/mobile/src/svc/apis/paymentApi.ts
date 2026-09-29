@@ -378,8 +378,12 @@ export const requestChargeUrl = async (
   return ok({ returnUrl: res.checkoutUrl, transactionId: res.transactionId });
 };
 
-/* ── 출금(환불) 요청 ──────────────────────────────────────────── */
-export const requestRefundAcnt = async (refundAmt: string, usrPin: string, nonce: string) => {
+/**
+ * 출금(환불) 요청.
+ * idempotencyKey: 화면이 진입 시 한 번 만들어 재시도에도 같은 값을 넘기는 중복 방지 키.
+ * 서버(request_refund)는 같은 키의 거래가 이미 있으면 새로 처리하지 않고 그 결과를 돌려준다.
+ */
+export const requestRefundAcnt = async (refundAmt: string, usrPin: string, idempotencyKey: string) => {
   try {
     const mbUid = (await getData<string>('mbUid')) ?? '';
     const a = await primaryRefundAcnt();
@@ -389,7 +393,7 @@ export const requestRefundAcnt = async (refundAmt: string, usrPin: string, nonce
           p_amount: Number(refundAmt),
           p_pin: usrPin,
           p_bank_account_id: a?.id ?? null,
-          p_idempotency_key: nonce || newIdempotencyKey(),
+          p_idempotency_key: idempotencyKey || newIdempotencyKey(),
         }),
       ) as { ok: boolean; code?: string; transactionId: string; amount: number; balance: number },
     );
