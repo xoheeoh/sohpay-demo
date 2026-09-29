@@ -23,12 +23,12 @@ const TrxStCdModal: React.FC<TrxStCdModalProps> = ({ handleSelectedTrxStCd, onTr
           { id: 'confirm', label: '승인', value: '0' },
           { id: 'cancel', label: '취소', value: '1' },
         ]
-      : getCd === 'CHRG'
+      : getCd === 'CHRG' || getCd === 'RFND'
         ? [
-            // 충전 종류에서는 "거래 상태" 값이 실제로는 조회할 거래 종류(getCd)를 뜻한다
-            { id: 'all', label: '모두', value: 'CHRG_RFND' }, // 충전 + 출금
-            { id: 'charge', label: '충전', value: 'CHRG' },
-            { id: 'refund', label: '출금', value: 'RFND' },
+            // 충전·출금은 성공 / 실패 (실패 = 모의 결제창 승인 거절·취소, 은행 오류 등)
+            { id: 'all', label: '모두', value: '9' },
+            { id: 'success', label: '성공', value: '1' },
+            { id: 'fail', label: '실패', value: '2' },
           ]
         : [{ id: 'all', label: '모두', value: '9' }]; // 거래 종류가 "모두"일 때는 상태 구분 없음
 
@@ -45,16 +45,7 @@ const TrxStCdModal: React.FC<TrxStCdModalProps> = ({ handleSelectedTrxStCd, onTr
 
   // 조회 조건 선택 완료 후 해당 값 부모로 전달
   const handleSelectTrxStCdWithValues = () => {
-    // 충전 종류에서는 고른 값(CHRG_RFND / CHRG / RFND)이 실제 조회 getCd 가 되고, 상태는 9(모두)로 둔다
-    let actualGetCd = getCd;
-    let actualTrxStCd = trxStCd;
-
-    if (getCd === 'CHRG') {
-      actualGetCd = trxStCd;
-      actualTrxStCd = '9';
-    }
-
-    onTrxStCdChange(actualGetCd, actualTrxStCd, selectedTrxStCd);
+    onTrxStCdChange(getCd, trxStCd, selectedTrxStCd);
     handleSelectedTrxStCd();
   };
 

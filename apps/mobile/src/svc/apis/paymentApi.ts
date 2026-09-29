@@ -42,6 +42,7 @@ type TxRow = {
   canceled_amount: number;
   balance_after: number | null;
   charge_method: 'BANK_TRANSFER' | 'VIRTUAL_ACCOUNT' | null;
+  failure_code: string | null;
   order_no: string;
   goods_name: string | null;
   approved_at: string | null;
@@ -58,6 +59,14 @@ const CHARGE_CD: Record<string, string> = {
   BANK_TRANSFER: ChargeTypeEnum.Transfer,
   VIRTUAL_ACCOUNT: ChargeTypeEnum.Virtual,
 };
+/** 실패한 충전·출금의 사유 코드 → 화면 문구 */
+const FAILURE_NM: Record<string, string> = {
+  PG_DECLINED: '승인 거절',
+  USER_CANCELED: '결제창에서 취소',
+  MAX_BALANCE_EXCEEDED: '보유 한도 초과',
+  BANK_ERROR: '은행 점검으로 이체 실패',
+};
+const failMsgOf = (t: TxRow) => (t.status === 'FAILED' ? (FAILURE_NM[t.failure_code ?? ''] ?? '처리 실패') : undefined);
 
 /* ── 이용내역 ─────────────────────────────────────────────────── */
 const toUse = (t: TxRow): IUseList => {
@@ -108,13 +117,16 @@ const toCharge = (t: TxRow): IChargeList => ({
   ppMthdId: '',
   chrgAmt: t.amount,
   rmnAmt: t.balance_after ?? 0,
+  chrgStCd: t.status === 'FAILED' ? '2' : '1',
+  failMsg: failMsgOf(t),
 });
 
 const toRefund = (t: TxRow): IRefundList => ({
   rfndNo: t.order_no,
   rfndReqDt: ymd(t.created_at),
   rfndReqTm: hms(t.created_at),
-  rfndStCd: '1', // 출금 완료
+  rfndStCd: t.status === 'FAILED' ? '2' : '1', // 1 출금 완료 | 2 실패
+  failMsg: failMsgOf(t),
   rfndBankCd: t.bank_account?.bank_code ?? '',
   rfndAcntNo: t.bank_account?.account_no_masked ?? '',
   rfndAcntNm: t.bank_account?.holder_name ?? '',
@@ -130,7 +142,6 @@ const GET_CD_TYPES: Record<string, TxRow['type'][]> = {
   USE: ['PAYMENT'], // 결제
   CHRG: ['CHARGE'], // 충전
   RFND: ['REFUND'], // 출금
-  CHRG_RFND: ['CHARGE', 'REFUND'], // 충전 + 출금 모두
 };
 
 /* DB 거래 한 건을 화면용 항목으로 바꾸고, 어떤 종류인지 getCd 를 붙인다 */
@@ -141,7 +152,12 @@ const toListItem = (t: TxRow): TransactionListItem =>
       ? { ...toCharge(t), getCd: 'CHRG' }
       : { ...toRefund(t), getCd: 'RFND' };
 
-/* 선불 거래 조회 — getCd: ALL | USE | CHRG | RFND | CHRG_RFND, trxStCds: 0 승인 | 1 취소 | 9 모두 (결제에만 적용) */
+/**
+ * 선불 거래 조회
+ * - getCd: ALL 모두 | USE 결제 | CHRG 충전 | RFND 출금
+ * - trxStCds: 결제는 0 승인 | 1 취소, 충전·출금은 1 성공 | 2 실패, 9 는 모두
+ * 실패(FAILED) 건도 목록에 넣는다. 모의 결제창에서 승인 거절·취소된 충전이 여기에 해당한다. 처리 중(PENDING)만 뺀다.
+ */
 export const loadTransactionList = async (
   getCd: string,
   trxStCds: string,
@@ -157,13 +173,14 @@ export const loadTransactionList = async (
       .select(TX_SELECT)
       .in('type', types)
       .neq('status', 'PENDING')
-      .neq('status', 'FAILED')
       .gte('created_at', fromYmd(frDt))
       .lte('created_at', fromYmd(toDt, true))
       .order('created_at', { ascending: false })
       .range(stRow, stRow + cntRows - 1);
     if (getCd === 'USE' && trxStCds === '0') q = q.eq('status', 'APPROVED');
     if (getCd === 'USE' && trxStCds === '1') q = q.in('status', ['CANCELED', 'PARTIALLY_CANCELED']);
+    if ((getCd === 'CHRG' || getCd === 'RFND') && trxStCds === '1') q = q.eq('status', 'APPROVED');
+    if ((getCd === 'CHRG' || getCd === 'RFND') && trxStCds === '2') q = q.eq('status', 'FAILED');
 
     const rows = unwrap(await q) as unknown as TxRow[];
     const listData = rows.map(toListItem);

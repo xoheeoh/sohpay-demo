@@ -80,9 +80,9 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
    * 거래 종류 select 클릭하면 해당 BottomSheet 등장
    * 라디오 버튼 선택 값에 따라 getCd 값 설정
    */
-  const [tempGetCd, setTempGetCd] = useState<string>(initialGetCd); // 거래종류 셀렉트 박스에서 선택된 값 ALL | USE | CHRG (거래상태 모달에 전달)
-  const [actualGetCd, setActualGetCd] = useState<string>(initialGetCd); // 실제 조회에 사용할 getCd (충전 종류에서 거래 상태를 고르면 CHRG_RFND | CHRG | RFND 로 바뀜)
-  const [getCd, setGetCd] = useState<string>(initialGetCd); // 조회 버튼을 누른 시점의 getCd: ALL 모두 | USE 결제 | CHRG 충전 | RFND 출금 | CHRG_RFND 충전+출금
+  const [tempGetCd, setTempGetCd] = useState<string>(initialGetCd); // 거래종류 셀렉트 박스에서 선택된 값 ALL | USE | CHRG | RFND (거래상태 모달에 전달)
+  const [actualGetCd, setActualGetCd] = useState<string>(initialGetCd); // 실제 조회에 사용할 getCd
+  const [getCd, setGetCd] = useState<string>(initialGetCd); // 조회 버튼을 누른 시점의 getCd: ALL 모두 | USE 결제 | CHRG 충전 | RFND 출금
   const [getCdModal, setGetCdModal] = useState<boolean>(false); // 거래종류 선택 BottomSheet
 
   const [selectedGetCd, setSelectedGetCd] = useState<string>(initialGetCdRadio); // 선택된 radio value값
@@ -94,9 +94,8 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
     setTempGetCd(selectedGetCd); // 모달에 전달할 값
     setSelectedGetCd(radio);
 
-    // 거래 종류가 바뀌면 거래 상태는 "모두"로 되돌린다.
-    // 충전 종류의 "모두"는 충전+출금이라 실제 조회 getCd 가 CHRG_RFND 가 된다.
-    setActualGetCd(selectedGetCd === 'CHRG' ? 'CHRG_RFND' : selectedGetCd);
+    // 거래 종류가 바뀌면 거래 상태는 "모두"로 되돌린다
+    setActualGetCd(selectedGetCd);
     setTrxStCd('9');
     setSelectedTrxStCd('all');
     setTrxStCdPlaceholder('모두');
@@ -114,6 +113,9 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
       case 'charge':
         setGetCdPlaceholder('충전');
         break;
+      case 'refund':
+        setGetCdPlaceholder('출금');
+        break;
       default:
         setGetCdPlaceholder('거래종류');
     }
@@ -126,7 +128,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
    * 거래 상태 select 클릭하면 해당 BottomSheet 등장
    * 라디오 버튼 선택 값에 따라 getCd 값 설정
    */
-  const [trxStCd, setTrxStCd] = useState<string>('9'); // USE - 0: 승인 | 1: 취소 | 9: 모두
+  const [trxStCd, setTrxStCd] = useState<string>('9'); // 결제 - 0 승인 | 1 취소, 충전·출금 - 1 성공 | 2 실패, 9 모두
   const [trxStCdModal, setTrxStCdModal] = useState<boolean>(false); // 거래상태 선택 BottomSheet
 
   const [selectedTrxStCd, setSelectedTrxStCd] = useState<string>('all'); // 선택된 radio value값
@@ -135,7 +137,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
 
   // 모달로부터 값 전달받는 이벤트
   const handleTrxStCdChange = (getCd: string, trxStCd: string, radio: string) => {
-    setActualGetCd(getCd); // 실제 조회에 사용할 getCd 업데이트 (출금 선택 시 RFND로 변경)
+    setActualGetCd(getCd);
     setTrxStCd(trxStCd);
     setSelectedTrxStCd(radio);
   };
@@ -149,11 +151,11 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
       case 'cancel':
         setTrxStCdPlaceholder('취소');
         break;
-      case 'charge':
-        setTrxStCdPlaceholder('충전');
+      case 'success':
+        setTrxStCdPlaceholder('성공');
         break;
-      case 'refund':
-        setTrxStCdPlaceholder('출금');
+      case 'fail':
+        setTrxStCdPlaceholder('실패');
         break;
       case 'all':
         setTrxStCdPlaceholder('모두');

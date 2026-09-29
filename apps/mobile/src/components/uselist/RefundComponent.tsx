@@ -16,8 +16,9 @@ interface RefundComponentProps {
 const RefundComponent: React.FC<RefundComponentProps> = ({ item, getCd }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
+  const isFailed = item.rfndStCd === '2';
   const categoryNm =
-    item.rfndStCd === '0' ? '출금요청' : item.rfndStCd === '1' ? '출금성공' : item.rfndStCd === '2' ? '출금실패' : '';
+    item.rfndStCd === '0' ? '출금요청' : item.rfndStCd === '1' ? '출금성공' : isFailed ? '출금실패' : '';
 
   return (
     <Pressable
@@ -25,7 +26,7 @@ const RefundComponent: React.FC<RefundComponentProps> = ({ item, getCd }) => {
       onPress={() => navigation.navigate('UseDetail', { item: item, getCd: getCd })}>
       {/* 좌측: 출금 계좌 / 일시 · 상태 */}
       <View style={styles.info}>
-        <Typography mode="subtitle2" color="gray900" numberOfLines={1}>
+        <Typography mode="subtitle2" color={isFailed ? 'gray400' : 'gray900'} numberOfLines={1}>
           {getBankName(item.rfndBankCd)} {item.rfndAcntNo}
         </Typography>
 
@@ -39,8 +40,13 @@ const RefundComponent: React.FC<RefundComponentProps> = ({ item, getCd }) => {
 
       {/* 우측: 금액 */}
       <View style={styles.amountBox}>
-        <Typography mode="subtitle1" color={getTrxAmountColor('refund')}>
-          - {formatWon(item.rfndAmt)}
+        {/* 실패한 출금은 돈이 나가지 않았으므로 부호 없이 회색 취소선 */}
+        <Typography
+          mode="subtitle1"
+          color={isFailed ? 'gray400' : getTrxAmountColor('refund')}
+          style={isFailed ? styles.struck : undefined}>
+          {isFailed ? '' : '- '}
+          {formatWon(item.rfndAmt)}
         </Typography>
       </View>
 
@@ -54,6 +60,7 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.6 },
   info: { flex: 1, gap: 4 },
   amountBox: { alignItems: 'flex-end', gap: 2 },
+  struck: { textDecorationLine: 'line-through' },
 });
 
 export default RefundComponent;
