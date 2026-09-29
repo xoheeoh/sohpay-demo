@@ -27,7 +27,8 @@ export const memberLogin = async (mbUid: string, pwd: string) => {
 };
 
 /* ── 비밀번호 규칙 (원본은 서버 검증. 여기서는 같은 규칙을 클라이언트에서 적용) ── */
-const PWD_RULE = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,20}$/;
+/** 비밀번호 규칙: 영문·숫자·특수문자 각 1개 이상, 8~20자. 입력칸의 실시간 검사(회원가입·비밀번호 변경)도 이 규칙을 그대로 쓴다 */
+export const PWD_RULE = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,20}$/;
 
 export const validationPwd = async (
   pwd: string,

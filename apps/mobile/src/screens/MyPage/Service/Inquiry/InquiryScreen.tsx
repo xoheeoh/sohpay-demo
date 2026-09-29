@@ -129,7 +129,7 @@ const InquiryScreen: React.FC<InquiryScreenProps> = () => {
           <BottomBtnBox
             buttonKey={(isButtonDisabled || isSubmitting).toString()}
             disabled={isButtonDisabled || isSubmitting}
-            label={'문의'}
+            label={'문의하기'}
             onPress={handleSubmitInquiry}
           />
         </>

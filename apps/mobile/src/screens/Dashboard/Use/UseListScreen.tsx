@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Divider, Icon } from 'react-native-paper';
@@ -173,7 +173,9 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
    */
   const [listData, setListData] = useState<TransactionListItem[]>([]); // 사용 내역 (모두 조회 시 종류가 섞여 있음)
 
-  const [startIdx, setStartIdx] = useState(0); // 항목 시작 번호
+  // 0.3초 뒤에 실행되는 예약 호출은 그 시점의 state 를 못 보므로, 진행 중 여부와 시작 번호는 ref 로도 들고 있는다
+  const isFetchingRef = useRef(false);
+  const startIdxRef = useRef(0);
   const [maxCount] = useState(10); // 한 번에 가져올 최대 항목 수
   const [isLoading, setIsLoading] = useState<boolean>(false); // 로딩 상태
   const [isLoaded, setIsLoaded] = useState<boolean>(false); // 첫 조회가 한 번이라도 끝났는지 (끝나기 전엔 자리표시자)
@@ -197,7 +199,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
 
     // 데이터 초기화 및 조회 트리거
     setListData([]);
-    setStartIdx(0);
+    startIdxRef.current = 0; // 항목 시작 번호
     setHasMore(true);
     setTriggerFetch(true);
   };
@@ -212,11 +214,12 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
 
   // 데이터를 가져오는 함수
   const fetchData = async (reset: boolean = false) => {
-    if (isLoading || !hasMore) return;
+    if (isFetchingRef.current || !hasMore) return;
 
+    isFetchingRef.current = true;
     setIsLoading(true);
     try {
-      const currentStartIdx = reset ? 0 : startIdx;
+      const currentStartIdx = reset ? 0 : startIdxRef.current;
       const data = await loadTransactionList(getCd, trxStCd, frDt, toDt, currentStartIdx, maxCount);
 
       if (data?.resultCd === '0000') {
@@ -229,7 +232,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
         if (newData.length < maxCount) {
           setHasMore(false);
         } else {
-          setStartIdx(currentStartIdx + maxCount);
+          startIdxRef.current = currentStartIdx + maxCount;
         }
       } else {
         console.log('데이터 조회 실패:', data?.resultMsg || '알 수 없는 오류');
@@ -239,6 +242,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
       console.log('API 호출 오류:', error);
       setHasMore(false);
     } finally {
+      isFetchingRef.current = false;
       setIsLoading(false);
       setIsLoaded(true);
     }
@@ -246,7 +250,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
 
   // FlatList 무한 스크롤
   const loadMore = async () => {
-    if (isLoading || !hasMore) return;
+    if (isFetchingRef.current || !hasMore) return;
 
     setTimeout(() => {
       fetchData();

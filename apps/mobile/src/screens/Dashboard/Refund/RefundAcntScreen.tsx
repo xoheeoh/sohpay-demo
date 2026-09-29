@@ -157,7 +157,7 @@ const RefundAcntScreen: React.FC<RefundAcntScreenProps> = ({ navigation, route }
         backgroundColor={theme.colors.bg}
         buttonKey={hasRefundAccount.toString()}
         disabled={isButtonDisabled}
-        label={'잔액 출금'}
+        label={'출금하기'}
         onPress={() => acntData && navigation.navigate('PinPayRefund', { acnt: acntData, amt: withdrawalAmt })}
       />
     </ScreenWrapper>

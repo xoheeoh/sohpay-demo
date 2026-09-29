@@ -83,7 +83,7 @@ const TransferAcntChargeScreen = ({ navigation, route }: TransferAcntChargeScree
         backgroundColor={theme.colors.bg}
         buttonKey={'charge'}
         disabled={false}
-        label={'충전'}
+        label={'충전하기'}
         onPress={() =>
           navigation.navigate('PinCharge', {
             chargeAmt: chargeAmt,

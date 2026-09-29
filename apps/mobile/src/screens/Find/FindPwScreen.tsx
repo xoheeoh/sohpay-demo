@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BackHandler, View } from 'react-native';
+import { BackHandler, Platform, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '@typ/navigation';
@@ -40,6 +40,8 @@ const FindPwScreen: React.FC<FindPwScreenProps> = ({ navigation, route }) => {
       return true; // 기본 뒤로가기 동작 방지
     };
 
+    // 웹에는 하드웨어 뒤로가기 버튼이 없고 BackHandler 도 지원되지 않아(콘솔 오류) 앱에서만 등록한다
+    if (Platform.OS === 'web') return;
     const subscription = BackHandler.addEventListener('hardwareBackPress', backAction);
 
     return () => {

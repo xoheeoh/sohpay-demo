@@ -29,7 +29,6 @@ export type RootStackParamList = {
   ChargeSelectMethod: undefined;
   ChargeAmt: undefined;
   TransferAcntCharge: { amount: string };
-  TransferAcntInput: { amount: string };
   PinCharge: { chargeAmt: string };
   ChargeAcntWeb: { chargeAmt: string };
   ChargeSuc: { chargeAmt: string };
