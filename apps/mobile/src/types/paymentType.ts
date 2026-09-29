@@ -164,9 +164,7 @@ export interface IUseList {
  * 화면은 이 getCd 로 행 컴포넌트와 상세 화면 표시 방식을 고른다.
  */
 export type TransactionListItem =
-  | (IUseList & { getCd: 'USE' })
-  | (IChargeList & { getCd: 'CHRG' })
-  | (IRefundList & { getCd: 'RFND' });
+  (IUseList & { getCd: 'USE' }) | (IChargeList & { getCd: 'CHRG' }) | (IRefundList & { getCd: 'RFND' });
 
 /* 가맹점 정보 */
 export interface IMidInfo {
@@ -202,6 +200,10 @@ export interface IQRdata {
   reqTm: string;
   rid: string;
   tid: string;
+  /** 결제코드 만료 시각 (ISO). 확인 화면에서 남은 시간을 보여준다 */
+  expiresAt?: string;
+  /** 데모용 재사용 QR 인지 (만료·1회 사용 검사 없음) */
+  reusable?: boolean;
 }
 
 /* 결제 성공 데이터 */

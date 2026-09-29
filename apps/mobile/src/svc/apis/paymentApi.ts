@@ -447,6 +447,8 @@ export const chkPaymentQR = async (otpCode: string) => {
       reqStCd: '0',
       rid: otpCode.trim(),
       tid: r.paymentRequestId,
+      expiresAt: r.expiresAt,
+      reusable: r.reusable === true,
     };
     return ok(qr);
   } catch (e) {

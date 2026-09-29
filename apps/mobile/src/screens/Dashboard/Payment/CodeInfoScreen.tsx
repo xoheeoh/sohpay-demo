@@ -41,6 +41,27 @@ const CodeInfoScreen: React.FC<CodeInfoScreenProps> = ({ navigation, route }) =>
     });
   }, []);
 
+  /**
+   * 결제코드 유효 시간. 실제 QR 은 발급 5분 뒤 만료되므로 남은 시간을 1초마다 갱신해 보여주고, 0 이 되면 결제 버튼을 끈다.
+   * README 의 데모 QR(reusable)은 만료가 없어 "만료 없음"으로 표시한다.
+   */
+  const isReusable = data.reusable === true;
+  const expiresAtMs = data.expiresAt && !isReusable ? new Date(data.expiresAt).getTime() : null;
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (expiresAtMs === null) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [expiresAtMs]);
+
+  const remainingSec = expiresAtMs === null ? null : Math.max(0, Math.floor((expiresAtMs - now) / 1000));
+  const isExpired = remainingSec === 0;
+  const remainingText =
+    remainingSec === null
+      ? null
+      : `${Math.floor(remainingSec / 60)}:${String(remainingSec % 60).padStart(2, '0')} 남음`;
+
   const canPay = balance !== null && balance >= goodsAmt;
   // 잔액이 상품 금액보다 적으면 이 화면에 그대로 두고 부족한 금액과 충전 버튼을 보여준다 (알림으로 튕겨 보내지 않음)
   const isInsufficient = balance !== null && balance < goodsAmt;
@@ -111,16 +132,29 @@ const CodeInfoScreen: React.FC<CodeInfoScreenProps> = ({ navigation, route }) =>
             <InfoRow label="부가세" value={formatWon(data.goodsVat)} />
             <InfoRow label="가맹점 번호" value={data.mid} />
             <InfoRow label="요청일시" value={formatDateTime(`${data.reqDt}${data.reqTm}`)} />
+            {/* 남은 시간이 1분 미만이면 빨갛게. 데모 QR 은 만료가 없다 */}
+            <InfoRow
+              label="유효 시간"
+              value={isReusable ? '만료 없음 (데모 QR)' : (remainingText ?? '-')}
+              valueColor={remainingSec !== null && remainingSec < 60 ? 'red500' : 'gray900'}
+            />
           </View>
+
+          {isExpired && <InfoBox tone="yellow">결제코드가 만료됐어요. 가맹점에 새 QR 코드를 요청해 주세요.</InfoBox>}
         </View>
+
+        {/* 결제 한도는 서버 규칙(1회 50만 · 1일 200만)과 같은 값. 한도를 넘기면 PIN 입력 뒤 오류로만 알게 되므로 미리 알려준다 */}
+        <Typography mode="caption1" color="gray500" style={{ textAlign: 'center' }}>
+          1회 50만원 · 1일 200만원까지 결제할 수 있어요
+        </Typography>
       </KeyboardAwareScrollView>
 
-      {/* 잔액이 부족하면 버튼이 "충전하기"로 바뀌어 충전 흐름으로 바로 이어진다 */}
+      {/* 만료되면 버튼을 끄고, 잔액이 부족하면 "충전하기"로 바뀌어 충전 흐름으로 바로 이어진다 */}
       <BottomBtnBox
         backgroundColor={theme.colors.bg}
-        buttonKey={`${canPay}-${isInsufficient}`}
-        disabled={balance === null}
-        label={isInsufficient ? '충전하기' : '결제하기'}
+        buttonKey={`${canPay}-${isInsufficient}-${isExpired}`}
+        disabled={balance === null || isExpired}
+        label={isExpired ? '만료된 결제코드' : isInsufficient ? '충전하기' : '결제하기'}
         onPress={() =>
           isInsufficient ? navigation.navigate('ChargeSelectMethod') : navigation.navigate('PinPayQR', { data: data })
         }
@@ -129,13 +163,17 @@ const CodeInfoScreen: React.FC<CodeInfoScreenProps> = ({ navigation, route }) =>
   );
 };
 
-/** 라벨은 왼쫁에 연하게, 값은 오른쪽에 진하게 놓는 한 줄 (회원정보 화면과 같은 모양) */
-const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+/** 라벨은 왼쪽에 연하게, 값은 오른쪽에 진하게 놓는 한 줄 (회원정보 화면과 같은 모양) */
+const InfoRow: React.FC<{ label: string; value: string; valueColor?: 'gray900' | 'red500' }> = ({
+  label,
+  value,
+  valueColor = 'gray900',
+}) => (
   <View style={[layout.rowBetween, { gap: 16 }]}>
     <Typography mode="body2" color="gray500">
       {label}
     </Typography>
-    <Typography mode="body2" color="gray900" numberOfLines={1} style={{ flexShrink: 1, textAlign: 'right' }}>
+    <Typography mode="body2" color={valueColor} numberOfLines={1} style={{ flexShrink: 1, textAlign: 'right' }}>
       {value}
     </Typography>
   </View>
