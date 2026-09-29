@@ -6,7 +6,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@typ/navigation';
 import { storeData } from '@storages/asyncStorage';
-import { PrimaryButton, ScreenWrapper, Typography, Wordmark } from '@components/common';
+import { InfoBox, PrimaryButton, ScreenWrapper, Typography, Wordmark } from '@components/common';
 import { theme } from '@styles';
 
 const PERMISSION_NOTICE_SEEN_KEY = 'permissionNoticeSeen';
@@ -76,15 +76,9 @@ const PermissionNoticeScreen: React.FC<PermissionNoticeScreenProps> = ({ navigat
               </View>
             </View>
 
-            <View style={styles.infoBox}>
-              <Icon source={'information'} size={24} color={theme.colors.gray600} />
-
-              <Typography mode="caption1" color="gray600">
-                권한은 ‘휴대폰 설정 {'>'} SohPay 설정’에서{'\n'}
-                언제든지 변경할 수 있으며,{'\n'}
-                서비스 이용 목적 이외에는 사용되지 않습니다.
-              </Typography>
-            </View>
+            <InfoBox>
+              {`권한은 ‘휴대폰 설정 > SohPay 설정’에서\n언제든지 변경할 수 있으며,\n서비스 이용 목적 이외에는 사용되지 않습니다.`}
+            </InfoBox>
           </View>
         </View>
 
@@ -115,14 +109,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 16,
-  },
-  infoBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    padding: 16,
-    borderRadius: theme.radius.lg,
-    backgroundColor: theme.colors.gray50,
   },
 });
 

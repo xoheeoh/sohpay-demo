@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Animated, DimensionValue, Easing, StyleSheet, ViewStyle } from 'react-native';
+import { Animated, DimensionValue, Easing, StyleSheet, View, ViewStyle } from 'react-native';
 
 import { theme } from '@styles';
 
@@ -24,8 +24,18 @@ const Skeleton: React.FC<SkeletonProps> = ({ width = '100%', height = 16, radius
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(opacity, { toValue: 0.45, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 1, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(opacity, {
+          toValue: 0.45,
+          duration: 700,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 700,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
       ]),
     );
     loop.start();
@@ -35,9 +45,36 @@ const Skeleton: React.FC<SkeletonProps> = ({ width = '100%', height = 16, radius
   return <Animated.View style={[styles.base, { width, height, borderRadius: radius, opacity }, style]} />;
 };
 
+interface SkeletonListProps {
+  /** 자리표시자 줄 수 */
+  rows?: number;
+  /** 줄 사이 구분선 표시 여부 */
+  divider?: boolean;
+}
+
+/**
+ * 목록 화면용 스켈레톤: [제목 줄 + 짧은 설명 줄] 을 여러 줄 반복한다.
+ * 공지사항·FAQ·1:1 문의·이용내역처럼 조회가 끝나기 전 목록 자리에 놓는다.
+ */
+const SkeletonList: React.FC<SkeletonListProps> = ({ rows = 4, divider = true }) => (
+  <View>
+    {Array.from({ length: rows }).map((_, i) => (
+      <View key={i} style={[styles.listRow, divider && i > 0 && styles.listDivider]}>
+        <View style={{ flex: 1, gap: 8 }}>
+          <Skeleton width="60%" height={16} />
+          <Skeleton width="35%" height={12} />
+        </View>
+        <Skeleton width={72} height={16} />
+      </View>
+    ))}
+  </View>
+);
+
 const styles = StyleSheet.create({
   base: { backgroundColor: theme.colors.gray100 },
+  listRow: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingVertical: 18 },
+  listDivider: { borderTopWidth: 1, borderTopColor: theme.colors.gray100 },
 });
 
 export default Skeleton;
-export { Skeleton };
+export { Skeleton, SkeletonList };

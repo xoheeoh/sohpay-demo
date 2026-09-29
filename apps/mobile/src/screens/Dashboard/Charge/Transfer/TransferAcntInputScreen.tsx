@@ -13,6 +13,7 @@ import {
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
   BottomSheet,
   CheckBox,
+  InfoBox,
   KeyboardAwareScrollView,
   ScreenWrapper,
   TextField,
@@ -125,15 +126,11 @@ const TransferAcntInputScreen = ({ navigation, route }: TransferAcntInputScreenP
             />
           </View>
 
-          <View style={styles.infoBox}>
-            <Icon source={'information'} size={24} color={theme.colors.gray600} />
-
-            <Typography mode="caption1" color="gray600" style={{ flexShrink: 1 }}>
-              {
-                "입력하신 계좌 정보는 충전에 1회 사용되며 '내 계좌' 정보에 저장되지 않습니다. 저장된 계좌 정보 수정을 원하시는 경우, '마이페이지 > 계좌관리' 메뉴에서 업데이트 해주세요."
-              }
-            </Typography>
-          </View>
+          <InfoBox>
+            {
+              "입력하신 계좌 정보는 충전에 1회 사용되며 '내 계좌' 정보에 저장되지 않습니다. 저장된 계좌 정보 수정을 원하시는 경우, '마이페이지 > 계좌관리' 메뉴에서 업데이트 해주세요."
+            }
+          </InfoBox>
         </View>
       </KeyboardAwareScrollView>
 
@@ -169,15 +166,6 @@ const styles = StyleSheet.create({
   },
   divider: { backgroundColor: theme.colors.gray100, height: 1, marginHorizontal: 16 },
   iconButton: { margin: 0, width: 24, height: 24 },
-  infoBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    padding: 16,
-    borderRadius: theme.radius.lg,
-    backgroundColor: theme.colors.gray50,
-    flex: 1,
-  },
 });
 
 export default TransferAcntInputScreen;

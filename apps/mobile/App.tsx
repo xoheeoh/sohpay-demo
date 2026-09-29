@@ -389,28 +389,28 @@ function App(): React.JSX.Element {
                   name="QRscan"
                   component={QRcodeScanScreen}
                   options={{
-                    header: () => <Header title="QR코드 스캔" bgColor="white" leftButton />,
+                    header: () => <Header title="결제하기" bgColor="white" leftButton />,
                   }}
                 />
                 <Stack.Screen
                   name="CodeInput"
                   component={CodeInputScreen}
                   options={{
-                    header: () => <Header title="결제코드" bgColor="white" leftButton />,
+                    header: () => <Header title="결제하기" bgColor="white" leftButton />,
                   }}
                 />
                 <Stack.Screen
                   name="CodeInfo"
                   component={CodeInfoScreen}
                   options={{
-                    header: () => <Header title="결제" bgColor={theme.colors.bg} leftButton />,
+                    header: () => <Header title="결제하기" bgColor={theme.colors.bg} leftButton />,
                   }}
                 />
                 <Stack.Screen
                   name="PinPayQR"
                   component={PinPaymentQRScreen}
                   options={{
-                    header: () => <Header title="결제" bgColor="white" leftButton />,
+                    header: () => <Header title="결제하기" bgColor="white" leftButton />,
                   }}
                 />
                 <Stack.Screen
@@ -428,7 +428,7 @@ function App(): React.JSX.Element {
                   name="UseList"
                   component={UseListScreen}
                   options={{
-                    header: () => <Header title="이용내역 조회" bgColor="white" leftButton />,
+                    header: () => <Header title="이용내역 조회" bgColor={theme.colors.bg} leftButton />,
                   }}
                 />
                 <Stack.Screen
@@ -480,7 +480,12 @@ function App(): React.JSX.Element {
                   component={WithdrawalAgrScreen}
                   options={{
                     header: ({ navigation }) => (
-                      <Header title="회원탈퇴" bgColor={theme.colors.bg} leftButton leftEvent={() => navigation.pop(2)} />
+                      <Header
+                        title="회원탈퇴"
+                        bgColor={theme.colors.bg}
+                        leftButton
+                        leftEvent={() => navigation.pop(2)}
+                      />
                     ),
                   }}
                 />

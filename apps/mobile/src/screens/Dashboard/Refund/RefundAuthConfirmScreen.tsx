@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Image, Keyboard, Platform, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Icon } from 'react-native-paper';
 
 import type { RootStackParamList } from '@typ/navigation';
 import { useDialog } from '@contexts/DialogContext';
@@ -12,6 +11,7 @@ import {
   Badge,
   BottomBtnBox,
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
+  InfoBox,
   KeyboardAwareScrollView,
   ScreenWrapper,
   TextField,
@@ -190,15 +190,10 @@ const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenP
             descMessage={errorMsg ?? undefined}
           />
 
-          {/* 데모 안내 (1:1 상담 답변중 안내 띠와 같은 톤) */}
-          <View style={styles.infoBox}>
-            <View style={styles.infoIcon}>
-              <Icon source="information-outline" size={18} color={theme.colors.gray600} />
-            </View>
-            <Typography mode="caption1" color="gray600" style={{ flex: 1 }}>
-              데모에서는 실제 입금 없이, 이전 화면에서 다음을 눌렀을 때 뜬 알림에 인증번호 3자리가 함께 표시됩니다.
-            </Typography>
-          </View>
+          {/* 데모 안내 */}
+          <InfoBox>
+            데모에서는 실제 입금 없이, 이전 화면에서 다음을 눌렀을 때 뜬 알림에 인증번호 3자리가 함께 표시됩니다.
+          </InfoBox>
         </View>
       </KeyboardAwareScrollView>
 
@@ -220,19 +215,8 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 14,
   },
-  bankLogo: { width: 40, height: 40, borderRadius: 20 },
+  bankLogo: { width: 44, height: 44, borderRadius: 22 }, // 계좌관리·출금 계좌 확인의 은행 로고와 같은 크기
   depositDivider: { height: 1, backgroundColor: theme.colors.gray150 },
-  // 안내 상자 (계좌인증 입력 화면과 같은 모양)
-  infoBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-    padding: 14,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.gray50,
-  },
-  // 아이콘을 첫 줄 글자 높이(16)에 맞춰 가운데에 둔다
-  infoIcon: { height: 16, justifyContent: 'center' },
 });
 
 export default RefundAuthConfirmScreen;

@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '@typ/navigation';
-import { formatDateTime, getTodayDateTime } from '@utils/formatter';
+import { formatDateTime, formatWon, getTodayDateTime } from '@utils/formatter';
 import { goBackToDashboard } from '@utils/navigationHelpers';
 import { loadUserAmt } from '@apis/commonApi';
 import { GlassReceiptCard, GlassReceiptRow } from '@components/dashboard';
@@ -25,9 +25,6 @@ type ChargeSucScreenProps = NativeStackScreenProps<RootStackParamList, 'ChargeSu
  * 하단 버튼 상자는 화면 위에 떠 있어 스크롤 영역이 그 뒤까지 이어지므로, 그냥 가운데 정렬하면 아래로 치우쳐 보인다.
  */
 const CENTERING_EXTRA_BOTTOM_PADDING = BOTTOM_BTN_BOX_HEIGHT - BOTTOM_BTN_BOX_KEYBOARD_INSET + 24;
-
-/** 금액 숫자를 '145,500' 처럼 천 단위 콤마 문자열로 */
-const formatAmount = (value: string | number) => Number(value).toLocaleString('ko-KR');
 
 const ChargeSucScreen: React.FC<ChargeSucScreenProps> = ({ navigation, route }) => {
   // 이전 화면에서 얻어온 충전금액 파라미터
@@ -72,7 +69,7 @@ const ChargeSucScreen: React.FC<ChargeSucScreenProps> = ({ navigation, route }) 
   // 결과 카드에 한 줄씩 놓을 항목 (출금 완료 화면과 같은 구성)
   const rows: GlassReceiptRow[] = [
     { label: '충전 수단', value: '계좌이체' },
-    { label: '충전 후 잔액', value: balanceAfter === null ? null : `${formatAmount(balanceAfter)} 원` },
+    { label: '충전 후 잔액', value: balanceAfter === null ? null : formatWon(balanceAfter) },
     { label: '요청일시', value: formatDateTime(getTodayDateTime()) },
   ];
 

@@ -8,6 +8,7 @@ import type { RootStackParamList } from '@typ/navigation';
 import { IUserProfile } from '@typ/userType';
 import { IRmnAmt } from '@typ/paymentType';
 import { removeData, removeEncryptedToken } from '@storages/asyncStorage';
+import { formatWon } from '@utils/formatter';
 import { loadUserAmt, loadUsrInfoData } from '@apis/commonApi';
 import { PopupModal, ScreenWrapper, Skeleton, Typography } from '@components/common';
 import { layout, theme } from '@styles';
@@ -171,7 +172,7 @@ const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
                 <Skeleton width={88} height={14} />
               ) : (
                 <Typography mode="subtitle3" color="gray900">
-                  {Number(rmnAmtData.sumPpRmnAmt).toLocaleString('ko-KR')} 원
+                  {formatWon(rmnAmtData.sumPpRmnAmt)}
                 </Typography>
               )}
             </View>

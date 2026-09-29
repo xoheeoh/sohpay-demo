@@ -2,8 +2,8 @@ import type { RootStackParamList } from '@typ/navigation';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { Icon } from 'react-native-paper';
-import { Badge, Typography, getTrxTone } from '@components/common';
-import { formatDateTime } from '@utils/formatter';
+import { Badge, Typography, getTrxAmountColor, getTrxTone } from '@components/common';
+import { formatDateTime, formatWon } from '@utils/formatter';
 import { IChargeList } from '@typ/paymentType';
 import { layout, theme } from '@styles';
 
@@ -37,8 +37,8 @@ const ChargeComponent: React.FC<ChargeComponentProps> = ({ item, getCd }) => {
 
       {/* 우측: 금액 */}
       <View style={styles.amountBox}>
-        <Typography mode="subtitle1" color="gray900">
-          + {item.chrgAmt.toLocaleString('kr-KR')}원
+        <Typography mode="subtitle1" color={getTrxAmountColor('charge')}>
+          + {formatWon(item.chrgAmt)}
         </Typography>
       </View>
 

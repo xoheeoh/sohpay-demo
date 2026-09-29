@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Icon } from 'react-native-paper';
 import RenderHtml from 'react-native-render-html';
@@ -8,7 +8,7 @@ import Accordion from 'react-native-collapsible/Accordion';
 import type { RootStackParamList } from '@typ/navigation';
 import { IFAQList } from '@typ/commonType';
 import { FAQ_CTGR_NM, InquiryFAQ } from '@apis/commonApi';
-import { Dropdown, ScreenWrapper, SearchBox, Typography } from '@components/common';
+import { Dropdown, ScreenWrapper, SearchBox, SkeletonList, Typography } from '@components/common';
 import { useAppWidth } from '@utils/dimensions';
 import { layout, theme } from '@styles';
 
@@ -184,8 +184,9 @@ const FAQScreen: React.FC<FAQScreenProps> = () => {
         keyboardShouldPersistTaps="handled"
         onScrollBeginDrag={() => dropdownRef.current?.close()}>
         {isLoading ? (
-          <View style={styles.emptyBox}>
-            <ActivityIndicator color={theme.colors.primary} />
+          // 조회가 끝나기 전에는 목록 자리에 자리표시자를 보여준다 (다른 목록 화면과 같은 방식)
+          <View style={styles.list}>
+            <SkeletonList rows={5} />
           </View>
         ) : faqList.length > 0 ? (
           <Accordion

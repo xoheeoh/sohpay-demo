@@ -2,7 +2,8 @@ import { StyleSheet, View } from 'react-native';
 
 import { ListDataItem, TransType, TransTypeEnum } from '@typ/paymentType';
 import { getBankName } from '@dt/bankCd';
-import { Typography } from '@components/common';
+import { formatWon } from '@utils/formatter';
+import { Typography, getTrxAmountColor } from '@components/common';
 
 interface TransactionItemProps {
   data: ListDataItem | null;
@@ -24,6 +25,22 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ data }) => {
 
   const isCancel = data?.transType === 'CANCEL' || data?.transType === 'PARTCANCEL';
 
+  // 금액 표기와 색은 이용내역 목록·상세와 같은 규칙(formatWon · getTrxAmountColor)을 쓴다
+  const amountKind = isCancel
+    ? 'cancel'
+    : data?.transType === 'PPNP'
+      ? 'charge'
+      : data?.transType === 'RFND'
+        ? 'refund'
+        : 'pay';
+  const amountText = isCancel
+    ? `+ ${formatWon(data?.ccAmt)}` // 취소, 부분취소 금액
+    : data?.transType === 'PPNP'
+      ? `+ ${formatWon(data?.goodsAmt)}` // 충전 금액
+      : data?.transType === 'RFND'
+        ? `- ${formatWon(data?.rfndAmt)}` // 출금 금액
+        : `- ${formatWon(data?.goodsAmt)}`; // 결제 금액
+
   return (
     <View style={styles.container}>
       {/* 거래일 (MM/DD) - 점(.)으로 이으면 시각처럼 읽혀서 빗금으로 구분 */}
@@ -37,22 +54,14 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ data }) => {
           {getContent(data?.transType as TransType)}
         </Typography>
 
-        <Typography mode="caption1" color={isCancel ? 'blue800' : 'gray500'}>
+        <Typography mode="caption1" color={isCancel ? 'blue500' : 'gray500'}>
           {TransTypeEnum[data?.transType as 'PAY']}
         </Typography>
       </View>
 
       {/* 금액 */}
-      <Typography mode="subtitle2" color={isCancel ? 'blue800' : 'gray900'} style={styles.amount}>
-        {
-          isCancel
-            ? '+ ' + Number(data?.ccAmt ?? 0).toLocaleString() // 취소, 부분취소 금액
-            : data?.transType === 'PPNP'
-              ? '+ ' + Number(data?.goodsAmt ?? 0).toLocaleString() // 충전 금액
-              : data?.transType === 'RFND'
-                ? '- ' + Number(data?.rfndAmt ?? 0).toLocaleString() // 출금 금액
-                : '- ' + Number(data?.goodsAmt ?? 0).toLocaleString() // 결제 금액
-        }
+      <Typography mode="subtitle2" color={getTrxAmountColor(amountKind)} style={styles.amount}>
+        {amountText}
       </Typography>
     </View>
   );

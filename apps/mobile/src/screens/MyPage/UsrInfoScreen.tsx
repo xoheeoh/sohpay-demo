@@ -7,23 +7,23 @@ import { Icon } from 'react-native-paper';
 import type { RootStackParamList } from '@typ/navigation';
 import { IRmnAmt, IRefundAcnt } from '@typ/paymentType';
 import { getBankName } from '@dt/bankCd';
-import { formatYYYYMMDDDate, maskAccountNumber } from '@utils/formatter';
+import { formatWon, formatYYYYMMDDDate, maskAccountNumber } from '@utils/formatter';
 import { loadUserAmt } from '@apis/commonApi';
 import { loadRefundAcnt } from '@apis/paymentApi';
-import { ScreenWrapper, SecondaryButton, TextButton, Typography } from '@components/common';
+import { ScreenWrapper, SecondaryButton, Skeleton, TextButton, Typography } from '@components/common';
 import { layout, theme } from '@styles';
 
 type UsrInfoScreenProps = NativeStackScreenProps<RootStackParamList, 'UsrInfo'>;
 
-/** 금액 숫자를 '145,500' 처럼 천 단위 콤마 문자열로. 값이 아직 없으면 0 으로 표시 */
-const formatAmount = (value: string | undefined) => Number(value ?? 0).toLocaleString('ko-KR');
+/** 금액 숫자를 '145,500' 처럼 천 단위 콤마 문자열로 */
+const formatAmount = (value: string) => Number(value).toLocaleString('ko-KR');
 
 const UsrInfoScreen: React.FC<UsrInfoScreenProps> = ({ navigation, route }) => {
   // 이전 화면에서 얻어온 사용자 프로필 정보
   const usrData = route.params.usrData;
 
-  // 회원 잔액 조회
-  const [rmnAmtData, setRmnAmtData] = useState<IRmnAmt>();
+  // 회원 잔액 조회 (null: 아직 조회 전 → 금액 자리에 자리표시자가 보인다. 마이페이지 프로필 카드와 같은 방식)
+  const [rmnAmtData, setRmnAmtData] = useState<IRmnAmt | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,8 +39,9 @@ const UsrInfoScreen: React.FC<UsrInfoScreenProps> = ({ navigation, route }) => {
     fetchData();
   }, []);
 
-  // 등록된 내 계좌 조회
-  const [rfndAcnt, setRfndAcnt] = useState<IRefundAcnt>();
+  // 등록된 내 계좌 조회 (isAcntLoaded: 조회가 끝나기 전에는 "계좌 등록하기"가 잠깐 보이지 않게 자리표시자를 둔다)
+  const [rfndAcnt, setRfndAcnt] = useState<IRefundAcnt | null>(null);
+  const [isAcntLoaded, setIsAcntLoaded] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -50,6 +51,7 @@ const UsrInfoScreen: React.FC<UsrInfoScreenProps> = ({ navigation, route }) => {
         if (data.resultCd === '0000') {
           setRfndAcnt(data);
         }
+        setIsAcntLoaded(true);
       });
     }, []),
   );
@@ -66,30 +68,41 @@ const UsrInfoScreen: React.FC<UsrInfoScreenProps> = ({ navigation, route }) => {
               보유 잔액
             </Typography>
             <View style={styles.iconCircle}>
-              <Icon source="wallet-outline" size={18} color={theme.colors.primary} />
+              <Icon source="wallet-outline" size={20} color={theme.colors.primary} />
             </View>
           </View>
 
-          <View style={styles.amountRow}>
-            <Typography mode="heading1" color="gray900">
-              {formatAmount(rmnAmtData?.sumPpRmnAmt)}
-            </Typography>
-            <Typography mode="subtitle1" color="gray600">
-              원
-            </Typography>
-          </View>
+          {rmnAmtData === null ? (
+            <View style={[styles.amountRow, { paddingVertical: 4 }]}>
+              <Skeleton width={160} height={32} />
+            </View>
+          ) : (
+            <View style={styles.amountRow}>
+              <Typography mode="heading1" color="gray900">
+                {formatAmount(rmnAmtData.sumPpRmnAmt)}
+              </Typography>
+              <Typography mode="subtitle1" color="gray600">
+                원
+              </Typography>
+            </View>
+          )}
 
           {/* 출금 가능 금액: 전체 잔액과 구분되게 연한 띠로 표시 */}
           <View style={[layout.rowBetween, styles.subInfoStrip]}>
             <Typography mode="body2" color="gray600">
               출금 가능 금액
             </Typography>
-            <Typography mode="subtitle3" color="primary">
-              {formatAmount(rmnAmtData?.ppCanRfndRmnAmt)} 원
-            </Typography>
+            {rmnAmtData === null ? (
+              <Skeleton width={88} height={14} />
+            ) : (
+              <Typography mode="subtitle3" color="primary">
+                {formatWon(rmnAmtData.ppCanRfndRmnAmt)}
+              </Typography>
+            )}
           </View>
 
-          <SecondaryButton label={'잔액 환급'} onPress={() => navigation.navigate('Refund')} size={'lg'} />
+          {/* 앱 전체에서 쓰는 말은 "출금" (환급·환불은 쓰지 않는다) */}
+          <SecondaryButton label={'출금하기'} onPress={() => navigation.navigate('Refund')} size={'lg'} />
         </View>
 
         {/* 회원 정보 카드. 아바타·큰 이름은 마이페이지 프로필 카드가 맡으므로 여기서는 항목 표로만 보여준다 (겹침 방지) */}
@@ -114,7 +127,9 @@ const UsrInfoScreen: React.FC<UsrInfoScreenProps> = ({ navigation, route }) => {
                 hitSlop={4}
                 style={({ pressed }) => [layout.rowCenter, styles.accountLink, pressed && { opacity: 0.5 }]}
                 onPress={() => navigation.navigate('AcntManage')}>
-                {hasAccount ? (
+                {!isAcntLoaded ? (
+                  <Skeleton width={120} height={14} />
+                ) : hasAccount ? (
                   <Typography mode="body2" color="gray900" numberOfLines={1}>
                     {getBankName(rfndAcnt.rfndBankCd)} {maskAccountNumber(rfndAcnt.rfndAcntNo)}
                   </Typography>
@@ -164,10 +179,11 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 16,
   },
+  // 출금·충전 확인 화면의 금액 카드(AmountSummaryCard)와 같은 크기
   iconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: theme.colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',

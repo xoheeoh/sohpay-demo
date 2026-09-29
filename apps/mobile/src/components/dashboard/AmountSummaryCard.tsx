@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
 
+import { formatWon } from '@utils/formatter';
 import { Skeleton, Typography } from '@components/common';
 import { layout, theme } from '@styles';
 
@@ -52,7 +53,7 @@ const AmountSummaryCard: React.FC<AmountSummaryCardProps> = ({ label, amount, ic
         <Skeleton width={88} height={14} />
       ) : (
         <Typography mode="subtitle3" color="gray900">
-          {formatAmount(subAmount)} 원
+          {formatWon(subAmount)}
         </Typography>
       )}
     </View>

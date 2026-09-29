@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Icon } from 'react-native-paper';
 import Accordion from 'react-native-collapsible/Accordion';
@@ -8,7 +8,7 @@ import RenderHtml from 'react-native-render-html';
 import type { RootStackParamList } from '@typ/navigation';
 import { INoticeList } from '@typ/commonType';
 import { InquiryNotice } from '@apis/commonApi';
-import { Badge, ScreenWrapper, Typography } from '@components/common';
+import { Badge, ScreenWrapper, SkeletonList, Typography } from '@components/common';
 import { formatYYYYMMDDDate, getTodayDate } from '@utils/formatter';
 import { useAppWidth } from '@utils/dimensions';
 import { layout, theme } from '@styles';
@@ -117,8 +117,9 @@ const NoticeScreen: React.FC<NoticeScreenProps> = () => {
       {/* 스크롤 영역: 공지 목록만 스크롤된다 */}
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.listContent}>
         {!isLoaded ? (
-          <View style={styles.emptyBox}>
-            <ActivityIndicator color={theme.colors.primary} />
+          // 조회가 끝나기 전에는 목록 자리에 자리표시자를 보여준다 (다른 목록 화면과 같은 방식)
+          <View style={styles.list}>
+            <SkeletonList rows={5} />
           </View>
         ) : noticeData.length > 0 ? (
           <Accordion

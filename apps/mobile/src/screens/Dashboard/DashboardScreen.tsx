@@ -11,7 +11,7 @@ import { storeData } from '@storages/asyncStorage';
 import { loadUserAmt, loadUsrInfoData } from '@apis/commonApi';
 import { getUseList } from '@apis/paymentApi';
 import { BalanceInfo, GradientButton, TransactionItem } from '@components/dashboard';
-import { ScreenWrapper, Typography } from '@components/common';
+import { ScreenWrapper, Skeleton, Typography } from '@components/common';
 import { layout, theme } from '@styles';
 
 type DashboardScreenProps = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
@@ -137,16 +137,32 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             keyExtractor={(item, index) => `${index}`}
             scrollEnabled={false}
             contentContainerStyle={{ flexGrow: 1 }}
-            ListEmptyComponent={() => (
-              <View style={styles.empty}>
-                <View style={styles.emptyIcon}>
-                  <Icon source="receipt-text-outline" size={20} color={theme.colors.primary} />
+            ListEmptyComponent={() =>
+              useList === null ? (
+                // 아직 조회 전: "없음" 문구 대신 행 모양 자리표시자 (마이페이지·계좌관리와 같은 방식)
+                <View>
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <View key={i} style={[styles.skeletonRow, i > 0 && styles.skeletonDivider]}>
+                      <Skeleton width={28} height={12} />
+                      <View style={{ flex: 1, gap: 6 }}>
+                        <Skeleton width="55%" height={14} />
+                        <Skeleton width={36} height={10} />
+                      </View>
+                      <Skeleton width={64} height={14} />
+                    </View>
+                  ))}
                 </View>
-                <Typography mode="body2" color="gray500">
-                  최근 이용 내역이 없습니다.
-                </Typography>
-              </View>
-            )}
+              ) : (
+                <View style={styles.empty}>
+                  <View style={styles.emptyIcon}>
+                    <Icon source="receipt-text-outline" size={20} color={theme.colors.primary} />
+                  </View>
+                  <Typography mode="body2" color="gray500">
+                    최근 이용 내역이 없습니다.
+                  </Typography>
+                </View>
+              )
+            }
             ItemSeparatorComponent={() => <Divider style={styles.separator} />}
           />
 
@@ -200,6 +216,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   separator: { backgroundColor: theme.colors.gray100, marginHorizontal: 16 },
+  // 조회 전 자리표시자 행: 실제 행(TransactionItem)과 같은 높이·여백
+  skeletonRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 17, paddingHorizontal: 16 },
+  skeletonDivider: { borderTopWidth: 1, borderTopColor: theme.colors.gray100 },
   // 비어 있을 때: 늘어난 내용 영역의 세로 가운데에 아이콘·문구를 둔다 (다른 화면의 빈 상태와 같은 모양)
   empty: {
     flex: 1,

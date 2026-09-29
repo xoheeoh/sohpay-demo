@@ -240,3 +240,12 @@ export function maskAccountNumber(accountNumber: string | null | undefined): str
 
   return `${start}${masked}${end}`;
 }
+
+/**
+ * 금액 표기: 숫자 → '4,500원' (천 단위 콤마, 뒤에 "원"을 붙여 쓴다)
+ * 이용내역·확인 카드·완료 카드 등 글자로 쓰는 금액은 모두 이 함수를 써서 표기를 한 가지로 맞춘다.
+ * 큰 숫자 옆에 "원"을 따로 작은 글자로 놓는 화면(잔액 카드 등)은 예외로 숫자만 따로 그린다.
+ */
+export function formatWon(value: number | string | null | undefined): string {
+  return `${Number(value ?? 0).toLocaleString('ko-KR')}원`;
+}

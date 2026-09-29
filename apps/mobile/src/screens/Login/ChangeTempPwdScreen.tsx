@@ -107,7 +107,7 @@ const ChangeTempPwdScreen: React.FC<ChangeTempPwdScreenProps> = ({ route, naviga
         contentContainerStyle={[styles.wrap]}
         keyboardShouldPersistTaps="handled"
         keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
-        <Typography mode="subtitle2" color="gray900">
+        <Typography mode="heading3" color="gray900">
           신규 비밀번호 입력
         </Typography>
 

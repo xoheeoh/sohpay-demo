@@ -1,8 +1,7 @@
 import type { RootStackParamList } from '@typ/navigation';
-import { Fragment } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Divider, Icon } from 'react-native-paper';
+import { Icon } from 'react-native-paper';
 import { ScreenWrapper, Typography } from '@components/common';
 import { theme } from '@styles';
 import styles from './TermListScreen.styles';
@@ -24,20 +23,16 @@ const TermListScreen: React.FC<TermListScreenProps> = ({ navigation }) => {
       <ScrollView contentContainerStyle={styles.wrap}>
         <View style={styles.list}>
           {termList.map((item, index) => (
-            <Fragment key={index}>
-              <Pressable
-                style={styles.pressable}
-                onPress={() => navigation.navigate('TermContent', { flg: index, title: item.title })}>
-                <Typography mode="subtitle2" color="gray900">
-                  {item.title}
-                </Typography>
+            <Pressable
+              key={item.title}
+              style={({ pressed }) => [styles.pressable, index > 0 && styles.divider, pressed && styles.pressed]}
+              onPress={() => navigation.navigate('TermContent', { flg: index, title: item.title })}>
+              <Typography mode="subtitle2" color="gray900">
+                {item.title}
+              </Typography>
 
-                <Icon source={'chevron-right'} size={24} color={theme.colors.gray600} />
-              </Pressable>
-
-              {/* 맨 마지막에는 렌더링 되지 않음 */}
-              {index !== termList.length - 1 && <Divider style={{ backgroundColor: theme.colors.gray150 }} />}
-            </Fragment>
+              <Icon source={'chevron-right'} size={20} color={theme.colors.gray400} />
+            </Pressable>
           ))}
         </View>
       </ScrollView>
