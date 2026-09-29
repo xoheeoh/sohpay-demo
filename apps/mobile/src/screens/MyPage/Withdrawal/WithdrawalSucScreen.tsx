@@ -30,8 +30,8 @@ const CENTERING_EXTRA_BOTTOM_PADDING = BOTTOM_BTN_BOX_HEIGHT - BOTTOM_BTN_BOX_KE
 const NOTES = [
   {
     icon: 'shield-check-outline',
-    title: '회원정보·결제정보·계좌정보가 폐기되었어요',
-    desc: '복구할 수 없으며, 이 아이디로는 더 이상 로그인할 수 없습니다.',
+    title: '계정이 탈퇴 처리되었어요',
+    desc: '이 아이디로는 더 이상 로그인할 수 없어요. 거래 기록은 관련 법령에 따라 5년 보관 후 파기됩니다.',
   },
   {
     icon: 'account-plus-outline',

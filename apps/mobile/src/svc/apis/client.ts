@@ -115,7 +115,13 @@ export const fail = (code: string, msg?: string): ApiResult =>
 export function unwrap<T>(res: { data: T | null; error: { message: string; code?: string } | null }): T {
   if (res.error) {
     const e = new Error(res.error.message) as Error & { code?: string };
-    e.code = res.error.code && MESSAGES[res.error.code] ? res.error.code : res.error.message;
+    // 로그인 토큰이 만료·폐기된 경우(PGRST301 = JWT 오류)는 화면이 로그인으로 보낼 수 있게 한 코드로 묶는다
+    const isAuthError = res.error.code === 'PGRST301' || /jwt/i.test(res.error.message);
+    e.code = isAuthError
+      ? 'UNAUTHENTICATED'
+      : res.error.code && MESSAGES[res.error.code]
+        ? res.error.code
+        : res.error.message;
     throw e;
   }
   return res.data as T;
@@ -129,7 +135,11 @@ export const toFail = (e: unknown): ApiResult => {
 
 /** RPC 가 ok:false 를 값으로 돌려주는 경우(PIN 계열) */
 export const fromRpc = <T extends { ok?: boolean; code?: string }>(data: T): ApiResult<T> => {
-  if (data && data.ok === false) return fail(data.code ?? '9999') as ApiResult<T>;
+  if (data && data.ok === false) {
+    // 실패 응답에 딸려 오는 부가 정보(예: PIN 남은 시도 횟수 remainingAttempts, 잠금 해제 시각 unlocksAt)도 화면에 넘긴다
+    const { ok: _ok, code, ...extra } = data;
+    return { ...extra, ...fail(code ?? '9999') } as ApiResult<T>;
+  }
   return ok(data);
 };
 

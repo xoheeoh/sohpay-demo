@@ -4,12 +4,12 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Icon } from 'react-native-paper';
 
 import { RootStackParamList } from '@typ/navigation';
-import { useDialog } from '@contexts/DialogContext';
 import { loadUserAmt } from '@apis/commonApi';
 import { formatDateTime, formatWon } from '@utils/formatter';
 import {
   BottomBtnBox,
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
+  InfoBox,
   KeyboardAwareScrollView,
   ScreenWrapper,
   Skeleton,
@@ -27,9 +27,6 @@ const CodeInfoScreen: React.FC<CodeInfoScreenProps> = ({ navigation, route }) =>
   const data = route.params.data;
   const goodsAmt = data.goodsAmt;
 
-  // Dialog
-  const { alert } = useDialog();
-
   // 현재 잔액 (null: 아직 조회 전 → "결제 후 잔액" 자리에 자리표시자가 보인다)
   const [balance, setBalance] = useState<number | null>(null);
 
@@ -40,20 +37,14 @@ const CodeInfoScreen: React.FC<CodeInfoScreenProps> = ({ navigation, route }) =>
       if (result.resultCd === '0000') {
         const current = Number(result.sumPpRmnAmt);
         setBalance(current);
-
-        // 잔액이 상품 금액보다 작으면 결제를 진행할 수 없으니 안내 후 결제 시작 화면으로 되돌린다
-        if (current < goodsAmt) {
-          alert({
-            title: '잔액 부족',
-            message1: '잔액이 부족합니다.',
-            message2: '결제하려는 상품 금액을 충전해 주세요.',
-          }).then(() => navigation.pop(2));
-        }
       }
     });
   }, []);
 
   const canPay = balance !== null && balance >= goodsAmt;
+  // 잔액이 상품 금액보다 적으면 이 화면에 그대로 두고 부족한 금액과 충전 버튼을 보여준다 (알림으로 튕겨 보내지 않음)
+  const isInsufficient = balance !== null && balance < goodsAmt;
+  const shortage = isInsufficient ? goodsAmt - balance : 0;
 
   return (
     <ScreenWrapper backgroundColor={theme.colors.bg} keyboardBottomInset={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
@@ -102,6 +93,10 @@ const CodeInfoScreen: React.FC<CodeInfoScreenProps> = ({ navigation, route }) =>
               </Typography>
             )}
           </View>
+
+          {isInsufficient && (
+            <InfoBox tone="yellow">{`잔액이 ${formatWon(shortage)} 부족해요. 충전 후 다시 결제해 주세요.`}</InfoBox>
+          )}
         </View>
 
         {/* 결제 정보 카드 */}
@@ -120,12 +115,15 @@ const CodeInfoScreen: React.FC<CodeInfoScreenProps> = ({ navigation, route }) =>
         </View>
       </KeyboardAwareScrollView>
 
+      {/* 잔액이 부족하면 버튼이 "충전하기"로 바뀌어 충전 흐름으로 바로 이어진다 */}
       <BottomBtnBox
         backgroundColor={theme.colors.bg}
-        buttonKey={canPay.toString()}
-        disabled={!canPay}
-        label={'결제하기'}
-        onPress={() => navigation.navigate('PinPayQR', { data: data })}
+        buttonKey={`${canPay}-${isInsufficient}`}
+        disabled={balance === null}
+        label={isInsufficient ? '충전하기' : '결제하기'}
+        onPress={() =>
+          isInsufficient ? navigation.navigate('ChargeSelectMethod') : navigation.navigate('PinPayQR', { data: data })
+        }
       />
     </ScreenWrapper>
   );

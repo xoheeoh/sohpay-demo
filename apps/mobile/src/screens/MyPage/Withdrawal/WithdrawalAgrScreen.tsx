@@ -19,11 +19,14 @@ import { layout, theme } from '@styles';
 
 type WithdrawalAgrScreenProps = NativeStackScreenProps<RootStackParamList, 'WithdrawalAgr'>;
 
-/** 탈퇴 시 함께 폐기되는 정보 목록 */
-const DELETED_DATA = [
-  { icon: 'account-outline', label: '회원정보', desc: 'ID, 비밀번호, 본인인증 정보' },
-  { icon: 'receipt-text-outline', label: '결제정보', desc: '충전·결제·출금 내역' },
-  { icon: 'bank-outline', label: '계좌정보', desc: '등록된 출금 계좌' },
+/**
+ * 탈퇴 시 정보가 어떻게 처리되는지.
+ * 거래 기록은 전자금융거래법에 따라 5년 보관 의무가 있어 "폐기"라고 쓰지 않는다 (서버도 계정 상태만 탈퇴로 바꾼다).
+ */
+const WITHDRAWAL_EFFECTS = [
+  { icon: 'account-outline', label: '회원정보', desc: '아이디·비밀번호·본인인증 정보 이용 중단' },
+  { icon: 'bank-outline', label: '계좌정보', desc: '등록된 출금 계좌 이용 중단' },
+  { icon: 'receipt-text-outline', label: '거래기록', desc: '관련 법령에 따라 5년 보관 후 파기' },
 ];
 
 const WithdrawalAgrScreen: React.FC<WithdrawalAgrScreenProps> = ({ navigation, route }) => {
@@ -91,13 +94,13 @@ const WithdrawalAgrScreen: React.FC<WithdrawalAgrScreenProps> = ({ navigation, r
                 탈퇴 전에 꼭 확인해 주세요
               </Typography>
               <Typography mode="body2" color="gray600">
-                탈퇴하면 아래 정보가 복구할 수 없는 형태로 폐기됩니다.
+                탈퇴하면 이 계정은 다시 쓸 수 없고, 정보는 아래와 같이 처리됩니다.
               </Typography>
             </View>
           </View>
 
           <View style={styles.deletedList}>
-            {DELETED_DATA.map((item, index) => (
+            {WITHDRAWAL_EFFECTS.map((item, index) => (
               <View
                 key={item.label}
                 style={[layout.rowCenter, styles.deletedRow, index > 0 && styles.deletedRowDivider]}>
@@ -123,7 +126,7 @@ const WithdrawalAgrScreen: React.FC<WithdrawalAgrScreenProps> = ({ navigation, r
             setIsChecked={setAgrChecked}
             labelComponent={
               <Typography mode="body2" color="gray900" style={{ flexShrink: 1 }}>
-                위 내용을 확인했으며, SohPay를 탈퇴하고 모든 데이터를 삭제하는 것에 동의합니다.
+                위 내용을 확인했으며, SohPay 탈퇴에 동의합니다.
               </Typography>
             }
           />

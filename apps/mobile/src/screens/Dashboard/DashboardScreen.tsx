@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { FlatList, Image, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -7,7 +7,10 @@ import { Divider, Icon } from 'react-native-paper';
 import { IRmnAmt, ListDataItem } from '@typ/paymentType';
 import type { RootStackParamList } from '@typ/navigation';
 import { IUserProfile } from '@typ/userType';
-import { storeData } from '@storages/asyncStorage';
+import { removeData, removeEncryptedToken, storeData } from '@storages/asyncStorage';
+import { useDialog } from '@contexts/DialogContext';
+import { goToLogin } from '@utils/navigationHelpers';
+import { hasSession } from '@apis/client';
 import { loadUserAmt, loadUsrInfoData } from '@apis/commonApi';
 import { getUseList } from '@apis/paymentApi';
 import { BalanceInfo, GradientButton, TransactionItem } from '@components/dashboard';
@@ -17,6 +20,29 @@ import { layout, theme } from '@styles';
 type DashboardScreenProps = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
 
 const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
+  // Dialog
+  const { alert } = useDialog();
+
+  /**
+   * 로그인 상태(세션)가 끊긴 경우: 다른 기기에서 탈퇴·비밀번호 변경을 했거나 토큰이 만료·폐기된 상태.
+   * 그대로 두면 잔액 0원·이름 빈칸인 홈이 뜨고 모든 동작이 실패하므로, 저장된 정보를 지우고 로그인 화면으로 보낸다.
+   * 조회 여러 개가 동시에 실패해도 안내는 한 번만 띄운다.
+   */
+  const isSessionExpiredHandled = useRef(false);
+  const handleSessionExpired = async () => {
+    if (isSessionExpiredHandled.current) return;
+    isSessionExpiredHandled.current = true;
+
+    await removeEncryptedToken().catch(() => {});
+    await removeData('mbUid');
+    await alert({
+      title: '다시 로그인해 주세요',
+      message1: '로그인 상태가 만료되었어요.',
+      message2: '안전을 위해 로그인 화면으로 이동합니다.',
+    });
+    goToLogin(navigation);
+  };
+
   // 사용자 정보 조회 ==================================================
   const [usrData, setUsrData] = useState<IUserProfile>();
 
@@ -28,6 +54,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
 
         // 사용자명 저장
         storeData('usrNm', data.usrNm);
+      } else if (data.resultCd === 'UNAUTHENTICATED') {
+        handleSessionExpired();
       } else {
         console.error('사용자 정보 조회 실패: ', data.resultMsg);
       }
@@ -42,6 +70,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
       if (data.resultCd === '0000') {
         setRmnAmtData(data);
         // console.log('회원 잔액:', data);
+      } else if (data.resultCd === 'UNAUTHENTICATED') {
+        handleSessionExpired();
       } else {
         console.error('회원 잔액 조회 실패: ', data.resultMsg);
       }
@@ -79,9 +109,16 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   // 화면 focus 시 데이터 조회 =========================================
   useFocusEffect(
     useCallback(() => {
-      fetchUserInfo();
-      fetchUserBalance();
-      getUseListApi();
+      // 세션이 없으면(만료·폐기) 조회 대신 로그인으로 보낸다
+      hasSession().then((loggedIn) => {
+        if (!loggedIn) {
+          handleSessionExpired();
+          return;
+        }
+        fetchUserInfo();
+        fetchUserBalance();
+        getUseListApi();
+      });
     }, []),
   );
   // ========================================= 화면 focus 시 데이터 조회

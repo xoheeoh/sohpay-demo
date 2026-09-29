@@ -82,14 +82,11 @@ const RefundAuthScreen = ({ navigation, route }: RefundAuthScreenProps) => {
       } else {
         const errMsg = data.resultMsg;
 
+        // 서버가 준 이유(명의 불일치·지원하지 않는 은행·계좌번호 오류 등)를 그대로 보여준다
         alert({
-          title: '송금 실패',
-          message1: '1원 송금에 실패하였습니다.',
-          message2: errMsg.includes('명의')
-            ? errMsg
-            : errMsg.includes('횟수')
-              ? errMsg
-              : '입력하신 계좌 정보를 다시 한 번 확인해주세요.',
+          title: '1원 송금 실패',
+          message1: errMsg,
+          message2: '입력하신 계좌 정보를 다시 한 번 확인해 주세요.',
         });
       }
     });

@@ -31,9 +31,10 @@ const CodeInputScreen: React.FC<CodeInputScreenProps> = ({ navigation }) => {
       if (data.resultCd === '0000') {
         navigation.navigate('CodeInfo', { data: data });
       } else {
+        // 서버가 구분해 주는 이유(만료·이미 결제됨·없는 코드)를 그대로 보여준다
         alert({
           title: '결제코드 오류',
-          message1: '유효하지 않은 결제코드입니다.',
+          message1: data.resultMsg,
           message2: '확인 후 다시 입력해 주세요.',
         });
         setCode('');

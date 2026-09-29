@@ -116,10 +116,11 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           navigation.navigate('ChangeTempPwd', { uid: uidForChangePwd, tempPwd: tempPwdForChange });
         }
       } else {
+        // 아이디·비밀번호 오류 / 이용할 수 없는 계정(탈퇴) / 네트워크 등 서버가 준 이유를 그대로 보여준다
         await alert({
           title: '로그인',
           message1: '로그인에 실패했습니다.',
-          message2: '입력하신 정보를 다시 확인해 주세요.',
+          message2: data.resultMsg,
         });
         setUserPw('');
       }

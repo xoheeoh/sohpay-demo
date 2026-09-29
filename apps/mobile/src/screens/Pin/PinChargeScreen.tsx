@@ -102,6 +102,7 @@ const PinChargeScreen: React.FC<PinChargeScreenProps> = ({ navigation, route }) 
   const [enteredNumbers, setEnteredNumbers] = useState<number[]>([]); // 입력된 숫자 저장
   const [error, setError] = useState<boolean>(false);
   const [exceed, setExceed] = useState<boolean>(false);
+  const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null); // 서버가 알려주는 남은 시도 횟수
 
   // 6자리 숫자 입력이 완료되면 맞는지 확인
   useEffect(() => {
@@ -125,7 +126,8 @@ const PinChargeScreen: React.FC<PinChargeScreenProps> = ({ navigation, route }) 
           setEnteredNumbers([]);
           setInputCount(0);
         } else {
-          // 핀 번호 불일치 (5회 초과 전)
+          // 핀 번호 불일치 (5회 초과 전). 서버가 남은 횟수를 알려주면 함께 보여준다
+          setRemainingAttempts(typeof data.remainingAttempts === 'number' ? data.remainingAttempts : null);
           setError(true);
           console.log('핀 번호 불일치!', data.resultMsg);
 
@@ -144,19 +146,23 @@ const PinChargeScreen: React.FC<PinChargeScreenProps> = ({ navigation, route }) 
     if (error && !exceed) {
       Toast.show({
         type: 'error',
-        text1: '비밀번호가 올바르지 않습니다.\n비밀번호를 확인 후 다시 입력해 주세요.',
+        text1:
+          remainingAttempts !== null
+            ? `비밀번호가 올바르지 않습니다. (남은 횟수 ${remainingAttempts}회)\n5회 틀리면 10분간 잠깁니다.`
+            : '비밀번호가 올바르지 않습니다.\n비밀번호를 확인 후 다시 입력해 주세요.',
       });
       // Toast 표시 후 error 상태 초기화하여 다음 실패 시에도 Toast가 표시되도록 함
       setError(false);
     } else if (exceed) {
       Toast.show({
         type: 'error',
-        text1: '비밀번호를 5회 이상 실패하셨습니다.\n변경 후 사용해 주세요.',
+        // 서버 규칙: 5회 틀리면 10분 뒤 자동으로 풀린다 (비밀번호를 바꿔야 하는 것은 아님)
+        text1: '간편 비밀번호를 5회 잘못 입력해 10분간 잠겼습니다.\n잠시 후 다시 시도해 주세요.',
       });
       // Toast 표시 후 exceed 상태 초기화
       setExceed(false);
     }
-  }, [error, exceed]);
+  }, [error, exceed, remainingAttempts]);
 
   return (
     <ScreenWrapper backgroundColor="white" topComponent={false}>

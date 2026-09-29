@@ -15,9 +15,8 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ data }) => {
     if (ctgr === 'CANCEL' || ctgr === 'PARTCANCEL' || ctgr === 'PAY') {
       return data?.coNm; // 결제, 취소에 관한 내역은 상점명 표시
     } else if (ctgr === 'PPNP') {
-      // transType이 PPNP인 경우 존재
-      // 원래 02:출금이제, 03:가상계좌 이지만 이 앱은 출금이체 고정이므로 그냥 계좌번호 노출
-      return '계좌이체';
+      // 충전은 수단 이름(계좌이체 / 가상계좌). 상세 화면과 같은 값을 보여준다
+      return data?.coNm || '충전';
     } else if (ctgr === 'RFND') {
       return getBankName(data?.rfndBankCd || '') + ' ' + (data?.rfndAcntNo || '');
     }
