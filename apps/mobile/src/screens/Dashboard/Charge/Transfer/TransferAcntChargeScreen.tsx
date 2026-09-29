@@ -80,6 +80,7 @@ const TransferAcntChargeScreen = ({ navigation, route }: TransferAcntChargeScree
       </KeyboardAwareScrollView>
 
       <BottomBtnBox
+        backgroundColor={theme.colors.bg}
         buttonKey={'charge'}
         disabled={false}
         label={'충전'}

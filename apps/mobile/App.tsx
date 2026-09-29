@@ -403,7 +403,7 @@ function App(): React.JSX.Element {
                   name="CodeInfo"
                   component={CodeInfoScreen}
                   options={{
-                    header: () => <Header title="결제" bgColor="white" leftButton />,
+                    header: () => <Header title="결제" bgColor={theme.colors.bg} leftButton />,
                   }}
                 />
                 <Stack.Screen

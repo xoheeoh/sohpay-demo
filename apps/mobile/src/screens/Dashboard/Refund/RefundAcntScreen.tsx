@@ -150,6 +150,7 @@ const RefundAcntScreen: React.FC<RefundAcntScreenProps> = ({ navigation, route }
       </KeyboardAwareScrollView>
 
       <BottomBtnBox
+        backgroundColor={theme.colors.bg}
         buttonKey={hasRefundAccount.toString()}
         disabled={isButtonDisabled}
         label={'잔액 출금'}

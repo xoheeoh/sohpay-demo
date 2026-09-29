@@ -1,23 +1,34 @@
 import { useCallback } from 'react';
-import { BackHandler, Image, StyleSheet, View } from 'react-native';
+import { BackHandler, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@typ/navigation';
 import { formatDateTime } from '@utils/formatter';
+import { GlassReceiptCard, GlassReceiptRow } from '@components/dashboard';
 import {
   BottomBtnBox,
+  BOTTOM_BTN_BOX_HEIGHT,
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
   KeyboardAwareScrollView,
   ScreenWrapper,
+  SuccessAnimation,
   Typography,
 } from '@components/common';
-import { layout, theme } from '@styles';
 
 type PayCompletedScreenProps = NativeStackScreenProps<RootStackParamList, 'PayCompleted'>;
 
+/**
+ * 내용을 "버튼 위 영역"의 가운데에 놓기 위한 추가 아래 여백 (출금·충전·회원가입 완료 화면과 같은 계산).
+ * 하단 버튼 상자는 화면 위에 떠 있어 스크롤 영역이 그 뒤까지 이어지므로, 그냥 가운데 정렬하면 아래로 치우쳐 보인다.
+ */
+const CENTERING_EXTRA_BOTTOM_PADDING = BOTTOM_BTN_BOX_HEIGHT - BOTTOM_BTN_BOX_KEYBOARD_INSET + 24;
+
+/** 금액 숫자를 '4,500' 처럼 천 단위 콤마 문자열로 */
+const formatAmount = (value: string | number) => Number(value).toLocaleString('ko-KR');
+
 const PayCompletedScreen: React.FC<PayCompletedScreenProps> = ({ navigation, route }) => {
-  // 이전 화면에서 얻어온 결제 정보 파라미터
+  // 이전 화면에서 얻어온 결제 결과
   const data = route.params.data;
 
   useFocusEffect(
@@ -42,101 +53,37 @@ const PayCompletedScreen: React.FC<PayCompletedScreenProps> = ({ navigation, rou
     }, [navigation]),
   );
 
+  // 결과 카드에 한 줄씩 놓을 항목 (출금·충전 완료 화면과 같은 구성)
+  const rows: GlassReceiptRow[] = [
+    { label: '가맹점', value: data.coNm },
+    { label: '상품명', value: data.goodsNm },
+    { label: '결제 후 잔액', value: `${formatAmount(data.ppRmnAmt)} 원` },
+    { label: '거래번호', value: data.tid },
+    { label: '결제일시', value: formatDateTime(`${data.ediDate}`) },
+  ];
+
   return (
     <ScreenWrapper backgroundColor="white" keyboardBottomInset={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
-      <KeyboardAwareScrollView keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
-        {/* 결제 성공 */}
-        <View style={[styles.container, { gap: 32, alignItems: 'center' }]}>
-          <View style={{ gap: 8, alignItems: 'center' }}>
-            <Typography mode="subtitle1" color="gray900">
-              결제완료
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.container}
+        keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}
+        extraBottomPadding={CENTERING_EXTRA_BOTTOM_PADDING}>
+        {/* 체크 애니메이션 → 완료 문구. 출금·충전·회원가입 완료와 같은 애니메이션으로 톤을 맞춘다 */}
+        <View style={styles.hero}>
+          <SuccessAnimation size={160} style={styles.animation} />
+
+          <View style={{ alignItems: 'center', gap: 6 }}>
+            <Typography mode="heading3" color="gray900">
+              결제가 완료되었어요
             </Typography>
-
-            <Typography mode="body2" color="gray600">
-              요청하신 결제가 정상적으로 완료되었습니다.
-            </Typography>
-          </View>
-
-          <Image
-            source={require('@images/illust/pay_completed.png')}
-            style={{ width: 174, height: 112, alignSelf: 'center' }}
-            resizeMode="contain"
-          />
-        </View>
-
-        <View style={styles.divider}></View>
-
-        {/* 결제 요약 */}
-        <View style={[styles.container, { gap: 12 }]}>
-          <View style={{ gap: 8 }}>
-            <Typography mode="body1" color="gray600">
-              {data.coNm}
-            </Typography>
-            <Typography mode="body2" color="gray600">
-              {data.goodsNm}
+            <Typography mode="body2" color="gray600" style={{ textAlign: 'center' }}>
+              {data.coNm}에서 결제한 내역이 이용내역에 기록되었습니다.
             </Typography>
           </View>
-
-          <Typography mode="heading1" color="primary" style={{ alignSelf: 'flex-end' }}>
-            {Number(data.goodsAmt).toLocaleString('ko-KR')} 원
-          </Typography>
         </View>
 
-        <View style={styles.divider}></View>
-
-        {/* 결제 상세 정보 */}
-        <View style={[styles.container, { gap: 16 }]}>
-          <Typography mode="subtitle2" color="gray900">
-            결제 정보
-          </Typography>
-
-          <View style={{ gap: 12 }}>
-            <View style={layout.rowBetween}>
-              <Typography mode="body2" color="gray900" style={{ width: 80 }}>
-                요청일시
-              </Typography>
-              <Typography mode="body2" color="gray600">
-                {formatDateTime(`${data.ediDate}`)}
-              </Typography>
-            </View>
-
-            <View style={layout.rowBetween}>
-              <Typography mode="body2" color="gray900" style={{ width: 80 }}>
-                거래번호
-              </Typography>
-              <Typography mode="body2" color="gray600">
-                {data.tid}
-              </Typography>
-            </View>
-
-            <View style={layout.rowBetween}>
-              <Typography mode="body2" color="gray900" style={{ width: 80 }}>
-                상품명
-              </Typography>
-              <Typography mode="body2" color="gray600">
-                {data.goodsNm}
-              </Typography>
-            </View>
-
-            <View style={layout.rowBetween}>
-              <Typography mode="body2" color="gray900" style={{ width: 80 }}>
-                금액
-              </Typography>
-              <Typography mode="subtitle3" color="gray600">
-                {Number(data.goodsAmt).toLocaleString('ko-KR')} 원
-              </Typography>
-            </View>
-
-            <View style={layout.rowBetween}>
-              <Typography mode="body2" color="gray900" style={{ width: 80 }}>
-                거래 후 잔액
-              </Typography>
-              <Typography mode="body2" color="gray600">
-                {Number(data.ppRmnAmt).toLocaleString('ko-KR')} 원
-              </Typography>
-            </View>
-          </View>
-        </View>
+        {/* 결과 카드 (출금·충전 완료 화면과 같은 공용 유리판 카드) */}
+        <GlassReceiptCard badgeLabel="결제 완료" amountLabel="결제 금액" amount={data.goodsAmt} rows={rows} />
       </KeyboardAwareScrollView>
 
       <BottomBtnBox
@@ -150,8 +97,12 @@ const PayCompletedScreen: React.FC<PayCompletedScreenProps> = ({ navigation, rou
 };
 
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: 16, paddingVertical: 24 },
-  divider: { backgroundColor: theme.colors.gray100, height: 1, marginHorizontal: 16 },
+  // 세로 가운데 정렬. 아래 여백은 KeyboardAwareScrollView 가 덮어쓰므로 extraBottomPadding 으로 보정한다.
+  container: { paddingHorizontal: 16, paddingVertical: 24, gap: 50, flexGrow: 1, justifyContent: 'center' },
+
+  hero: { gap: 12, alignItems: 'center' },
+  // Lottie 그림은 상자 안에 위 28px, 아래 35px 투명 여백을 두고 그려지므로 음수 여백으로 상쇄해 보이는 그림 기준으로 정렬한다
+  animation: { marginTop: -28, marginBottom: -32 },
 });
 
 export default PayCompletedScreen;

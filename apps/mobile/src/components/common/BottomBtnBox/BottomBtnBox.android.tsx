@@ -3,7 +3,13 @@ import { Animated, Easing, Keyboard, LayoutAnimation, UIManager, ViewStyle } fro
 import PrimaryButton from '../PrimaryButton';
 import { BottomBtnBoxProps } from './BottomBtnBox.ios';
 
-const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({ buttonKey, disabled, label, onPress }) => {
+const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({
+  buttonKey,
+  disabled,
+  label,
+  onPress,
+  backgroundColor = 'white',
+}) => {
   const paddingAnim = useRef(new Animated.Value(1)).current; // 1: 기본 padding, 0: 타이트
   const [opacityAnim] = useState(new Animated.Value(1)); // 초기값: 보임
   const bottomAnim = useRef(new Animated.Value(0)).current;
@@ -78,7 +84,7 @@ const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({ buttonKey, disabled, label,
     position: 'absolute',
     bottom: bottomAnim,
     width: '100%',
-    backgroundColor: 'white',
+    backgroundColor,
     paddingHorizontal: paddingAnim.interpolate({
       inputRange: [0, 1],
       outputRange: [0, 16],
