@@ -95,12 +95,9 @@ const AcntManageScreen: React.FC<AcntManageScreenProps> = ({ navigation }) => {
               </Typography>
             </>
           ) : (
-            /* 계좌 없음: 계좌가 있을 때와 같은 줄 구성(아이콘 동그라미 + 두 줄 글)으로, 줄 전체를 누르면 등록으로 간다 */
+            /* 계좌 없음: 계좌가 있을 때와 같은 줄 구성(아이콘 동그라미 + 두 줄 글). 등록은 위의 "등록하기 >" 링크 한 곳에서만 */
             <>
-              <Pressable
-                accessibilityRole="button"
-                style={({ pressed }) => [layout.rowCenter, styles.bankRow, pressed && { opacity: 0.6 }]}
-                onPress={() => navigation.navigate('RefundAuth', { flg: 'first' })}>
+              <View style={[layout.rowCenter, styles.bankRow]}>
                 <View style={styles.emptyIcon}>
                   <Icon source="bank-plus" size={22} color={theme.colors.gray500} />
                 </View>
@@ -113,7 +110,7 @@ const AcntManageScreen: React.FC<AcntManageScreenProps> = ({ navigation }) => {
                     출금과 계좌이체 충전에 쓸 계좌를 등록해 주세요.
                   </Typography>
                 </View>
-              </Pressable>
+              </View>
 
               <Typography mode="caption1" color="gray400">
                 계좌 등록에는 본인 명의 계좌의 1원 인증이 필요합니다.
