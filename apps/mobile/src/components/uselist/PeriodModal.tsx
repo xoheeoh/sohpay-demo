@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
 
 import { getDateMonthsAgo, getOneWeekAgoDate, getDateWithHypen } from '@utils/formatter';
@@ -41,11 +41,7 @@ const DateSelectBox: React.FC<DateSelectBoxProps> = ({ label, value, active, onP
         {value || '날짜 선택'}
       </Typography>
     </View>
-    <Icon
-      source={'calendar-blank-outline'}
-      size={20}
-      color={active ? theme.colors.primary : theme.colors.gray500}
-    />
+    <Icon source={'calendar-blank-outline'} size={20} color={active ? theme.colors.primary : theme.colors.gray500} />
   </Pressable>
 );
 
@@ -88,6 +84,8 @@ const PeriodModal: React.FC<PeriodModalProps> = ({ radioValue, frDt, toDt, handl
    */
   const [isDatePickerVisible, setDatePickerVisible] = useState<boolean>(false);
   const [isSelectingStartDate, setSelectingStartDate] = useState(true);
+  // 날짜 조건에 어긋날 때 날짜 칸 아래에 보여줄 안내 (Alert 는 웹에서 아무것도 띄우지 않아 쓰지 않는다)
+  const [periodError, setPeriodError] = useState<string | null>(null);
 
   const openDatePicker = (isStartDate: boolean) => {
     setSelectingStartDate(isStartDate);
@@ -104,27 +102,19 @@ const PeriodModal: React.FC<PeriodModalProps> = ({ radioValue, frDt, toDt, handl
       // 시작일 선택
       if (endDate && new Date(selectedDate) > new Date(endDate)) {
         // 선택한 시작일이 종료일보다 뒤인 경우 경고
-        Alert.alert('', '시작일은 종료일보다 늦을 수 없습니다.', [
-          {
-            text: '확인',
-            style: 'cancel',
-          },
-        ]);
+        setPeriodError('시작일은 종료일보다 늦을 수 없어요.');
       } else {
         setStartDate(selectedDate);
+        setPeriodError(null);
       }
     } else {
       // 종료일 선택
       if (startDate && new Date(selectedDate) < new Date(startDate)) {
         // 선택한 종료일이 시작일보다 앞인 경우 경고
-        Alert.alert('', '종료일은 시작일보다 이를 수 없습니다.', [
-          {
-            text: '확인',
-            style: 'cancel',
-          },
-        ]);
+        setPeriodError('종료일은 시작일보다 이를 수 없어요.');
       } else {
         setEndDate(selectedDate);
+        setPeriodError(null);
       }
     }
     closeDatePicker(); // DatePicker 닫기
@@ -140,12 +130,7 @@ const PeriodModal: React.FC<PeriodModalProps> = ({ radioValue, frDt, toDt, handl
       const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
       if (diffInDays > 92) {
-        Alert.alert('', '조회 가능한 최대 기간은 3개월(92일)입니다.', [
-          {
-            text: '확인',
-            style: 'cancel',
-          },
-        ]);
+        setPeriodError('조회 가능한 최대 기간은 3개월(92일)이에요.');
         return;
       }
     }
@@ -184,9 +169,15 @@ const PeriodModal: React.FC<PeriodModalProps> = ({ radioValue, frDt, toDt, handl
               />
             </View>
 
-            <Typography mode="caption1" color="gray500" style={styles.hint}>
-              최대 3개월까지 조회할 수 있어요
-            </Typography>
+            {periodError ? (
+              <Typography mode="caption1" color="red500" style={styles.hint}>
+                {periodError}
+              </Typography>
+            ) : (
+              <Typography mode="caption1" color="gray500" style={styles.hint}>
+                최대 3개월까지 조회할 수 있어요
+              </Typography>
+            )}
 
             {/* DatePicker 모달 - 바깥 어두운 영역을 누르면 닫히고, 달력 영역을 누르면 닫히지 않음 */}
             <Modal visible={isDatePickerVisible} animationType="fade" transparent onRequestClose={closeDatePicker}>

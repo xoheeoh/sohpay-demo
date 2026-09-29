@@ -71,9 +71,10 @@ const QRcodeScanScreen: React.FC<QRcodeScanScreenProps> = ({ navigation }) => {
         if (data.resultCd === '0000') {
           navigation.navigate('CodeInfo', { data: data as unknown as IQRdata });
         } else {
+          // 서버가 구분해 주는 이유(만료·이미 결제됨·없는 코드)를 그대로 보여준다
           confirm({
             title: '조회 실패',
-            message1: 'QR 코드 인식에 실패했습니다.',
+            message1: data.resultMsg,
             message2: '확인 후 다시 시도해주세요.',
             confirmText: '확인',
           }).then((ok) => {

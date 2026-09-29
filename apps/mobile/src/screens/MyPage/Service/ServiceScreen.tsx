@@ -10,9 +10,9 @@ import { layout, theme } from '@styles';
 
 type ServiceScreenProps = NativeStackScreenProps<RootStackParamList, 'Service'>;
 
-/** TODO: 고객센터 정보 바뀔 예정 */
-const CS_TEL_NO = '00000000';
-const CS_EMAIL = 'cs@service.com';
+/** 데모용 상담 채널. 실제로 운영하는 번호·주소가 아니라 화면 아래에 그 사실을 함께 적는다 */
+const CS_TEL_NO = '15880000';
+const CS_EMAIL = 'cs@demo.sohpay.app';
 
 /** 상담 안내 카드 안의 "라벨 : 값" 한 줄 */
 const InfoLine = ({ label, value }: { label: string; value: string }) => (
@@ -77,7 +77,7 @@ const ServiceScreen: React.FC<ServiceScreenProps> = ({ navigation }) => {
           <QuickMenuTile icon="email-edit-outline" label="1:1 상담" onPress={() => navigation.navigate('Inquiry')} />
         </View>
 
-        {/* 상담 안내 - TODO: 추후 내용 바뀔 예정 */}
+        {/* 상담 안내 */}
         <View style={styles.section}>
           <Typography mode="subtitle3" color="gray500" style={styles.sectionTitle}>
             상담 안내
