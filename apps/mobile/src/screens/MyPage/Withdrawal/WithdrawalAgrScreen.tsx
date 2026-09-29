@@ -18,6 +18,13 @@ import { layout, theme } from '@styles';
 
 type WithdrawalAgrScreenProps = NativeStackScreenProps<RootStackParamList, 'WithdrawalAgr'>;
 
+/** 탈퇴 시 함께 폐기되는 정보 목록 */
+const DELETED_DATA = [
+  { icon: 'account-outline', label: '회원정보', desc: 'ID, 비밀번호, 본인인증 정보' },
+  { icon: 'receipt-text-outline', label: '결제정보', desc: '충전·결제·출금 내역' },
+  { icon: 'bank-outline', label: '계좌정보', desc: '등록된 출금 계좌' },
+];
+
 const WithdrawalAgrScreen: React.FC<WithdrawalAgrScreenProps> = ({ navigation, route }) => {
   // 이전 화면에서 가져온 패스워드
   const pwd = route.params.pwd;
@@ -53,53 +60,67 @@ const WithdrawalAgrScreen: React.FC<WithdrawalAgrScreenProps> = ({ navigation, r
   };
 
   return (
-    <ScreenWrapper backgroundColor="white" keyboardBottomInset={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
+    <ScreenWrapper backgroundColor={theme.colors.bg} keyboardBottomInset={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
       <KeyboardAwareScrollView
-        contentContainerStyle={[styles.container, { gap: 24 }]}
+        contentContainerStyle={styles.wrap}
         keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
-        {/* 탈퇴 정보 알림 */}
-        <View style={styles.alertBox}>
-          <View style={{ gap: 12 }}>
-            <Icon source={'alert-circle'} size={36} color={theme.colors.red500} />
-            <Typography mode="body2" color="red500">
-              회원 탈퇴 시, 회원과 관련한 모든 데이터가 복구할 수 없는 형태로 폐기됩니다.
-            </Typography>
+        {/* 경고 카드: 무엇이 사라지는지 */}
+        <View style={styles.card}>
+          <View style={[layout.rowCenter, { gap: 12 }]}>
+            <View style={styles.warnCircle}>
+              <Icon source="alert-circle-outline" size={22} color={theme.colors.red500} />
+            </View>
+            <View style={{ flex: 1, gap: 2 }}>
+              <Typography mode="subtitle2" color="gray900">
+                탈퇴 전에 꼭 확인해 주세요
+              </Typography>
+              <Typography mode="body2" color="gray600">
+                탈퇴하면 아래 정보가 복구할 수 없는 형태로 폐기됩니다.
+              </Typography>
+            </View>
           </View>
 
-          <View style={styles.infoBox}>
-            <View style={layout.rowCenter}>
-              <Typography mode="body2" color="gray900" style={{ width: 80 }}>
-                회원정보
-              </Typography>
-              <Typography mode="body2" color="gray600">
-                ID, PW, 본인인증 등
-              </Typography>
-            </View>
+          <View style={styles.deletedList}>
+            {DELETED_DATA.map((item, index) => (
+              <View
+                key={item.label}
+                style={[layout.rowCenter, styles.deletedRow, index > 0 && styles.deletedRowDivider]}>
+                <Icon source={item.icon} size={18} color={theme.colors.gray400} />
+                <Typography mode="body2" color="gray900" style={styles.deletedLabel}>
+                  {item.label}
+                </Typography>
+                <Typography mode="body2" color="gray600" style={{ flex: 1 }}>
+                  {item.desc}
+                </Typography>
+              </View>
+            ))}
+          </View>
 
-            <View style={layout.rowCenter}>
-              <Typography mode="body2" color="gray900" style={{ width: 80 }}>
-                결제정보
-              </Typography>
-              <Typography mode="body2" color="gray600">
-                충전내역, 결제내역, 출금내역 등
-              </Typography>
-            </View>
+          {/* 잔액 조건: 서버가 잔액이 남아 있으면 탈퇴를 거절하므로 미리 알려준다 */}
+          <View style={[layout.rowCenter, styles.noticeStrip]}>
+            <Icon source="information-outline" size={16} color={theme.colors.yellow700} />
+            <Typography mode="caption1" color="gray600" style={{ flex: 1 }}>
+              잔액이 남아 있으면 탈퇴할 수 없어요. 먼저 잔액을 모두 출금해 주세요.
+            </Typography>
           </View>
         </View>
 
-        {/* 탈퇴 동의 체크박스 */}
-        <CheckBox
-          isChecked={agrChecked}
-          setIsChecked={setAgrChecked}
-          labelComponent={
-            <Typography mode="body2" color="gray900" style={{ flexShrink: 1 }}>
-              SohPay를 탈퇴하고 모든 데이터를 삭제하는 것에 동의합니다.
-            </Typography>
-          }
-        />
+        {/* 동의 체크: 카드 밖 회색 배경 위에 둔다 */}
+        <View style={styles.agree}>
+          <CheckBox
+            isChecked={agrChecked}
+            setIsChecked={setAgrChecked}
+            labelComponent={
+              <Typography mode="body2" color="gray900" style={{ flexShrink: 1 }}>
+                위 내용을 확인했으며, SohPay를 탈퇴하고 모든 데이터를 삭제하는 것에 동의합니다.
+              </Typography>
+            }
+          />
+        </View>
       </KeyboardAwareScrollView>
 
       <BottomBtnBox
+        backgroundColor={theme.colors.bg}
         buttonKey={isButtonDisabled.toString()}
         disabled={isButtonDisabled}
         label={'회원탈퇴'}
@@ -109,18 +130,37 @@ const WithdrawalAgrScreen: React.FC<WithdrawalAgrScreenProps> = ({ navigation, r
   );
 };
 
+// 회원정보·출금 확인 화면과 같은 카드 모양
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: 16, paddingVertical: 24 },
-  alertBox: {
-    backgroundColor: theme.colors.red50,
-    borderWidth: 1,
-    borderColor: theme.colors.red500,
-    borderRadius: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 32,
+  wrap: { paddingHorizontal: 16, paddingVertical: 24, gap: 16 },
+  // 카드 안쪽 여백(20)에 맞춰 체크박스 시작 위치를 카드 내용과 나란히 둔다
+  agree: { paddingHorizontal: 4, paddingTop: 4 },
+  card: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.lg,
+    boxShadow: theme.shadow.card,
+    padding: 20,
+    gap: 16,
   },
-  infoBox: { backgroundColor: 'white', borderRadius: 12, gap: 12, padding: 12 },
+  warnCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: theme.colors.red50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deletedList: { backgroundColor: theme.colors.gray50, borderRadius: theme.radius.md, paddingHorizontal: 14 },
+  deletedRow: { gap: 10, paddingVertical: 12 },
+  deletedRowDivider: { borderTopWidth: 1, borderTopColor: theme.colors.gray100 },
+  deletedLabel: { width: 64 },
+  noticeStrip: {
+    gap: 8,
+    backgroundColor: theme.colors.yellow50,
+    borderRadius: theme.radius.md,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
 });
 
 export default WithdrawalAgrScreen;
