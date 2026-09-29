@@ -258,7 +258,19 @@ export const editUsrProfile = async (pwd: string, email?: string, newPwd?: strin
       const res = await supabase.auth.updateUser({ password: newPwd });
       if (res.error) return fail(res.error.code ?? res.error.message);
     }
-    if (email) unwrap(await supabase.from('profiles').update({ email }).select('id').single());
+    if (email) {
+      // 서버(PostgREST)는 어느 행을 고칠지 조건(WHERE)이 없는 갱신을 거절한다. 내 행 조건을 꼭 붙인다
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) return fail('UNAUTHENTICATED');
+      unwrap(
+        await supabase
+          .from('profiles')
+          .update({ email: email.trim().toLowerCase() })
+          .eq('id', auth.user.id)
+          .select('id')
+          .single(),
+      );
+    }
     return ok();
   } catch (e) {
     return toFail(e);
