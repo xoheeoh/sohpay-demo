@@ -136,7 +136,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             renderItem={renderTransactionItem}
             keyExtractor={(item, index) => `${index}`}
             scrollEnabled={false}
-            contentContainerStyle={{ flexGrow: 1, paddingBottom: 8 }}
+            contentContainerStyle={{ flexGrow: 1 }}
             ListEmptyComponent={() => (
               <View style={styles.empty}>
                 <View style={styles.emptyIcon}>
@@ -148,23 +148,19 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
               </View>
             )}
             ItemSeparatorComponent={() => <Divider style={styles.separator} />}
-            ListFooterComponent={() => (
-              <>
-                {useList && visibleCount < useList.length && (
-                  <Pressable
-                    style={({ pressed }) => [styles.more, pressed && { opacity: 0.6 }]}
-                    onPress={() =>
-                      setVisibleCount((prev) => (useList ? Math.min(prev + PAGE_SIZE, useList.length) : prev))
-                    }>
-                    <Typography mode="subtitle3" color="gray600">
-                      더보기
-                    </Typography>
-                    <Icon color={theme.colors.gray500} size={18} source="chevron-down" />
-                  </Pressable>
-                )}
-              </>
-            )}
           />
+
+          {/* 더보기: 목록 바로 아래가 아니라 카드 맨 아래에 붙인다 (목록이 짧아도 카드 하단에 고정) */}
+          {useList && visibleCount < useList.length && (
+            <Pressable
+              style={({ pressed }) => [styles.more, pressed && { opacity: 0.6 }]}
+              onPress={() => setVisibleCount((prev) => (useList ? Math.min(prev + PAGE_SIZE, useList.length) : prev))}>
+              <Typography mode="subtitle3" color="gray600">
+                더보기
+              </Typography>
+              <Icon color={theme.colors.gray500} size={18} source="chevron-down" />
+            </Pressable>
+          )}
         </View>
       </ScrollView>
     </ScreenWrapper>
@@ -228,6 +224,7 @@ const styles = StyleSheet.create({
     gap: 2,
     marginHorizontal: 16,
     marginTop: 4,
+    marginBottom: 16, // 카드 아래 여백
     height: 40,
     borderRadius: theme.radius.md,
     backgroundColor: theme.colors.gray50,
