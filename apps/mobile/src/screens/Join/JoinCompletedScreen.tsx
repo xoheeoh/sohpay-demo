@@ -222,7 +222,7 @@ const MemberRow = ({ label, value }: { label: string; value?: string }) => (
 
 const styles = StyleSheet.create({
   // 세로 가운데 정렬. 아래 여백은 KeyboardAwareScrollView 가 덮어쓰므로 여기서 주지 않고 extraBottomPadding 으로 보정한다.
-  container: { paddingHorizontal: 16, paddingVertical: 24, gap: 28, flexGrow: 1, justifyContent: 'center' },
+  container: { paddingHorizontal: 16, paddingVertical: 24, gap: 50, flexGrow: 1, justifyContent: 'center' },
 
   hero: { gap: 12, alignItems: 'center' },
   // 크기는 SuccessAnimation 의 size(160) 로 정한다.
