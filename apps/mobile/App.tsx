@@ -480,7 +480,7 @@ function App(): React.JSX.Element {
                   component={WithdrawalAgrScreen}
                   options={{
                     header: ({ navigation }) => (
-                      <Header title="회원탈퇴" bgColor="white" leftButton leftEvent={() => navigation.pop(2)} />
+                      <Header title="회원탈퇴" bgColor={theme.colors.bg} leftButton leftEvent={() => navigation.pop(2)} />
                     ),
                   }}
                 />
