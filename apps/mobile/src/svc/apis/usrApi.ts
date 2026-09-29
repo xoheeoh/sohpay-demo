@@ -161,9 +161,31 @@ export const validationPinNo = async (usrPin: string, _memberAuthKey?: string, b
 
 /** 회원가입 확정: Auth 계정 생성 → 프로필·지갑 생성 */
 export const joinService = async (userData: IUserData) => {
-  const res = await supabase.auth.signUp({ email: emailFor(userData.mbUid), password: userData.pwd });
-  if (res.error) return fail(res.error.code ?? res.error.message);
-  if (!res.data.session) return fail('UNAUTHENTICATED');
+  const email = emailFor(userData.mbUid);
+  const res = await supabase.auth.signUp({ email, password: userData.pwd });
+
+  if (res.error) {
+    // 이전 시도에서 1단계(인증 계정)만 만들어지고 2단계(프로필)가 실패한 아이디는 계정이 이미 있다고 나온다.
+    // 같은 비밀번호로 로그인이 되고 프로필이 아직 없으면, 새로 만들지 않고 2단계부터 이어서 진행한다.
+    if (res.error.code === 'user_already_exists') {
+      const login = await supabase.auth.signInWithPassword({ email, password: userData.pwd });
+      if (login.error) {
+        console.warn('[회원가입] 인증 계정은 있으나 비밀번호가 달라 이어서 진행할 수 없음:', login.error.message);
+        return fail('SIGNUP_ACCOUNT_EXISTS');
+      }
+      const { data: profile } = await supabase.from('profiles').select('id').maybeSingle();
+      if (profile) {
+        await supabase.auth.signOut();
+        return fail('MB_UID_TAKEN');
+      }
+      console.log('[회원가입] 이전 시도의 인증 계정을 재사용해 프로필 생성부터 이어서 진행');
+    } else {
+      console.warn('[회원가입] 인증 계정 생성 실패:', res.error.code, res.error.message);
+      return fail(res.error.code ?? res.error.message);
+    }
+  } else if (!res.data.session) {
+    return fail('UNAUTHENTICATED');
+  }
 
   try {
     unwrap(
@@ -173,19 +195,17 @@ export const joinService = async (userData: IUserData) => {
         p_pin: userData.usrPin,
         p_verification_id: userData.nonce || null, // 가입 플로우에서 nonce 자리에 verificationId 를 담아 둔다
         p_marketing_opt_in: !!userData.optionAgree,
+        // 가입 화면에서 입력받은 연락용 이메일. 프로필이 처음부터 이 값으로 만들어진다 (아이디 찾기가 이 이메일로 회원을 찾는다).
+        // 전에는 가입 뒤 별도 요청으로 덮어썼는데, 그 요청이 실패하면 로그인용 가짜 주소가 남는 문제가 있었다.
+        p_email: userData.email?.trim().toLowerCase() || null,
       }),
     );
   } catch (e) {
+    // 실제 오류 내용을 남긴다. 화면에는 코드에 맞는 문구(없으면 기본 문구)만 보이므로 원인 추적은 이 로그로 한다.
+    const err = e as Error & { code?: string };
+    console.warn('[회원가입] 프로필 생성 실패:', err.code, err.message);
     await supabase.auth.signOut();
     return toFail(e);
-  }
-
-  // complete_signup 은 프로필 이메일을 로그인용 주소(아이디@demo.sohpay.app)로 채운다.
-  // 가입 화면에서 입력받은 실제 이메일로 바꿔 둔다. 아이디 찾기가 이 이메일로 회원을 찾는다.
-  // 계정은 이미 만들어졌으므로 여기서 실패해도 가입 자체는 성공으로 본다.
-  if (userData.email) {
-    const { error } = await supabase.from('profiles').update({ email: userData.email.trim().toLowerCase() }).select('id').single();
-    if (error) console.warn('가입 이메일 저장 실패:', error.message);
   }
 
   // 가입 완료 화면은 로그인 상태를 가정하지 않는다(다시 로그인). 세션은 정리한다.

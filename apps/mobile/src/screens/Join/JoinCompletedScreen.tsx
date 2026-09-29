@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
 import { CommonActions } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -79,10 +79,14 @@ const JoinCompletedScreen: React.FC<JoinCompletedScreenProps> = ({ navigation })
   // 회원가입 성공 여부에 따라 보여주는 화면 분기
   const [show, setShow] = useState(IS_PREVIEW);
 
+  // 가입 요청은 한 번만 보낸다. 화면이 다시 그려지거나 효과가 두 번 돌아도 같은 아이디로 두 번 가입을 시도하지 않게 막는다
+  const isSubmittedRef = useRef(false);
+
   useEffect(() => {
     if (IS_PREVIEW) return; // 미리보기: 실제 가입 요청을 보내지 않는다
 
-    if (userData) {
+    if (userData && !isSubmittedRef.current) {
+      isSubmittedRef.current = true;
       console.log('불러온 회원가입 데이터:', userData);
 
       joinService(userData).then(async (data) => {
