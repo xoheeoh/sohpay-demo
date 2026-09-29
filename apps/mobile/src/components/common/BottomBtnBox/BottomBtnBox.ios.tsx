@@ -7,9 +7,17 @@ export interface BottomBtnBoxProps {
   disabled: boolean;
   label: string;
   onPress: () => void;
+  /** 버튼 뒤 바탕색. 기본 흰색. 회색 배경(theme.colors.bg) 화면에서는 같은 색을 넘겨 버튼 띠가 화면과 한 덩어리로 보이게 한다 */
+  backgroundColor?: string;
 }
 
-const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({ buttonKey, disabled, label, onPress }) => {
+const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({
+  buttonKey,
+  disabled,
+  label,
+  onPress,
+  backgroundColor = 'white',
+}) => {
   const paddingAnim = useRef(new Animated.Value(1)).current; // 1: 기본 padding, 0: 타이트
   const [opacityAnim] = useState(new Animated.Value(1)); // 초기값: 보임
   const [keyboardVisible, setKeyboardVisible] = useState<boolean>(false); // 키패드 존재 여부
@@ -65,7 +73,7 @@ const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({ buttonKey, disabled, label,
 
   const containerStyle: Animated.WithAnimatedObject<ViewStyle> = {
     position: 'absolute',
-    backgroundColor: 'white',
+    backgroundColor,
     bottom: keyboardVisible ? actualKeyboardHeight - 34 : 0,
     width: '100%',
     paddingHorizontal: paddingAnim.interpolate({
