@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { Keyboard, Platform, StyleSheet, View } from 'react-native';
+import { Image, Keyboard, Platform, StyleSheet, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Icon } from 'react-native-paper';
 
 import type { RootStackParamList } from '@typ/navigation';
 import { useDialog } from '@contexts/DialogContext';
-import { getBankErrorMessage } from '@dt/authErrorCd';
-import { getBankName } from '@dt/bankCd';
-import { BankErrorCode } from '@dt/enum';
+import { getBankImage, getBankName } from '@dt/bankCd';
+import { maskAccountNumber } from '@utils/formatter';
 import { chkAcntConfirmNo, editRefundAcnt, enrollRefundAcnt } from '@apis/paymentApi';
 import {
+  Badge,
   BottomBtnBox,
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
   KeyboardAwareScrollView,
@@ -25,7 +25,8 @@ const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenP
   // 이전 화면에서 얻어온 1원 인증 계좌 정보 파라미터
   const { bankCd, acntNo, acntNm, nonce, flg } = route.params;
 
-  const [errorCode, setErrorCode] = useState<BankErrorCode | null>(null); // 에러코드
+  // 인증 실패 문구. 서버 오류 코드에 맞춘 문구(client.ts MESSAGES)를 그대로 보여준다
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [certNum, setCertNum] = useState<string>(''); // 인증번호 숫자 3자리
 
   const scrollViewRef = useRef<any>(null);
@@ -107,7 +108,7 @@ const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenP
           });
         }
       } else {
-        setErrorCode(data.resultCd);
+        setErrorMsg(data.resultMsg);
       }
     });
   };
@@ -128,39 +129,49 @@ const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenP
           입력하신 계좌에 입금된 1원의{'\n'}입금자명 숫자 3자리를 입력해주세요.
         </Typography>
 
-        <View style={styles.cardBox}>
-          <View style={styles.cardNum}>
-            <Typography color="primary" mode="subtitle3">
-              {getBankName(bankCd)}
-              {'  '}
-              {acntNo}
-            </Typography>
+        {/* 입금 내역 카드: 은행 앱에 뜨는 입금 알림처럼 보이게. 계좌 카드(계좌관리·출금 확인)와 같은 줄 구성 */}
+        <View style={styles.depositCard}>
+          <View style={[layout.rowCenter, { gap: 12 }]}>
+            <Image source={getBankImage(bankCd)} style={styles.bankLogo} />
+            <View style={{ flex: 1, gap: 2 }}>
+              <Typography mode="subtitle2" color="gray900">
+                {getBankName(bankCd)}
+              </Typography>
+              <Typography mode="body2" color="gray600" style={{ letterSpacing: 0.5 }}>
+                {maskAccountNumber(acntNo)}
+              </Typography>
+            </View>
+            <Badge label="입금" tone="blue" />
           </View>
 
-          <View style={{ gap: 8 }}>
-            <View style={layout.rowBetween}>
-              <Typography mode="body1" color="gray900">
+          <View style={styles.depositDivider} />
+
+          <View style={{ gap: 10 }}>
+            <View style={[layout.rowBetween, { gap: 16 }]}>
+              <Typography mode="body2" color="gray500">
                 입금자명
               </Typography>
-
-              <Typography mode="heading1" color="gray900">
-                1원인증{' '}
-                <Typography mode="heading1" color="primary">
+              <Typography mode="subtitle1" color="gray900">
+                소페이{' '}
+                <Typography mode="subtitle1" color="primary">
                   ***
                 </Typography>
               </Typography>
             </View>
 
-            <View style={layout.rowBetween}>
-              <Typography mode="body1" color="gray900">
+            <View style={[layout.rowBetween, { gap: 16 }]}>
+              <Typography mode="body2" color="gray500">
                 입금액
               </Typography>
-
-              <Typography mode="heading3" color="gray900">
+              <Typography mode="subtitle3" color="gray900">
                 1원
               </Typography>
             </View>
           </View>
+
+          <Typography mode="caption1" color="gray400">
+            입금자명의 *** 자리에 적힌 숫자 3자리가 인증번호예요.
+          </Typography>
         </View>
 
         <View style={{ gap: 12 }}>
@@ -168,28 +179,26 @@ const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenP
           <TextField
             id={'certNum'}
             inputMode={'numeric'}
-            label={'숫자 3자리'}
+            label={'인증번호 3자리'}
             value={certNum}
-            onChangeText={(x: string) => setCertNum(x)}
+            onChangeText={(x: string) => {
+              setCertNum(x.replace(/[^0-9]/g, '').slice(0, 3)); // 숫자 3자리만
+              if (errorMsg) setErrorMsg(null); // 다시 입력하기 시작하면 이전 오류 표시를 지운다
+            }}
             placeholder={''}
+            error={!!errorMsg}
+            descMessage={errorMsg ?? undefined}
           />
 
-          {/* 1원 인증 실패 시 보이는 오류 메시지 박스 */}
-          {errorCode && (
-            <View style={styles.errorBox}>
-              <Icon source={'alert-circle'} size={24} color={theme.colors.red500} />
-              <View>
-                <Typography mode="body2" color="red500">
-                  {getBankErrorMessage(errorCode).msg1}
-                </Typography>
-                {getBankErrorMessage(errorCode).msg2 && (
-                  <Typography mode="body2" color="red500">
-                    {getBankErrorMessage(errorCode).msg2}
-                  </Typography>
-                )}
-              </View>
+          {/* 데모 안내 (1:1 상담 답변중 안내 띠와 같은 톤) */}
+          <View style={styles.infoBox}>
+            <View style={styles.infoIcon}>
+              <Icon source="information-outline" size={18} color={theme.colors.gray600} />
             </View>
-          )}
+            <Typography mode="caption1" color="gray600" style={{ flex: 1 }}>
+              데모에서는 실제 입금 없이, 이전 화면에서 다음을 눌렀을 때 뜬 알림에 인증번호 3자리가 함께 표시됩니다.
+            </Typography>
+          </View>
         </View>
       </KeyboardAwareScrollView>
 
@@ -204,34 +213,26 @@ const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenP
 };
 
 const styles = StyleSheet.create({
-  cardBox: {
-    paddingVertical: 24,
-    paddingHorizontal: 16,
-    backgroundColor: theme.colors.gray100,
-    gap: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.gray150,
-    borderRadius: 12,
+  // 입금 내역 카드 (계좌관리·출금 확인 화면의 계좌 줄과 같은 연회색 상자)
+  depositCard: {
+    backgroundColor: theme.colors.gray50,
+    borderRadius: theme.radius.lg,
+    padding: 16,
+    gap: 14,
   },
-  cardNum: {
-    borderWidth: 1,
-    borderColor: theme.colors.primary,
-    borderRadius: 32,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    alignSelf: 'baseline',
-    backgroundColor: 'white',
-  },
-  errorBox: {
-    borderWidth: 1,
-    borderColor: theme.colors.red500,
-    backgroundColor: theme.colors.red50,
-    padding: 12,
-    borderRadius: 4,
-    gap: 8,
+  bankLogo: { width: 40, height: 40, borderRadius: 20 },
+  depositDivider: { height: 1, backgroundColor: theme.colors.gray150 },
+  // 안내 상자 (계좌인증 입력 화면과 같은 모양)
+  infoBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    gap: 8,
+    padding: 14,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.gray50,
   },
+  // 아이콘을 첫 줄 글자 높이(16)에 맞춰 가운데에 둔다
+  infoIcon: { height: 16, justifyContent: 'center' },
 });
 
 export default RefundAuthConfirmScreen;

@@ -58,6 +58,12 @@ Deno.serve(async (req) => {
     if (accountNo.length < 10 || accountNo.length > 16) return fail('INVALID_ACCOUNT_NO');
     if (holderName.length < 2) return fail('INVALID_HOLDER_NAME');
 
+    // 본인 명의 확인: 예금주명이 회원 이름과 다르면 거절한다 (출금 계좌는 돈이 나가는 곳). 공백 차이는 무시한다.
+    // 앱도 같은 검사를 먼저 하지만, 앱을 우회한 요청까지 막기 위해 서버에서 한 번 더 본다.
+    const { data: profile } = await supabase.from('profiles').select('name').eq('id', userId).maybeSingle();
+    const normalize = (s: string) => s.replace(/\s+/g, '');
+    if (!profile || normalize(profile.name) !== normalize(holderName)) return fail('HOLDER_NAME_MISMATCH');
+
     // 짧은 시간에 반복 요청하는 것을 막는다.
     const since = new Date(Date.now() - 60_000).toISOString();
     const { count } = await supabase
