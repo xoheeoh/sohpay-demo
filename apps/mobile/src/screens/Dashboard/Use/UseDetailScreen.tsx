@@ -156,7 +156,9 @@ const UseDetailScreen: React.FC<UseDetailScreenProps> = ({ route }) => {
         : getCd === 'USE' && item.partCanFlg === '1'
           ? '부분취소'
           : getCd === 'CHRG'
-            ? '충전'
+            ? item.chrgStCd === '2'
+              ? '충전실패'
+              : '충전'
             : getCd === 'RFND' && item.rfndStCd === '0'
               ? '출금요청'
               : getCd === 'RFND' && item.rfndStCd === '1'
@@ -165,8 +167,8 @@ const UseDetailScreen: React.FC<UseDetailScreenProps> = ({ route }) => {
                   ? '출금실패'
                   : '';
 
-  // 취소된 거래만 취소선·회색으로 그린다. 정상 완료된 출금은 결제처럼 "- 금액" 으로 보여야 한다
-  const isStruck = stateNm.includes('취소');
+  // 취소·실패한 거래(돈이 움직이지 않은 건)만 취소선·회색으로 그린다. 정상 완료된 출금은 결제처럼 "- 금액" 으로 보여야 한다
+  const isStruck = stateNm.includes('취소') || stateNm.includes('실패');
 
   // 요약 카드 제목/부제
   const summaryTitle =
@@ -177,7 +179,15 @@ const UseDetailScreen: React.FC<UseDetailScreenProps> = ({ route }) => {
         : getCd === 'RFND'
           ? `${getBankName(item.rfndBankCd)} ${item.rfndAcntNo}`
           : '';
-  const summarySub = getCd === 'USE' && midInfo?.coNm ? item.goodsNm : getCd === 'RFND' ? item.rfndAcntNm : '';
+  // 실패 건은 부제 자리에 실패 사유를 보여준다 (예: 승인 거절)
+  const summarySub =
+    getCd === 'USE' && midInfo?.coNm
+      ? item.goodsNm
+      : getCd === 'CHRG'
+        ? (item.failMsg ?? '')
+        : getCd === 'RFND'
+          ? (item.failMsg ?? item.rfndAcntNm)
+          : '';
 
   // 금액 (결제/출금은 -, 충전/취소는 +)
   const amount =

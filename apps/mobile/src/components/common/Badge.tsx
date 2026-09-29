@@ -38,7 +38,7 @@ const Badge: React.FC<BadgeProps> = ({ label, tone = 'gray', size = 'small', sty
 
 /** 거래 상태명에 따른 배지 색상 */
 export const getTrxTone = (stateNm: string): BadgeTone => {
-  if (stateNm === '결제' || stateNm === '출금실패') return 'red';
+  if (stateNm === '결제' || stateNm === '출금실패' || stateNm === '충전실패') return 'red';
   if (stateNm === '취소' || stateNm === '부분취소' || stateNm === '충전' || stateNm === '출금성공') return 'blue';
   if (stateNm === '출금요청') return 'yellow';
   return 'gray';

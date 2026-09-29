@@ -15,7 +15,9 @@ interface ChargeComponentProps {
 const ChargeComponent: React.FC<ChargeComponentProps> = ({ item, getCd }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const categoryNm = '충전';
+  // 모의 결제창에서 승인 거절·취소된 건은 "충전실패"로, 금액은 취소 건처럼 회색 취소선 (돈이 들어오지 않았음)
+  const isFailed = item.chrgStCd === '2';
+  const categoryNm = isFailed ? '충전실패' : '충전';
 
   return (
     <Pressable
@@ -23,7 +25,7 @@ const ChargeComponent: React.FC<ChargeComponentProps> = ({ item, getCd }) => {
       onPress={() => navigation.navigate('UseDetail', { item: item, getCd: getCd })}>
       {/* 좌측: 충전수단 / 일시 · 거래구분 */}
       <View style={styles.info}>
-        <Typography mode="subtitle2" color="gray900" numberOfLines={1}>
+        <Typography mode="subtitle2" color={isFailed ? 'gray400' : 'gray900'} numberOfLines={1}>
           {item.chrgPmCdNm}
         </Typography>
 
@@ -37,8 +39,12 @@ const ChargeComponent: React.FC<ChargeComponentProps> = ({ item, getCd }) => {
 
       {/* 우측: 금액 */}
       <View style={styles.amountBox}>
-        <Typography mode="subtitle1" color={getTrxAmountColor('charge')}>
-          + {formatWon(item.chrgAmt)}
+        <Typography
+          mode="subtitle1"
+          color={isFailed ? 'gray400' : getTrxAmountColor('charge')}
+          style={isFailed ? styles.struck : undefined}>
+          {isFailed ? '' : '+ '}
+          {formatWon(item.chrgAmt)}
         </Typography>
       </View>
 
@@ -52,6 +58,7 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.6 },
   info: { flex: 1, gap: 4 },
   amountBox: { alignItems: 'flex-end', gap: 2 },
+  struck: { textDecorationLine: 'line-through' },
 });
 
 export default ChargeComponent;

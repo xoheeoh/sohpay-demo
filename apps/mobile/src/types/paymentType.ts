@@ -111,6 +111,10 @@ export interface IChargeList {
   ppMthdId: string;
   chrgAmt: number;
   rmnAmt: number;
+  /** 충전 상태: 1 성공 | 2 실패 (모의 결제창에서 승인 거절·취소된 건) */
+  chrgStCd: string;
+  /** 실패 사유 (실패 건에만). 예) 승인 거절 */
+  failMsg?: string;
 }
 
 /* 이용내역 - RFND */
@@ -119,6 +123,8 @@ export interface IRefundList {
   rfndReqDt: string;
   rfndReqTm: string;
   rfndStCd: string; // 0: 요청, 1: 출금, 2: 실패
+  /** 실패 사유 (실패 건에만). 예) 은행 점검으로 이체 실패 */
+  failMsg?: string;
   rfndBankCd: string;
   rfndAcntNo: string;
   rfndAcntNm: string;
