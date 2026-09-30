@@ -25,11 +25,8 @@ interface GlassReceiptCardProps {
 const formatAmount = (value: string | number) => Number(value).toLocaleString('ko-KR');
 
 /**
- * 완료 화면(출금·충전)의 결과 카드: 유리판(글래스모피즘) 느낌.
- * 진짜 배경 흐림(blur)은 앱·웹 공통으로 쓸 라이브러리가 없어, 같은 인상을 내는 요소로 대신한다.
- *  - 카드 뒤에 부드러운 파랑·민트 빛 덩어리를 깔아 유리 너머로 비치는 색을 만든다
- *  - 카드는 반투명 흰색 + 얇은 흰 테두리 + 위쪽 하이라이트(빛 반사) + 은은한 파란 그림자로 떠 보이게 한다
- * 글씨는 진한 파랑. (회원가입 완료의 진한 그라디언트 카드는 "회원 카드" 느낌이라 결과 표시에는 쓰지 않는다)
+ * 완료 화면(출금·충전)의 결과 카드. 유리판(글래스모피즘) 느낌.
+ * 앱·웹 공통 blur 라이브러리가 없어 카드 뒤 빛 덩어리 + 반투명 흰색 + 위쪽 하이라이트 + 파란 그림자로 같은 인상을 낸다.
  */
 const GlassReceiptCard: React.FC<GlassReceiptCardProps> = ({ badgeLabel, amountLabel, amount, rows }) => (
   <View style={styles.glassWrap}>
@@ -102,9 +99,9 @@ const GlassReceiptCard: React.FC<GlassReceiptCardProps> = ({ badgeLabel, amountL
 );
 
 const styles = StyleSheet.create({
-  // 웹은 프레임이 700px 까지 넓어져 카드가 너무 커 보인다. 휴대폰 폭 정도로 제한하고 가운데에 둔다.
+  // 웹의 700px 프레임에서 카드가 너무 커지지 않게 휴대폰 폭으로 제한한다
   glassWrap: { width: '100%', maxWidth: 400, alignSelf: 'center' },
-  // 카드 뒤 빛 덩어리. 카드 모서리 밖으로 살짝 새어 나오게 두어 유리 너머 색이 비치는 느낌을 준다
+  // 카드 뒤 빛 덩어리. 모서리 밖으로 살짝 새어 나와 유리 너머 색이 비치는 느낌을 준다
   glowBlue: { position: 'absolute', top: -28, left: -24, width: 220, height: 220, borderRadius: 110 },
   glowMint: { position: 'absolute', right: -30, bottom: -36, width: 200, height: 200, borderRadius: 100 },
   card: {

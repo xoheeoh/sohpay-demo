@@ -8,7 +8,7 @@ import styles from './TermListScreen.styles';
 type TermContentScreenProps = NativeStackScreenProps<RootStackParamList, 'TermContent'>;
 
 const components: Record<number, React.FC> = {
-  // 신규 약관이 생기는 경우 이 밑으로 추가하면 됨 (3: Term3, 4: Term4 등..)
+  // 새 약관은 이 표에 번호와 컴포넌트를 추가한다
   0: Term0, // 서비스 이용약관
   1: Term1, // 전자금융거래이용약관
   2: Term2, // 개인(신용)정보 수집 및 이용 동의
@@ -18,11 +18,10 @@ const components: Record<number, React.FC> = {
 };
 
 const TermContentScreen: React.FC<TermContentScreenProps> = ({ route }) => {
-  // 이전 화면에서 얻어온 이용약관 정보 (값에 따라 화면에 보이는 내용이 달라짐)
   const flg = route.params.flg;
   const title = route.params.title;
 
-  const SelectedComponent = components[flg]; // flg 값에 따라 컴포넌트 선택
+  const SelectedComponent = components[flg];
 
   return (
     <ScreenWrapper backgroundColor="white">

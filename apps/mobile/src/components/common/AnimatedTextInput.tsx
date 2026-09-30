@@ -38,7 +38,7 @@ const AnimatedTextInput = React.forwardRef<TextInput, AnimatedTextInputProps>((p
   }, [id]);
 
   useEffect(() => {
-    // value가 초기값으로 존재하면, 라벨 위치를 포커스 상태로 업데이트
+    // 초기값이 있으면 라벨을 떠 있는 위치로 바로 옮긴다
     if (value) {
       Animated.timing(animatedLabelPosition, {
         toValue: 1,
@@ -59,7 +59,7 @@ const AnimatedTextInput = React.forwardRef<TextInput, AnimatedTextInputProps>((p
   }, [value, isFocused, animatedLabelPosition]);
 
   const handleFocus = () => {
-    if (disabled || editable === false) return; // disabled 상태이거나 editable이 false인 경우 포커스 허용x
+    if (disabled || editable === false) return;
     setIsFocused(true);
     Animated.timing(animatedLabelPosition, {
       toValue: 1,
@@ -77,25 +77,23 @@ const AnimatedTextInput = React.forwardRef<TextInput, AnimatedTextInputProps>((p
         useNativeDriver: false,
       }).start();
     } else {
-      setIsFocused(false); // 값을 유지하면서 blur 상태로 전환
+      setIsFocused(false);
     }
   };
 
   const labelStyle = {
     top: animatedLabelPosition.interpolate({
       inputRange: [0, 1],
-      // 비포커스 / 포커스 라벨 위치. 플랫폼별 폰트 메트릭이 달라 값이 다르다.
-      // 웹은 <input> 이 텍스트를 세로 중앙 정렬하지 않으므로 아래 styles.input 의 paddingTop 과 함께 맞춘다.
+      // 플랫폼별 폰트 메트릭이 달라 라벨 위치가 다르다. 웹은 <input> 이 세로 중앙 정렬을 하지 않아 styles.input 의 paddingTop 과 함께 맞춘다
       outputRange: Platform.select({ ios: [16, 10], web: [18, 10], default: [8, -1] }) as number[],
     }),
     fontSize: animatedLabelPosition.interpolate({
       inputRange: [0, 1],
-      outputRange: [14, 12], // 비포커스(fontSize=14), 포커스(fontSize=12)
+      outputRange: [14, 12],
     }),
   };
 
-  // 기본은 채워진(gray50) 박스 + 연한 테두리(line), 포커스 시 primary 테두리, 오류 시 red 테두리 + 연한 red 배경
-  // 입력칸 테두리 색은 Textarea·SearchBox·Dropdown 과 같은 theme.colors.line 을 쓴다
+  // 기본 gray50 배경 + line 테두리, 포커스 primary, 오류 red. Textarea·SearchBox·Dropdown 과 같은 규칙
   const borderColor = error ? theme.colors.red500 : isFocused ? theme.colors.primary : theme.colors.line;
   const backgroundColor = error
     ? theme.colors.red50
@@ -105,7 +103,7 @@ const AnimatedTextInput = React.forwardRef<TextInput, AnimatedTextInputProps>((p
         ? theme.colors.white
         : theme.colors.gray50;
 
-  // 라벨 색. 자리표시자 자리에 있을 때(값 없음·비포커스)는 입력값(gray900)과 구분되도록 한 단계 더 연하게 한다.
+  // 자리표시자 위치의 라벨은 입력값(gray900)과 구분되도록 한 단계 연하게 한다
   const isLabelFloating = isFocused || !!value;
   const labelColor = error
     ? theme.colors.red500
@@ -115,17 +113,13 @@ const AnimatedTextInput = React.forwardRef<TextInput, AnimatedTextInputProps>((p
         ? theme.colors.gray500
         : theme.colors.gray400;
 
-  // 클리어 버튼 클릭 이벤트
   const handleClear = () => {
-    setValue(''); // 입력값 초기화
+    setValue('');
   };
 
   return (
     <View style={[styles.inputContainer, { borderColor, backgroundColor }]}>
-      <Animated.Text
-        style={[styles.label, labelStyle, { color: labelColor }]}>
-        {label}
-      </Animated.Text>
+      <Animated.Text style={[styles.label, labelStyle, { color: labelColor }]}>{label}</Animated.Text>
       <TextInput
         ref={(node) => {
           inputRef.current = node;
@@ -147,7 +141,7 @@ const AnimatedTextInput = React.forwardRef<TextInput, AnimatedTextInputProps>((p
         placeholder={isFocused ? placeholder : ''}
         editable={!disabled && editable !== false}
         selectTextOnFocus={!disabled && editable !== false}
-        {...rest} // TextInputProps 확장을 위한 나머지 props 전달
+        {...rest}
       />
       {/* 클리어 버튼 (X) */}
       {value.length > 0 && !disabled && editable !== false && (
@@ -159,7 +153,7 @@ const AnimatedTextInput = React.forwardRef<TextInput, AnimatedTextInputProps>((p
   );
 });
 
-// forwardRef 로 감싼 컴포넌트는 이름이 자동으로 붙지 않아 개발 도구·경고 메시지에 익명으로 나온다. 이름을 직접 붙인다.
+// forwardRef 컴포넌트는 이름이 자동으로 붙지 않아 개발 도구에 익명으로 나온다
 AnimatedTextInput.displayName = 'AnimatedTextInput';
 
 const styles = StyleSheet.create({
@@ -180,21 +174,21 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   input: {
-    ...typographyStyles.body2, // 입력 글자는 타입 스케일의 body2 (SearchBox·Textarea·Dropdown 과 동일)
+    ...typographyStyles.body2, // SearchBox·Textarea·Dropdown 과 같은 body2
     paddingHorizontal: 16,
     paddingTop: Platform.select({ ios: 12, web: 12, default: 20 }),
-    // 컨테이너(56) 안에 테두리 1.5px 이 있어 안쪽 높이는 53. 웹은 넘치면 어긋나 보이므로 53 으로 맞춘다.
+    // 웹은 컨테이너 안쪽 높이를 넘으면 어긋나 보이므로 테두리를 뺀 높이로 맞춘다
     height: Platform.OS === 'web' ? controlSize.lg.height - 3 : controlSize.lg.height,
     includeFontPadding: false, // 안드로이드 기본 패딩 제거
-    // 브라우저 기본 포커스 외곽선(outline)을 없앤다. 포커스 표시는 컨테이너 테두리 색(primary)이 담당한다.
-    // RN 타입에는 'none' 이 없지만 react-native-web 은 CSS outline-style 로 그대로 넘긴다.
+    // 브라우저 기본 포커스 outline 을 없앤다. 포커스 표시는 컨테이너 테두리 색이 담당한다.
+    // RN 타입에는 없는 값이지만 react-native-web 은 CSS outline-style 로 그대로 넘긴다.
     ...(Platform.OS === 'web'
       ? ({ paddingBottom: 0, outlineStyle: 'none', outlineWidth: 0 } as unknown as TextStyle)
       : null),
   },
   clearButton: {
     position: 'absolute',
-    right: 16, // 우측 끝에 위치
+    right: 16,
     width: 22,
     height: 22,
     backgroundColor: theme.colors.gray100,

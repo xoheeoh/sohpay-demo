@@ -11,11 +11,11 @@ const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({
   backgroundColor = 'white',
 }) => {
   const paddingAnim = useRef(new Animated.Value(1)).current; // 1: 기본 padding, 0: 타이트
-  const [opacityAnim] = useState(new Animated.Value(1)); // 초기값: 보임
+  const [opacityAnim] = useState(new Animated.Value(1));
   const bottomAnim = useRef(new Animated.Value(0)).current;
-  const [keyboardVisible, setKeyboardVisible] = useState<boolean>(false); // 키패드 존재 여부
+  const [keyboardVisible, setKeyboardVisible] = useState<boolean>(false);
 
-  // 안드로이드 LayoutAnimation 설정
+  // 안드로이드는 LayoutAnimation 을 명시적으로 켜야 한다
   useEffect(() => {
     if (UIManager.setLayoutAnimationEnabledExperimental) {
       UIManager.setLayoutAnimationEnabledExperimental(true);

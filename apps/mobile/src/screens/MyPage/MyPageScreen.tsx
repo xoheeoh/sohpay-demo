@@ -24,13 +24,9 @@ interface MenuItem {
 }
 
 const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
-  /**
-   * 회원 정보 조회
-   * 조회 결과 상태관리
-   */
   const [usrData, setUsrData] = useState<IUserProfile | null>(null);
 
-  // 보유 잔액 (null: 아직 조회 전 → 프로필 카드의 잔액 자리에 자리표시자가 보인다)
+  // null 이면 조회 전이라 잔액 자리에 자리표시자를 보여준다
   const [rmnAmtData, setRmnAmtData] = useState<IRmnAmt | null>(null);
 
   useFocusEffect(
@@ -53,14 +49,11 @@ const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
     }, [navigation]),
   );
 
-  /**
-   * 로그아웃 메뉴 클릭 시, 팝업 등장
-   * 팝업에서 로그아웃 버튼 클릭: 데이터 삭제 후 로그인 화면으로 이동
-   */
+  // 로그아웃: 토큰과 저장된 아이디를 지우고 로그인 화면으로 돌아간다
   const [logoutModal, setLogoutModal] = useState<boolean>(false);
   const handleLogout = async () => {
-    await removeEncryptedToken(); // 암호화된 토큰 삭제
-    await removeData('mbUid'); // 저장된 아이디 삭제
+    await removeEncryptedToken();
+    await removeData('mbUid');
 
     setLogoutModal(false);
     navigation.reset({
@@ -70,13 +63,11 @@ const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
   };
 
   /**
-   * 웹 전용 등장 애니메이션: 오른쪽에서 밀려 들어오며 나타난다.
-   * 앱(iOS/Android)은 App.tsx 의 animation: 'slide_from_right' 가 화면 전환을 담당하므로 여기서는 웹만 처리한다.
-   * (웹의 native-stack 은 화면 전환 애니메이션을 지원하지 않아 화면이 뚝 끊어져 보인다)
-   * 값 0 = 오른쪽 화면 밖, 1 = 제자리
+   * 웹 전용 등장 애니메이션. 웹의 native-stack 은 화면 전환 애니메이션을 지원하지 않아 오른쪽에서 밀려 들어오게 직접 처리한다.
+   * 앱은 App.tsx 의 animation: 'slide_from_right' 가 담당한다. 값 0 = 오른쪽 화면 밖, 1 = 제자리.
    */
   const isWeb = Platform.OS === 'web';
-  // 애니메이션 값은 한 번만 만들어 재사용한다 (렌더 중 ref 를 읽지 말라는 lint 규칙 때문에 useRef 대신 useState 초기화 함수를 쓴다)
+  // 렌더 중 ref 를 읽지 말라는 lint 규칙 때문에 useRef 대신 useState 초기화 함수로 한 번만 만든다
   const [slideInProgress] = useState(() => new Animated.Value(isWeb ? 0 : 1));
 
   useEffect(() => {
@@ -84,7 +75,7 @@ const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
     Animated.timing(slideInProgress, {
       toValue: 1,
       duration: 260,
-      easing: Easing.out(Easing.cubic), // 빠르게 들어와서 부드럽게 멈춤
+      easing: Easing.out(Easing.cubic),
       useNativeDriver: true,
     }).start();
   }, [isWeb, slideInProgress]);
@@ -96,10 +87,7 @@ const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
       }
     : undefined;
 
-  /**
-   * 메뉴 구성. 항목이 하나뿐이던 계좌관리 섹션은 "계정" 으로 합쳐 카드 수를 줄였다.
-   * 줄마다 아이콘을 두어 고객센터 화면·최근 만든 카드들과 같은 인상을 준다.
-   */
+  // 메뉴 구성
   const sections: { title: string; items: MenuItem[] }[] = [
     {
       title: '계정',
@@ -135,7 +123,7 @@ const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
     <Animated.View style={[{ flex: 1 }, slideInStyle]}>
       <ScreenWrapper backgroundColor={theme.colors.bg} topComponent={false}>
         <ScrollView contentContainerStyle={styles.wrap}>
-          {/* 프로필 카드: 회원정보 화면의 프로필 카드와 같은 모양. 아래 띠에 보유 잔액을 함께 보여준다 */}
+          {/* 프로필 카드. 아래 띠에 보유 잔액을 함께 보여준다 */}
           <View style={styles.card}>
             <View style={[layout.rowCenter, { gap: 14 }]}>
               <Image source={require('@images/non_profile.png')} style={styles.avatar} resizeMode="cover" />
@@ -211,7 +199,7 @@ const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
             </View>
           ))}
 
-          {/* 로그아웃: 화면 이동이 아니라 동작이므로 화살표 대신 나가기 아이콘만, 글자도 한 단계 연하게 */}
+          {/* 로그아웃은 화면 이동이 아니라 동작이므로 화살표 없이 나가기 아이콘만 두고 글자도 연하게 한다 */}
           <View style={styles.listMenu}>
             <Pressable
               style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
@@ -247,7 +235,7 @@ const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   wrap: { paddingHorizontal: 16, paddingVertical: 24, gap: 24 },
 
-  // 프로필 카드 (회원정보 화면과 같은 카드 모양)
+  // 프로필 카드
   card: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,

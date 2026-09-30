@@ -23,13 +23,11 @@ import { layout, theme } from '@styles';
 type RefundAcntScreenProps = NativeStackScreenProps<RootStackParamList, 'RefundAcnt'>;
 
 const RefundAcntScreen: React.FC<RefundAcntScreenProps> = ({ navigation, route }) => {
-  // 이전 화면에서 얻은 출금할 금액
   const withdrawalAmt = route.params.amt;
 
   // 등록된 내 계좌 조회
   const [acntData, setAcntData] = useState<IRefundAcnt | null>(null);
-  // 첫 조회가 끝났는지. 끝나기 전에는 "계좌 없음" 대신 스켈레톤을 보여준다 (조회 전 1초쯤 "계좌 없음"이 깜빡이던 문제 방지)
-  // 계좌 변경 뒤 돌아와 다시 조회할 때는 이전 결과를 그대로 두고 갱신만 하므로 스켈레톤이 다시 뜨지 않는다
+  // 첫 조회가 끝나기 전에는 "계좌 없음" 대신 스켈레톤을 보여준다. 이후 재조회는 이전 결과를 유지한 채 갱신만 한다
   const [isAcntLoaded, setIsAcntLoaded] = useState(false);
 
   useFocusEffect(
@@ -59,7 +57,6 @@ const RefundAcntScreen: React.FC<RefundAcntScreenProps> = ({ navigation, route }
     });
   }, []);
 
-  // 잔액 출금 계좌 등록 여부 및 버튼 활성화 여부
   const hasRefundAccount = !!(acntData?.rfndAcntNo && acntData?.rfndBankCd);
   const isButtonDisabled = !hasRefundAccount;
 
@@ -68,7 +65,7 @@ const RefundAcntScreen: React.FC<RefundAcntScreenProps> = ({ navigation, route }
       <KeyboardAwareScrollView
         contentContainerStyle={styles.wrap}
         keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
-        {/* 출금 금액 카드: 예정 금액과 출금 후 잔액을 한 카드에 (충전 확인 화면과 같은 공용 카드) */}
+        {/* 출금 금액 카드 */}
         <AmountSummaryCard
           label="출금 예정 금액"
           amount={withdrawalAmt}
@@ -84,7 +81,7 @@ const RefundAcntScreen: React.FC<RefundAcntScreenProps> = ({ navigation, route }
               출금 계좌
             </Typography>
 
-            {/* 계좌가 있으면 변경, 없으면 등록. 자리와 모양은 같게 두어 두 상태가 한 카드로 보이게 한다 */}
+            {/* 계좌가 있으면 변경, 없으면 등록. 두 상태가 같은 자리에 오도록 한다 */}
             {isAcntLoaded && (
               <Pressable
                 accessibilityRole="button"
@@ -100,7 +97,7 @@ const RefundAcntScreen: React.FC<RefundAcntScreenProps> = ({ navigation, route }
           </View>
 
           {!isAcntLoaded ? (
-            /* 조회 중: 은행 로고·은행명·계좌번호 자리를 같은 크기의 회색 막대로 채운다 */
+            /* 조회 중: 계좌 줄과 같은 크기의 스켈레톤 */
             <View style={[layout.rowCenter, styles.bankRow]}>
               <Skeleton width={44} height={44} radius={22} />
               <View style={{ gap: 8, flex: 1 }}>
@@ -128,7 +125,7 @@ const RefundAcntScreen: React.FC<RefundAcntScreenProps> = ({ navigation, route }
               </Typography>
             </>
           ) : (
-            /* 계좌 없음: 계좌가 있을 때와 같은 줄 구성(아이콘 동그라미 + 두 줄 글). 등록은 위의 "등록하기 >" 링크 한 곳에서만 (계좌관리 화면과 같은 모양) */
+            /* 계좌 없음: 등록 진입은 위의 "등록하기" 링크 한 곳으로 모은다 */
             <>
               <View style={[layout.rowCenter, styles.bankRow]}>
                 <View style={styles.emptyIcon}>
@@ -164,7 +161,6 @@ const RefundAcntScreen: React.FC<RefundAcntScreenProps> = ({ navigation, route }
   );
 };
 
-// 회원정보(UsrInfoScreen)·계좌관리 화면과 같은 카드 모양
 const styles = StyleSheet.create({
   wrap: { paddingHorizontal: 16, paddingVertical: 24, gap: 16 },
   card: {
@@ -174,7 +170,7 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 16,
   },
-  // 계좌 없음 줄의 아이콘 자리: 은행 로고와 같은 크기의 회색 동그라미
+  // 은행 로고와 같은 크기의 자리표시 아이콘
   emptyIcon: {
     width: 44,
     height: 44,

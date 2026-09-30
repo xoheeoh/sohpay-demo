@@ -22,7 +22,6 @@ import { layout, theme } from '@styles';
 type RefundAuthConfirmScreenProps = NativeStackScreenProps<RootStackParamList, 'RefundAuthConfirm'>;
 
 const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenProps) => {
-  // 이전 화면에서 얻어온 1원 인증 계좌 정보 파라미터
   const { bankCd, acntNo, acntNm, nonce, flg } = route.params;
 
   // 인증 실패 문구. 서버 오류 코드에 맞춘 문구(client.ts MESSAGES)를 그대로 보여준다
@@ -32,7 +31,6 @@ const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenP
   const scrollViewRef = useRef<any>(null);
   const [keyboardVisible, setKeyboardVisible] = useState<boolean>(false);
 
-  // 다음 버튼 활성화 유무
   const isButtonDisabled = !(certNum.length >= 3);
 
   // Dialog
@@ -52,9 +50,8 @@ const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenP
   }, []);
 
   useEffect(() => {
-    // iOS는 키보드 프레임 변화/레이아웃 타이밍 편차가 커서,
-    // 공통 KeyboardAwareScrollView가 해도 가끔 덜 올라오는 기기가 있어
-    // 이 화면은 키보드가 올라올 때 한 번 더 아래로 밀어줌. (입력칸이 하나뿐이라 키보드가 보이면 곧 그 입력칸에 포커스된 상태다)
+    // iOS 는 키보드 프레임 타이밍 편차가 커 KeyboardAwareScrollView 만으로는 덜 올라오는 기기가 있어,
+    // 키보드가 뜨면 한 번 더 끝까지 스크롤한다 (입력칸이 하나뿐이라 그 입력칸에 포커스된 상태다)
     if (Platform.OS !== 'ios') return;
     if (!keyboardVisible) return;
     const sv = scrollViewRef.current;
@@ -129,7 +126,7 @@ const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenP
           입력하신 계좌에 입금된 1원의{'\n'}입금자명 숫자 3자리를 입력해주세요.
         </Typography>
 
-        {/* 입금 내역 카드: 은행 앱에 뜨는 입금 알림처럼 보이게. 계좌 카드(계좌관리·출금 확인)와 같은 줄 구성 */}
+        {/* 입금 내역 카드: 은행 앱의 입금 알림처럼 보이게 한다 */}
         <View style={styles.depositCard}>
           <View style={[layout.rowCenter, { gap: 12 }]}>
             <Image source={getBankImage(bankCd)} style={styles.bankLogo} />
@@ -175,7 +172,6 @@ const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenP
         </View>
 
         <View style={{ gap: 12 }}>
-          {/* 다른 화면과 같은 공용 입력칸. 라벨이 안에서 떠오르고, 포커스 표시는 컨테이너 테두리 색이 담당한다 */}
           <TextField
             id={'certNum'}
             inputMode={'numeric'}
@@ -183,7 +179,7 @@ const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenP
             value={certNum}
             onChangeText={(x: string) => {
               setCertNum(x.replace(/[^0-9]/g, '').slice(0, 3)); // 숫자 3자리만
-              if (errorMsg) setErrorMsg(null); // 다시 입력하기 시작하면 이전 오류 표시를 지운다
+              if (errorMsg) setErrorMsg(null); // 다시 입력하면 이전 오류를 지운다
             }}
             placeholder={''}
             error={!!errorMsg}
@@ -208,14 +204,14 @@ const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenP
 };
 
 const styles = StyleSheet.create({
-  // 입금 내역 카드 (계좌관리·출금 확인 화면의 계좌 줄과 같은 연회색 상자)
+  // 입금 내역 카드
   depositCard: {
     backgroundColor: theme.colors.gray50,
     borderRadius: theme.radius.lg,
     padding: 16,
     gap: 14,
   },
-  bankLogo: { width: 44, height: 44, borderRadius: 22 }, // 계좌관리·출금 계좌 확인의 은행 로고와 같은 크기
+  bankLogo: { width: 44, height: 44, borderRadius: 22 },
   depositDivider: { height: 1, backgroundColor: theme.colors.gray150 },
 });
 

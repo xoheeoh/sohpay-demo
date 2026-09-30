@@ -24,8 +24,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const { alert } = useDialog();
 
   /**
-   * 로그인 상태(세션)가 끊긴 경우: 다른 기기에서 탈퇴·비밀번호 변경을 했거나 토큰이 만료·폐기된 상태.
-   * 그대로 두면 잔액 0원·이름 빈칸인 홈이 뜨고 모든 동작이 실패하므로, 저장된 정보를 지우고 로그인 화면으로 보낸다.
+   * 세션이 끊긴 경우(다른 기기에서 탈퇴·비밀번호 변경, 토큰 만료·폐기) 저장 정보를 지우고 로그인 화면으로 보낸다.
    * 조회 여러 개가 동시에 실패해도 안내는 한 번만 띄운다.
    */
   const isSessionExpiredHandled = useRef(false);
@@ -47,13 +46,13 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const [usrData, setUsrData] = useState<IUserProfile>();
 
   const fetchUserInfo = async () => {
-    // return 을 붙여 당겨서 새로고침(Promise.all)이 실제 응답까지 기다리게 한다
+    // 당겨서 새로고침(Promise.all)이 응답을 기다릴 수 있도록 Promise 를 돌려준다
     return loadUsrInfoData().then((data) => {
       if (data.resultCd === '0000') {
         setUsrData(data);
         // console.log('조회된 사용자 정보:', data);
 
-        // 사용자명 저장
+        // 출금 계좌 등록 시 본인 명의 확인(RefundAuthScreen)에 쓴다
         storeData('usrNm', data.usrNm);
       } else if (data.resultCd === 'UNAUTHENTICATED') {
         handleSessionExpired();
@@ -95,15 +94,11 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   // 모든 데이터 새로고침 ===============================================
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = async () => {
-    setRefreshing(true); // 새로고침 시작
+    setRefreshing(true);
 
-    await Promise.all([
-      fetchUserInfo(), // 사용자 정보 업데이트
-      fetchUserBalance(), // 회원 잔액 업데이트
-      getUseListApi(), // 회원 최근 이력 업데이트
-    ]);
+    await Promise.all([fetchUserInfo(), fetchUserBalance(), getUseListApi()]);
 
-    setRefreshing(false); // 새로고침 완료
+    setRefreshing(false);
   };
   // =============================================== 모든 데이터 새로고침
 
@@ -128,7 +123,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const PAGE_SIZE = 5;
   const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
 
-  // 최근 결제내역 아이템 렌더링
   const renderTransactionItem = ({ item }: { item: ListDataItem }) => {
     return <TransactionItem data={item} />;
   };
@@ -167,7 +161,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             </View>
           </Pressable>
 
-          {/* 리스트. 카드가 남은 높이를 다 쓰므로, 비어 있을 때 안내가 카드 세로 가운데에 오도록 내용 영역도 늘린다 */}
+          {/* 비어 있을 때 안내가 카드 세로 가운데에 오도록 내용 영역을 카드 높이만큼 늘린다 */}
           <FlatList
             style={{ flex: 1 }}
             data={useList ? useList.slice(0, visibleCount) : []}
@@ -177,7 +171,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             contentContainerStyle={{ flexGrow: 1 }}
             ListEmptyComponent={() =>
               useList === null ? (
-                // 아직 조회 전: "없음" 문구 대신 행 모양 자리표시자 (마이페이지·계좌관리와 같은 방식)
+                // 조회 전에는 "없음" 문구 대신 행 모양 자리표시자를 보여준다
                 <View>
                   {Array.from({ length: 4 }).map((_, i) => (
                     <View key={i} style={[styles.skeletonRow, i > 0 && styles.skeletonDivider]}>
@@ -204,7 +198,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             ItemSeparatorComponent={() => <Divider style={styles.separator} />}
           />
 
-          {/* 더보기: 목록 바로 아래가 아니라 카드 맨 아래에 붙인다 (목록이 짧아도 카드 하단에 고정) */}
+          {/* 더보기: 목록이 짧아도 카드 맨 아래에 고정한다 */}
           {useList && visibleCount < useList.length && (
             <Pressable
               style={({ pressed }) => [styles.more, pressed && { opacity: 0.6 }]}
@@ -222,7 +216,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // flexGrow: 내용이 화면보다 짧을 때 남는 높이를 아래 카드가 채우도록 (길면 평소처럼 스크롤)
+  // 내용이 화면보다 짧을 때 남는 높이를 아래 카드가 채우도록 늘린다
   wrap: {
     paddingHorizontal: 16,
     paddingTop: 8,
@@ -232,7 +226,7 @@ const styles = StyleSheet.create({
   },
   icon: { width: 20, height: 20 },
   recentList: {
-    flex: 1, // 화면 아래까지 늘어나 홈이 항상 꽉 찬 모습이 되게
+    flex: 1, // 화면 아래까지 늘려 홈이 항상 꽉 차 보이게 한다
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.xl,
     boxShadow: theme.shadow.card,
@@ -257,7 +251,7 @@ const styles = StyleSheet.create({
   // 조회 전 자리표시자 행: 실제 행(TransactionItem)과 같은 높이·여백
   skeletonRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 17, paddingHorizontal: 16 },
   skeletonDivider: { borderTopWidth: 1, borderTopColor: theme.colors.gray100 },
-  // 비어 있을 때: 늘어난 내용 영역의 세로 가운데에 아이콘·문구를 둔다 (다른 화면의 빈 상태와 같은 모양)
+  // 빈 상태: 늘어난 내용 영역의 세로 가운데에 둔다
   empty: {
     flex: 1,
     paddingHorizontal: 16,
@@ -281,7 +275,7 @@ const styles = StyleSheet.create({
     gap: 2,
     marginHorizontal: 16,
     marginTop: 4,
-    marginBottom: 16, // 카드 아래 여백
+    marginBottom: 16,
     height: 40,
     borderRadius: theme.radius.md,
     backgroundColor: theme.colors.gray50,

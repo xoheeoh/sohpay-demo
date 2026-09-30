@@ -14,11 +14,11 @@ interface SkeletonProps {
 }
 
 /**
- * 스켈레톤(자리표시자): 데이터를 불러오는 동안 내용이 들어올 자리를 회색 막대로 미리 보여준다.
- * 조회가 끝나기 전에 "없음" 화면이 잠깐 보이는 깜빡임을 막는 용도. 천천히 밝아지고 어두워지는 애니메이션이 돈다.
+ * 스켈레톤(자리표시자): 데이터를 불러오는 동안 내용 자리를 회색 막대로 보여준다.
+ * 조회 전 "없음" 화면이 잠깐 보이는 깜빡임을 막는다.
  */
 const Skeleton: React.FC<SkeletonProps> = ({ width = '100%', height = 16, radius = theme.radius.sm, style }) => {
-  // 애니메이션 값은 한 번만 만들어 재사용한다 (렌더 중 ref 를 읽지 말라는 lint 규칙 때문에 useRef 대신 useState 초기화 함수를 쓴다)
+  // 렌더 중 ref 를 읽지 말라는 lint 규칙 때문에 useRef 대신 useState 초기화 함수로 한 번만 만든다
   const [opacity] = useState(() => new Animated.Value(1));
 
   useEffect(() => {
@@ -52,10 +52,7 @@ interface SkeletonListProps {
   divider?: boolean;
 }
 
-/**
- * 목록 화면용 스켈레톤: [제목 줄 + 짧은 설명 줄] 을 여러 줄 반복한다.
- * 공지사항·FAQ·1:1 문의·이용내역처럼 조회가 끝나기 전 목록 자리에 놓는다.
- */
+/** 목록 화면용 스켈레톤: [제목 줄 + 짧은 설명 줄] 을 여러 줄 반복한다 */
 const SkeletonList: React.FC<SkeletonListProps> = ({ rows = 4, divider = true }) => (
   <View>
     {Array.from({ length: rows }).map((_, i) => (

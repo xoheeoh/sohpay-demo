@@ -37,7 +37,7 @@ function useDragToClose(panY: Animated.Value, snapBack: Animated.CompositeAnimat
         // 탭은 그대로 두고(닫기 버튼이 눌리도록), 세로로 어느 정도 움직였을 때만 드래그로 인식
         onMoveShouldSetPanResponder: (_, gesture) =>
           Math.abs(gesture.dy) > DRAG_START_DISTANCE && Math.abs(gesture.dy) > Math.abs(gesture.dx),
-        // 웹: 마우스로 끌다가 글자가 선택되면 브라우저가 "드래그 그만하라"고 요청하는데, 이를 거절해서 계속 끌 수 있게 함
+        // 웹: 드래그 중 글자가 선택되면 브라우저가 제스처 종료를 요청하므로 거절해 계속 끌 수 있게 한다
         onPanResponderTerminationRequest: () => false,
         onPanResponderMove: (_, gesture) => {
           panY.setValue(Math.max(0, gesture.dy));
@@ -69,7 +69,7 @@ interface SimpleBottomSheetProps {
   content: ReactNode;
 }
 
-// 간단한 BottomSheet - 떨림 방지용 (짧은 내용)
+// 스크롤 없는 BottomSheet (짧은 내용)
 const SimpleBottomSheet: React.FC<SimpleBottomSheetProps> = ({ visible, setVisible, title, content }) => {
   const screenHeight = Dimensions.get('screen').height;
   const panY = useRef(new Animated.Value(screenHeight)).current;
@@ -136,94 +136,8 @@ const SimpleBottomSheet: React.FC<SimpleBottomSheetProps> = ({ visible, setVisib
             />
           </View>
 
-          {/* 콘텐츠 영역 - 간단한 View만 사용 */}
+          {/* 콘텐츠 영역 */}
           <View style={[styles.content, { paddingBottom: insets.bottom }]}>{content}</View>
-        </Animated.View>
-      </View>
-    </Modal>
-  );
-};
-
-// 스크롤 가능한 BottomSheet - 긴 내용용
-interface ScrollableBottomSheetProps {
-  visible: boolean;
-  setVisible: (visible: boolean) => void;
-  title: string;
-  content: ReactNode;
-}
-
-const ScrollableBottomSheet: React.FC<ScrollableBottomSheetProps> = ({ visible, setVisible, title, content }) => {
-  const screenHeight = Dimensions.get('screen').height;
-  const maxHeight = screenHeight * 0.85;
-  const panY = useRef(new Animated.Value(screenHeight)).current;
-  const insets = useSafeAreaInsets();
-  const translateY = panY.interpolate({
-    inputRange: [-1, 0, 1],
-    outputRange: [0, 0, 1],
-  });
-
-  const resetBottomSheet = Animated.timing(panY, {
-    toValue: 0,
-    duration: 300,
-    useNativeDriver: true,
-  });
-
-  const closeBottomSheet = Animated.timing(panY, {
-    toValue: screenHeight,
-    duration: 300,
-    useNativeDriver: true,
-  });
-
-  useEffect(() => {
-    if (visible) {
-      resetBottomSheet.start();
-    } else {
-      closeBottomSheet.start();
-    }
-  }, [visible]);
-
-  const closeModal = () => {
-    closeBottomSheet.start(() => {
-      setVisible(false);
-    });
-  };
-
-  const dragToCloseHandlers = useDragToClose(panY, resetBottomSheet, closeModal);
-
-  return (
-    <Modal visible={visible} animationType="fade" transparent statusBarTranslucent>
-      <View style={styles.overlay}>
-        <TouchableWithoutFeedback onPress={closeModal}>
-          <View style={styles.background} />
-        </TouchableWithoutFeedback>
-
-        <Animated.View
-          style={{
-            ...styles.container,
-            height: maxHeight,
-            transform: [{ translateY: translateY }],
-          }}>
-          {/* 고정 헤더 영역 - 이 영역을 잡고 끌어내리면 닫힘 (스크롤 영역과 겹치지 않음) */}
-          <View {...dragToCloseHandlers}>
-            <View style={styles.grabber} />
-            <View style={styles.header}>
-              <Typography mode="subtitle1" color="gray900" style={styles.title}>
-                {title}
-              </Typography>
-              <IconButton
-                icon={'close'}
-                size={20}
-                onPress={closeModal}
-                style={styles.closeBtn}
-                iconColor={theme.colors.gray700}
-              />
-            </View>
-          </View>
-
-          {/* 스크롤 가능한 콘텐츠 영역 */}
-          <Animated.ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false}>
-            <View style={[styles.content, { paddingBottom: insets.bottom }]}>{content}</View>
-          </Animated.ScrollView>
         </Animated.View>
       </View>
     </Modal>
@@ -238,9 +152,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: theme.radius.xxl,
     borderTopRightRadius: theme.radius.xxl,
     width: '100%',
-    // height는 동적으로 설정됨
-    // 웹: 전체 창을 덮는 Modal 안에서 시트만 700px 프레임 폭에 맞춰 중앙 정렬
-    // 웹: 마우스로 시트를 끌 때 글자가 선택되지 않게 함 (글자가 선택되면 브라우저가 드래그를 끊어버림)
+    // 웹: 시트를 700px 프레임 폭에 맞춰 중앙 정렬하고, 드래그 중 글자 선택으로 제스처가 끊기지 않게 userSelect 를 막는다
     ...(Platform.OS === 'web'
       ? { maxWidth: WEB_MAX_WIDTH, alignSelf: 'center' as const, userSelect: 'none' as const }
       : null),
@@ -254,7 +166,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.gray200,
   },
   header: {
-    // 고정 헤더 영역 - 타이틀과 닫기 버튼을 한 줄에 배치
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
@@ -266,15 +177,14 @@ const styles = StyleSheet.create({
   title: { flex: 1 },
   closeBtn: { margin: 0, width: 36, height: 36, borderRadius: 18 },
   scrollArea: {
-    flex: 1, // 스크롤 가능한 영역
-    maxHeight: '100%', // 최대 높이 제한
+    flex: 1,
+    maxHeight: '100%',
   },
   content: { paddingHorizontal: 20 },
 });
 
-// 기본 export는 SimpleBottomSheet (기존 호환성 유지)
 export default SimpleBottomSheet;
-export { SimpleBottomSheet, ScrollableBottomSheet };
+export { SimpleBottomSheet };
 
-// 기존 호환성을 위한 alias
+/** 호환용 별칭 */
 export const BottomSheet = SimpleBottomSheet;

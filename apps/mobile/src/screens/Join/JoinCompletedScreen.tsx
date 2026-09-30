@@ -25,9 +25,8 @@ import { theme } from '@styles';
 type JoinCompletedScreenProps = NativeStackScreenProps<RootStackParamList, 'JoinCompleted'>;
 
 /**
- * 화면 모양만 확인하기 위한 미리보기 모드.
- * .env 에 EXPO_PUBLIC_DEV_START_SCREEN=JoinCompleted 를 넣고 실행하면 실제 가입 요청 없이 아래 샘플 정보로 화면을 그린다.
- * 개발 실행에서만 동작하고, 배포 빌드에서는 항상 꺼져 있다.
+ * 화면 모양만 확인하는 미리보기 모드.
+ * .env 의 EXPO_PUBLIC_DEV_START_SCREEN=JoinCompleted 로 켜면 실제 가입 요청 없이 샘플 정보로 그리며, 배포 빌드에서는 항상 꺼져 있다.
  */
 const IS_PREVIEW = DEV_START_SCREEN === 'JoinCompleted';
 const PREVIEW_USER: IUserData = {
@@ -42,26 +41,20 @@ const PREVIEW_USER: IUserData = {
 };
 
 /**
- * 내용을 "버튼 위 영역"의 가운데에 놓기 위한 추가 아래 여백.
- * 하단 버튼 상자는 화면 위에 떠 있어(absolute) 스크롤 영역이 그 뒤까지 이어진다. 그래서 그냥 가운데 정렬하면
- * 버튼까지 포함한 높이의 가운데에 놓여 아래로 치우쳐 보인다.
- *  - 버튼 상자 높이(BOTTOM_BTN_BOX_HEIGHT) 중 스크롤뷰가 이미 더해 주는 몫(BOTTOM_BTN_BOX_KEYBOARD_INSET)을 뺀 나머지
- *  - 아래쪽에 무게가 실리는 구성(카드)이라 기하학적 중앙보다 살짝 위에 보이도록 24 를 더한다
+ * 하단 버튼 상자가 스크롤 영역 위에 떠 있어 단순 가운데 정렬은 아래로 치우쳐 보이므로,
+ * 버튼 위 영역 기준으로 가운데를 맞추기 위한 추가 아래 여백. 24 는 카드가 아래쪽에 무게를 실어 살짝 위로 올리는 보정값.
  */
 const CENTERING_EXTRA_BOTTOM_PADDING = BOTTOM_BTN_BOX_HEIGHT - BOTTOM_BTN_BOX_KEYBOARD_INSET + 24;
 
 const JoinCompletedScreen: React.FC<JoinCompletedScreenProps> = ({ navigation }) => {
-  /**
-   * 회원가입 1~3 단계에서 저장한 정보 불러오기
-   * 불러온 정보 사용자 정보로 상태관리
-   */
+  // 1~3 단계에서 저장해 둔 가입 정보
   const [userData, setUserData] = useState<IUserData | null>(IS_PREVIEW ? PREVIEW_USER : null);
 
   useEffect(() => {
     if (IS_PREVIEW) return; // 미리보기: 저장된 가입 정보를 읽지 않는다
 
     const loadUserData = async () => {
-      const data = await getData<IUserData>('userData'); // 저장된 userData 키 데이터 가져오기
+      const data = await getData<IUserData>('userData');
 
       console.log('========================================');
       console.log('[회원가입 완료 화면] AsyncStorage에서 데이터 로드');
@@ -73,13 +66,12 @@ const JoinCompletedScreen: React.FC<JoinCompletedScreenProps> = ({ navigation })
     loadUserData();
   }, []);
 
-  // Dialog
   const { confirm } = useDialog();
 
-  // 회원가입 성공 여부에 따라 보여주는 화면 분기
+  // 가입 요청이 성공한 뒤에만 화면을 그린다
   const [show, setShow] = useState(IS_PREVIEW);
 
-  // 가입 요청은 한 번만 보낸다. 화면이 다시 그려지거나 효과가 두 번 돌아도 같은 아이디로 두 번 가입을 시도하지 않게 막는다
+  // 화면이 다시 그려지거나 효과가 두 번 돌아도 가입 요청은 한 번만 보낸다
   const isSubmittedRef = useRef(false);
 
   useEffect(() => {
@@ -95,22 +87,21 @@ const JoinCompletedScreen: React.FC<JoinCompletedScreenProps> = ({ navigation })
           console.log('[회원가입 완료 화면] 회원가입 성공!');
           console.log(`회원 ID: ${data.mbUid}`);
           console.log('========================================');
-          // 회원가입 성공 후 저장된 회원가입 관련 데이터 삭제
           await removeData('userData');
           console.log('[회원가입 완료 화면] AsyncStorage의 userData 삭제 완료');
-          setShow(true); // 가입 성공 화면 보여주기
+          setShow(true);
         } else {
           console.log('========================================');
           console.log('[회원가입 완료 화면] 회원가입 실패, 사유:', data.resultMsg);
           console.log('========================================');
-          // 회원가입 실패 후에도 저장된 회원가입 관련 데이터 삭제
+          // 실패해도 처음부터 다시 시작하도록 가입 정보를 지운다
           await removeData('userData');
           console.log('[회원가입 완료 화면] AsyncStorage의 userData 삭제 완료');
           setShow(false);
 
           confirm({
             title: '회원가입 실패',
-            message1: data.resultMsg, // 실패 사유 (본인인증 만료, 이미 가입된 사용자 등)
+            message1: data.resultMsg, // 본인인증 만료, 이미 가입된 사용자 등
             message2: '처음부터 다시 시도해 주세요.',
             confirmText: '확인',
           }).then((ok) => {
@@ -123,8 +114,8 @@ const JoinCompletedScreen: React.FC<JoinCompletedScreenProps> = ({ navigation })
     }
   }, [userData]);
 
+  // 완료 화면에서는 뒤로가기를 막고 로그인 화면으로 보낸다
   useEffect(() => {
-    // 제스처 뒤로가기 방지
     navigation.setOptions({
       gestureEnabled: false,
     });
@@ -132,12 +123,12 @@ const JoinCompletedScreen: React.FC<JoinCompletedScreenProps> = ({ navigation })
     const backAction = () => {
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Login' }], // 'Login' 화면으로 이동 (스택 리셋)
+        routes: [{ name: 'Login' }],
       });
       return true; // 기본 뒤로가기 동작 방지
     };
 
-    // 웹에는 하드웨어 뒤로가기 버튼이 없고 BackHandler 도 지원되지 않아(콘솔 오류) 앱에서만 등록한다
+    // 웹에는 BackHandler 가 없어(콘솔 오류) 앱에서만 등록한다
     if (Platform.OS === 'web') return;
     const subscription = BackHandler.addEventListener('hardwareBackPress', backAction);
 
@@ -156,14 +147,12 @@ const JoinCompletedScreen: React.FC<JoinCompletedScreenProps> = ({ navigation })
 
   return (
     <ScreenWrapper backgroundColor="white" keyboardBottomInset={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
-      {/* 회원가입 성공 시에만 화면 보임 */}
       {show && (
         <>
           <KeyboardAwareScrollView
             contentContainerStyle={styles.container}
             keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}
             extraBottomPadding={CENTERING_EXTRA_BOTTOM_PADDING}>
-            {/* 체크 애니메이션 → 환영 문구. 다른 성공 화면(ID 찾기·탈퇴 완료)과 같은 애니메이션을 써서 톤을 맞춘다 */}
             <View style={styles.hero}>
               <SuccessAnimation size={160} style={styles.animation} />
 
@@ -177,7 +166,7 @@ const JoinCompletedScreen: React.FC<JoinCompletedScreenProps> = ({ navigation })
               </View>
             </View>
 
-            {/* 회원 정보 카드. 대시보드 잔액 카드와 같은 브랜드 그라디언트로 "내 회원카드" 느낌을 준다 */}
+            {/* 대시보드 잔액 카드와 같은 브랜드 그라디언트로 회원카드 느낌을 준다 */}
             <LinearGradient
               colors={[theme.colors.blue500, theme.colors.primaryDark]}
               start={{ x: 0, y: 0 }}
@@ -223,17 +212,15 @@ const MemberRow = ({ label, value }: { label: string; value?: string }) => (
 );
 
 const styles = StyleSheet.create({
-  // 세로 가운데 정렬. 아래 여백은 KeyboardAwareScrollView 가 덮어쓰므로 여기서 주지 않고 extraBottomPadding 으로 보정한다.
+  // 아래 여백은 KeyboardAwareScrollView 가 덮어쓰므로 extraBottomPadding 으로 보정한다
   container: { paddingHorizontal: 16, paddingVertical: 24, gap: 50, flexGrow: 1, justifyContent: 'center' },
 
   hero: { gap: 12, alignItems: 'center' },
-  // 크기는 SuccessAnimation 의 size(160) 로 정한다.
-  // Lottie 그림은 상자 안에 위 28px, 아래 35px 투명 여백을 두고 그려지므로 그만큼 음수 여백으로 상쇄해
-  // 눈에 보이는 그림 기준으로 정렬되게 한다. (아래는 제목과 16px 정도 떨어지도록 조금 더 당긴다)
+  // Lottie 그림 안의 투명 여백(위 28px, 아래 35px)을 음수 여백으로 상쇄해 보이는 그림 기준으로 정렬한다
   animation: { marginTop: -28, marginBottom: -32 },
 
   memberCard: {
-    // 웹은 프레임이 700px 까지 넓어져 카드가 너무 커 보인다. 휴대폰 폭 정도로 제한하고 가운데에 둔다.
+    // 웹은 프레임이 700px 까지 넓어지므로 카드를 휴대폰 폭 정도로 제한한다
     width: '100%',
     maxWidth: 400,
     alignSelf: 'center',

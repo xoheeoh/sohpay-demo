@@ -17,10 +17,9 @@ import { layout, theme } from '@styles';
 type TransferAcntChargeScreenProps = NativeStackScreenProps<RootStackParamList, 'TransferAcntCharge'>;
 
 const TransferAcntChargeScreen = ({ navigation, route }: TransferAcntChargeScreenProps) => {
-  // 이전 화면에서 얻어온 충전 예정 금액
   const chargeAmt = route.params.amount;
 
-  // 현재 잔액 조회 (null: 아직 조회 전 → 카드에는 자리표시자가 보인다)
+  // 현재 잔액. null 이면 조회 전으로 카드에 자리표시자를 보여준다
   const [balance, setBalance] = useState<number | null>(null);
 
   useEffect(() => {
@@ -38,7 +37,7 @@ const TransferAcntChargeScreen = ({ navigation, route }: TransferAcntChargeScree
       <KeyboardAwareScrollView
         contentContainerStyle={styles.wrap}
         keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
-        {/* 충전 금액 카드: 예정 금액과 충전 후 잔액을 한 카드에 (출금 계좌 확인 화면과 같은 구성) */}
+        {/* 충전 금액 카드 */}
         <AmountSummaryCard
           label="충전 예정 금액"
           amount={Number(chargeAmt)}
@@ -94,7 +93,6 @@ const TransferAcntChargeScreen = ({ navigation, route }: TransferAcntChargeScree
   );
 };
 
-// 출금 계좌 확인(RefundAcntScreen)과 같은 카드 모양
 const styles = StyleSheet.create({
   wrap: { paddingHorizontal: 16, paddingVertical: 24, gap: 16 },
   card: {

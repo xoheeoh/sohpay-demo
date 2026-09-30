@@ -31,7 +31,6 @@ import styles from './JoinStepScreen.styles';
 type JoinStepTwoScreenProps = NativeStackScreenProps<RootStackParamList, 'JoinTwo'>;
 
 const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => {
-  // Dialog
   const { alert, confirm } = useDialog();
 
   const scrollViewRef = useRef<ScrollView>(null);
@@ -39,28 +38,21 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
   const usrPwRef = useRef<TextInput>(null);
   const usrPwChkRef = useRef<TextInput>(null);
 
-  /* 사용자명 입력 상태관리 */
+  // 이름
   const [usrNm, setUsrNm] = useState<string>('');
   const [usrNmError, setUsrNmError] = useState<boolean>(false);
 
-  /**
-   * 이메일 입력 상태관리
-   * 이메일 형식에 어긋나면 오류 설정
-   */
+  // 이메일
   const [usrEmail, setUsrEmail] = useState<string>('');
   const [emailError, setEmailError] = useState<boolean>(false);
   const isEmailChecked = usrEmail.length > 0 && !emailError;
 
-  /**
-   * 아이디 입력 상태관리
-   * 아이디 형식에 어긋나면 오류 설정
-   * 아이디 중복확인
-   */
+  // 아이디
   const [usrId, setUsrId] = useState<string>('');
   const [idError, setIdError] = useState<boolean>(false);
-  const [idDuplicate, setIdDuplicate] = useState<boolean>(true); // false: 중복X, true: 중복O
+  const [idDuplicate, setIdDuplicate] = useState<boolean>(true); // 중복확인을 통과하기 전까지는 중복으로 본다
   const isIdChecked = usrId.length > 0 && !idError && !idDuplicate;
-  const isDupIdButtonDisabled = !(usrId.length > 0 && !idError); // 아이디 중복확인 버튼 활성화 상태
+  const isDupIdButtonDisabled = !(usrId.length > 0 && !idError);
 
   // 아이디 중복 확인
   const handleChkId = () => {
@@ -78,15 +70,13 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
       chkDuplicateUid(usrId, storedNonce)
         .then((data) => {
           if (data.resultCd === '0000') {
-            // 사용 가능한 아이디
-            setIdDuplicate(false); // 중복된 아이디가 아님
+            setIdDuplicate(false);
 
             alert({
               title: '중복확인',
               message1: '사용할 수 있는 ID입니다!',
             });
           } else if (data.resultCd === 'MB_UID_TAKEN') {
-            // 이미 쓰고 있는 아이디
             setIdDuplicate(true);
             alert({
               title: '중복확인',
@@ -94,7 +84,7 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
               message2: 'ID를 다시 입력해 주세요.',
             });
           } else {
-            // 아이디 규칙 위반, 네트워크 오류 등. 서버가 준 문구를 그대로 보여준다
+            // 아이디 규칙 위반, 네트워크 오류 등은 서버 문구를 그대로 보여준다
             setIdDuplicate(true);
             alert({
               title: '중복확인',
@@ -106,28 +96,20 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
     }
   };
 
-  /**
-   * 비밀번호 입력 상태관리
-   * 비밀번호 형식에 어긋나면 오류 설정 (영문, 숫자, 특수문자 8~30자)
-   * 비밀번호 확인과 일치하는지 비교
-   */
+  // 비밀번호
   const [usrPw, setUsrPw] = useState<string>('');
   const [usrPwChk, setUsrPwChk] = useState<string>('');
   const [pwError, setPwError] = useState<boolean>(false);
   const [pwChkError, setPwChkError] = useState<boolean>(false);
   const isPwChecked = usrPw.length > 0 && usrPwChk.length > 0 && !pwError && !pwChkError;
 
-  /**
-   * 본인인증
-   * 인증 성공 여부 확인
-   */
-  const [identifySuc, setIdentifySuc] = useState<boolean>(false); // true: 본인인증 성공, false: 본인인증 실패
-  const [memberAuthKey, setMemberAuthKey] = useState<string>(''); // 본인인증 키
+  // 본인인증
+  const [identifySuc, setIdentifySuc] = useState<boolean>(false);
+  const [memberAuthKey, setMemberAuthKey] = useState<string>('');
 
-  // 버튼 활성화 상태 계산 (입력칸이 모두 입력되고, 아이디 중복체크가 되고, 이메일 형식이 맞고, 본인확인이 완료되면 활성화)
+  // 모든 입력이 유효하고 아이디 중복확인·본인인증까지 끝나야 활성화된다
   const isButtonDisabled = !(usrNm.length > 0 && isEmailChecked && isIdChecked && isPwChecked && identifySuc);
 
-  // 사용자 데이터 준비
   const prepareUserData = (): Partial<IUserData> => {
     const firstStepData: Partial<IUserData> = {
       usrNm: usrNm,
@@ -142,10 +124,10 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
     return firstStepData;
   };
 
-  // 중복 가입자 검증
+  // 같은 본인인증 정보로 이미 가입한 사용자인지 확인한다
   const checkDuplicateUser = async (): Promise<boolean> => {
     if (memberAuthKey === '') {
-      return false; // memberAuthKey가 없으면 중복 체크 필요X
+      return false;
     }
 
     try {
@@ -163,18 +145,16 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
     }
   };
 
-  // 입력한 가입 정보 저장
+  // 입력한 가입 정보를 저장하고 다음 단계로 넘어간다
   const handleSaveJoinData = async () => {
-    // 비밀번호 유효성 검사 실행
+    // 비밀번호 규칙(아이디 포함 여부 등)은 서버가 검사한다
     validationPwd(usrPw, usrId, memberAuthKey).then(async (data) => {
       if (data.resultCd === '0000') {
-        // 1. 저장할 사용자 데이터 준비
         const firstStepData = {
           ...prepareUserData(),
           pwd: usrPw,
         };
 
-        // 2. 중복 가입자 여부 확인
         const isDuplicate = await checkDuplicateUser();
         if (isDuplicate) {
           const ok = await confirm({
@@ -183,28 +163,24 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
             message2: '아이디 찾기 후 로그인해 주세요.',
           });
           if (ok) {
-            navigation.navigate('Login'); // 로그인 화면으로 돌아가기
+            navigation.navigate('Login');
           }
-          return; // 중복 가입자이므로 더 이상 진행 X
+          return;
         }
 
-        // 3. 사용자 데이터 저장
         await mergeData<IUserData>('userData', firstStepData);
 
-        // 4. userData에 nonce가 포함되어 저장되었으므로, 별도로 저장된 nonce 삭제
+        // nonce 는 userData 에 함께 담겼으므로 따로 저장한 값은 지운다
         await removeData('nonce');
 
-        // 5. 저장된 전체 데이터 확인 및 콘솔 출력
         const savedData = await getData<IUserData>('userData');
         console.log('========================================');
         console.log('[회원가입 2단계 화면] AsyncStorage 저장 완료');
         console.log('저장된 전체 userData:', JSON.stringify(savedData, null, 2));
         console.log('========================================');
 
-        // 6. 다음 단계로 이동
         navigation.navigate('JoinThree', { memberAuthKey: memberAuthKey });
       } else {
-        // 실패 모달 노출
         alert({
           title: '비밀번호 오류',
           message1: data.resultMsg,
@@ -213,22 +189,20 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
     });
   };
 
-  // 휴대폰 본인인증 / 간편인증 버튼 클릭 이벤트
   const handleAuth = async (identCd: '01' | '02') => {
-    // 열린 키보드 닫기 (인증 완료 후 화면 복귀했을 때 대비)
+    // 인증 화면에서 돌아왔을 때 키보드가 남지 않도록 미리 닫는다
     Keyboard.dismiss();
 
-    // 이름이 비어있으면 에러 표시하고 본인인증 로직 실행하지 않음
+    // 이름은 인증 결과와 대조하는 값이라 인증 전에 입력되어 있어야 한다
     if (!usrNm.trim()) {
       setUsrNmError(true);
       return;
     }
 
     try {
-      // 기존 certData 삭제
+      // 이전 인증 결과가 새 인증 결과로 읽히지 않게 지운다
       await removeData('certData');
 
-      // 인증 화면 URL 요청
       const data = await requestCertifyUrl(identCd);
       if (data.resultCd === '0000') {
         if (data.returnUrl) {
@@ -242,21 +216,21 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
     }
   };
 
-  // 본인인증 완료 후 화면 복귀 시, 데이터 읽어오기
-  const [certData, setCertData] = useState<string | null>(null); // 간편인증 데이터 상태관리
-  const [storedNonce, setStoredNonce] = useState<string | null>(null); // 본인인증 논스 상태관리
+  // 인증 화면이 저장해 둔 인증 결과와 nonce
+  const [certData, setCertData] = useState<string | null>(null);
+  const [storedNonce, setStoredNonce] = useState<string | null>(null);
 
+  // 인증 화면에서 돌아오면 저장된 인증 결과를 읽어 온다
   useFocusEffect(
     useCallback(() => {
       const loadCertData = async () => {
-        // 본인인증 화면에서 저장했던 certData 가져오기
         const storedCertData = await getData<string>('certData');
         const storedNonce = await getData<string>('nonce');
 
         if (storedCertData) {
           console.log('전달받은 간편인증 정보:', storedCertData, '전달받은 논스:', storedNonce);
-          setCertData(storedCertData); // 상태에 certData 저장
-          setStoredNonce(storedNonce); // 상태에 nonce 저장
+          setCertData(storedCertData);
+          setStoredNonce(storedNonce);
         } else {
           console.log('전달받은 간편인증 정보 없음');
         }
@@ -266,15 +240,13 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
     }, []),
   );
 
-  // certData가 업데이트 되었을 때 memberAuthKey 얻기
+  // 인증 결과를 입력한 이름과 대조해 memberAuthKey 를 받는다
   useEffect(() => {
     const checkAuthName = async () => {
       if (!certData) return;
 
-      // 본인 인증 결과 확인
       const data = await handleCertifyResult(usrNm, certData);
 
-      // 본인인증 확인 성공
       if (data.resultCd === '0000') {
         setIdentifySuc(true);
         setMemberAuthKey(data.memberAuthKey);
@@ -284,11 +256,11 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
           message1: '본인인증이 완료되었습니다.',
         });
 
-        // 인증 성공 후 certData 정리
+        // 한 번 쓴 인증 결과가 다시 검증되지 않도록 지운다
         setCertData(null);
         await removeData('certData');
       } else if (data.resultCd === '9999' && data.resultMsg.includes('입력하신 이름')) {
-        // 본인인증은 성공했지만 입력한 정보와 다름
+        // 인증 자체는 됐지만 입력한 이름과 다른 경우
         alert({
           title: '오류',
           message1: '본인 인증 정보가 입력하신 이름과 일치하지 않습니다.',
@@ -297,7 +269,7 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
 
         setIdentifySuc(false);
 
-        // 정보 수정 후 본인인증을 다시 시도할 수 있도록
+        // 이름을 고친 뒤 다시 인증할 수 있도록 결과를 지운다
         setUsrNm('');
         setCertData(null);
         await removeData('certData');
@@ -306,8 +278,6 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
 
     checkAuthName();
   }, [certData, usrNm]);
-
-  // 키보드 스크롤/패딩은 KeyboardAwareScrollView가 처리
 
   return (
     <ScreenWrapper backgroundColor="white" keyboardBottomInset={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
@@ -361,7 +331,6 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
               value={usrNm}
               onChangeText={(text: string) => {
                 setUsrNm(text);
-                // 이름이 입력되면 에러 상태 초기화
                 if (usrNmError && text.trim()) {
                   setUsrNmError(false);
                 }
@@ -412,7 +381,6 @@ const JoinStepTwoScreen: React.FC<JoinStepTwoScreenProps> = ({ navigation }) => 
               value={usrId}
               inputRef={usrIdRef}
               onChangeText={(text: string) => {
-                // 입력값 필터링
                 const filtered = filterUserId(text);
                 setUsrId(filtered);
                 setIdDuplicate(true); // 아이디가 바뀌면 중복확인을 다시 받아야 한다

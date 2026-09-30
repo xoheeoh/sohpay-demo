@@ -17,22 +17,19 @@ import { theme } from '@styles';
 type UseDetailScreenProps = NativeStackScreenProps<RootStackParamList, 'UseDetail'>;
 
 const UseDetailScreen: React.FC<UseDetailScreenProps> = ({ route }) => {
-  // 이전 화면에서 얻어오는 정보
   const { getCd, item } = route.params;
 
   // Dialog
   const { alert, confirm } = useDialog();
 
-  // 이전 화면에서 얻어온 결제 정보의 mid에 해당하는 가맹점 정보 구하기
+  // 결제 건의 가맹점 정보
   const [midInfo, setMidInfo] = useState<IMidInfo>();
 
-  // 화면 캡처를 위한 ViewShot ref
   const viewShotRef = useRef<ViewShotRef>(null);
 
   /**
-   * 갤러리 저장 권한. 원본은 react-native-permissions + CameraRoll 을 썼고,
-   * Expo 에서는 expo-media-library 가 iOS/Android 권한 요청을 함께 처리한다. (사진 추가 권한만 요청)
-   * 웹에는 네이티브 모듈이 없어 로드 시점에 오류가 나므로, 네이티브에서만 지연 로드한다.
+   * 갤러리 저장 권한은 expo-media-library 로 요청한다 (사진 추가 권한만).
+   * 웹에는 네이티브 모듈이 없어 로드 시점에 오류가 나므로 네이티브에서만 지연 로드한다.
    */
   const loadMediaLibrary = () =>
     Platform.OS === 'web' ? null : (require('expo-media-library') as typeof import('expo-media-library'));
@@ -62,7 +59,7 @@ const UseDetailScreen: React.FC<UseDetailScreenProps> = ({ route }) => {
     }
   };
 
-  /** CameraRoll / Android Uri.parse 모두 file:// 스킴이 있는 경로를 기대함 (스킴 없으면 iOS에서 저장 실패·메시지 없음) */
+  /** 저장 API 는 file:// 스킴이 있는 경로를 기대한다. 스킴이 없으면 iOS 에서 메시지 없이 저장에 실패한다 */
   const toFileUri = (pathOrUri: string) => {
     if (pathOrUri.startsWith('file://')) {
       return pathOrUri;
@@ -73,7 +70,7 @@ const UseDetailScreen: React.FC<UseDetailScreenProps> = ({ route }) => {
     return pathOrUri;
   };
 
-  // 실제 저장 로직 (ViewShot 캡처 파일을 그대로 앨범에 저장)
+  // 캡처 파일을 앨범에 저장한다
   const saveToGallery = async (uri: string) => {
     try {
       const fileUri = toFileUri(uri);
@@ -95,9 +92,8 @@ const UseDetailScreen: React.FC<UseDetailScreenProps> = ({ route }) => {
     }
   };
 
-  // 다운로드 아이콘 클릭
   const handleSave = async () => {
-    // 웹에는 갤러리가 없어 저장을 지원하지 않는다. 전에는 아무 반응이 없어 고장처럼 보였으므로 안내를 띄운다
+    // 웹은 갤러리 저장을 지원하지 않아 안내만 띄운다
     if (Platform.OS === 'web') {
       alert({
         title: '앱에서 이용할 수 있어요',
@@ -139,7 +135,7 @@ const UseDetailScreen: React.FC<UseDetailScreenProps> = ({ route }) => {
     }
   }, [item.mid]);
 
-  // 거래 시각 변환
+  // 거래 시각
   const dateTime =
     getCd === 'USE' || getCd === 'CHRG'
       ? `${item.trDt}${item.trTm}`
@@ -167,7 +163,7 @@ const UseDetailScreen: React.FC<UseDetailScreenProps> = ({ route }) => {
                   ? '출금실패'
                   : '';
 
-  // 취소·실패한 거래(돈이 움직이지 않은 건)만 취소선·회색으로 그린다. 정상 완료된 출금은 결제처럼 "- 금액" 으로 보여야 한다
+  // 돈이 움직이지 않은 취소·실패 건만 취소선·회색으로 그린다
   const isStruck = stateNm.includes('취소') || stateNm.includes('실패');
 
   // 요약 카드 제목/부제

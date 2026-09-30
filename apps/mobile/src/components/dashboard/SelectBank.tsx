@@ -6,12 +6,12 @@ import { Typography } from '@components/common';
 import { theme } from '@styles';
 
 type SelectBankProps = {
-  onSelectBank: (bankCd: string) => void; // 선택 시 호출할 함수
+  onSelectBank: (bankCd: string) => void;
   setVisible: (visible: boolean) => void;
 };
 
 const SelectBank = ({ onSelectBank, setVisible }: SelectBankProps) => {
-  // 웹에서는 앱이 700px 프레임 안에 있으므로 창 폭이 아니라 프레임 폭 기준으로 3열을 맞춘다.
+  // 웹에서는 창 폭이 아니라 700px 프레임 폭 기준으로 3열을 맞춘다
   const windowWidth = useAppWidth();
 
   const bankList = Object.entries(bankMapping).map(([code, name]) => ({
@@ -37,7 +37,7 @@ const SelectBank = ({ onSelectBank, setVisible }: SelectBankProps) => {
             pressed && { backgroundColor: theme.colors.gray100 },
           ]}
           onPress={() => {
-            onSelectBank(item.code); // 콜백 호출
+            onSelectBank(item.code);
             setVisible(false);
           }}>
           <Image source={getBankImage(item.code)} resizeMode="contain" style={{ width: 36, height: 36 }} />

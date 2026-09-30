@@ -11,20 +11,19 @@ interface PeriodModalProps {
   frDt: string;
   toDt: string;
   handleSelectPeriod: () => void;
-  onPeriodChange: (frDt: string, toDt: string, radio: string) => void; // 조회 시작일, 종료일, radio value를 부모로 전달하는 콜백
+  onPeriodChange: (frDt: string, toDt: string, radio: string) => void;
 }
 
 interface DateSelectBoxProps {
   label: string; // 칸 위에 작게 표시되는 이름 (시작일 / 종료일)
   value: string; // 선택된 날짜 (YYYY-MM-DD). 비어 있으면 안내 문구 표시
-  active: boolean; // 이 칸의 달력이 열려 있는 상태인지
+  active: boolean; // 이 칸의 달력이 열려 있는지
   onPress: () => void;
 }
 
 /**
  * 누르면 달력이 열리는 날짜 선택 칸.
- * 실제 입력창(TextInput)이 아니라 버튼이라서, 웹에서 클릭해도 입력창 포커스 테두리(outline)가 생기지 않는다.
- * 모양은 화면 위쪽의 Dropdown 선택 상자와 같은 규칙(회색 배경, 열리면 파란 테두리)을 따른다.
+ * 입력창이 아니라 버튼이라 웹에서 포커스 outline 이 생기지 않는다. 모양은 Dropdown 선택 상자와 같은 규칙을 따른다.
  */
 const DateSelectBox: React.FC<DateSelectBoxProps> = ({ label, value, active, onPress }) => (
   <Pressable
@@ -46,11 +45,8 @@ const DateSelectBox: React.FC<DateSelectBoxProps> = ({ label, value, active, onP
 );
 
 const PeriodModal: React.FC<PeriodModalProps> = ({ radioValue, frDt, toDt, handleSelectPeriod, onPeriodChange }) => {
-  /**
-   * 라디오 버튼 선택 값에 따라 조회 frDt, toDt 설정
-   * 기간 직접입력의 경우 클릭하면 DatePicker 등장
-   */
-  const [selectedPeriod, setSelectedPeriod] = useState<string>(radioValue); // 선택된 radio value값
+  // 라디오 선택값에 따라 frDt·toDt 를 정한다. 직접입력은 DatePicker 로 고른다
+  const [selectedPeriod, setSelectedPeriod] = useState<string>(radioValue);
   const [startDate, setStartDate] = useState<string>(frDt); // 모달 내부 표시용
   const [endDate, setEndDate] = useState<string>(toDt);
 
@@ -77,14 +73,9 @@ const PeriodModal: React.FC<PeriodModalProps> = ({ radioValue, frDt, toDt, handl
     }
   }, [selectedPeriod]);
 
-  /**
-   * DatePicker 열고 닫기
-   * DatePicker 표시 여부 상태관리 및 시작일/종료일 선택 구분
-   * 유효하지 않은 날짜 선택 시, 오류 Alert 노출
-   */
   const [isDatePickerVisible, setDatePickerVisible] = useState<boolean>(false);
   const [isSelectingStartDate, setSelectingStartDate] = useState(true);
-  // 날짜 조건에 어긋날 때 날짜 칸 아래에 보여줄 안내 (Alert 는 웹에서 아무것도 띄우지 않아 쓰지 않는다)
+  // Alert 는 웹에서 아무것도 띄우지 않으므로 날짜 조건 오류는 날짜 칸 아래 안내로 보여준다
   const [periodError, setPeriodError] = useState<string | null>(null);
 
   const openDatePicker = (isStartDate: boolean) => {
@@ -96,34 +87,28 @@ const PeriodModal: React.FC<PeriodModalProps> = ({ radioValue, frDt, toDt, handl
     setDatePickerVisible(false);
   };
 
-  // 날짜 선택 후 처리
   const handleDateChange = (selectedDate: string) => {
     if (isSelectingStartDate) {
-      // 시작일 선택
       if (endDate && new Date(selectedDate) > new Date(endDate)) {
-        // 선택한 시작일이 종료일보다 뒤인 경우 경고
         setPeriodError('시작일은 종료일보다 늦을 수 없어요.');
       } else {
         setStartDate(selectedDate);
         setPeriodError(null);
       }
     } else {
-      // 종료일 선택
       if (startDate && new Date(selectedDate) < new Date(startDate)) {
-        // 선택한 종료일이 시작일보다 앞인 경우 경고
         setPeriodError('종료일은 시작일보다 이를 수 없어요.');
       } else {
         setEndDate(selectedDate);
         setPeriodError(null);
       }
     }
-    closeDatePicker(); // DatePicker 닫기
+    closeDatePicker();
   };
 
-  // 조회 옵션 모달 선택 버튼 활성화 상태 계산
   const isButtonDisabled = !(frDt !== '' && toDt !== '');
 
-  // 선택 완료 시 부모로 전달 (직접입력은 3개월(92일) 초과 시 여기서만 안내)
+  // 직접입력의 3개월(92일) 초과 검사는 선택 완료 시점에만 한다
   const handleSelectPeriodWithValues = () => {
     if (selectedPeriod === 'specific' && startDate && endDate) {
       const diffInMs = new Date(endDate).getTime() - new Date(startDate).getTime();
@@ -144,7 +129,7 @@ const PeriodModal: React.FC<PeriodModalProps> = ({ radioValue, frDt, toDt, handl
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <Radio selectedId={selectedPeriod} setSelectedId={setSelectedPeriod} radioButtons={periodRadioButtons} />
 
-        {/* 직접입력 선택 시에서만 보이는 부분 */}
+        {/* 직접입력 선택 시에만 보이는 영역 */}
         {selectedPeriod === 'specific' && (
           <>
             <View style={styles.specificBox}>
@@ -179,7 +164,7 @@ const PeriodModal: React.FC<PeriodModalProps> = ({ radioValue, frDt, toDt, handl
               </Typography>
             )}
 
-            {/* DatePicker 모달 - 바깥 어두운 영역을 누르면 닫히고, 달력 영역을 누르면 닫히지 않음 */}
+            {/* 바깥 어두운 영역을 누르면 닫히고, 달력 영역은 닫히지 않는다 */}
             <Modal visible={isDatePickerVisible} animationType="fade" transparent onRequestClose={closeDatePicker}>
               <Pressable style={styles.modalOverlay} onPress={closeDatePicker}>
                 <Pressable style={styles.datePickerContainer}>
@@ -205,7 +190,7 @@ const PeriodModal: React.FC<PeriodModalProps> = ({ radioValue, frDt, toDt, handl
 
 const styles = StyleSheet.create({
   specificBox: { ...layout.rowBetween, gap: 12, marginTop: 8 },
-  // Dropdown 선택 상자와 같은 규칙: 회색 배경 + 연한 테두리(line), 열리면 흰 배경 + 파란 테두리
+  // Dropdown 선택 상자와 같은 규칙: 회색 배경 + line 테두리, 열리면 흰 배경 + primary 테두리
   dateBox: {
     flex: 1,
     height: 60,

@@ -10,11 +10,8 @@ type ChargeSelectMethodScreenProps = NativeStackScreenProps<RootStackParamList, 
 
 /**
  * 충전수단 선택.
- *
- * 전신 앱은 출금(환불) 계좌가 등록된 사용자만 충전할 수 있게 여기서 막았지만, 이 앱에서는 그 조건을 두지 않는다.
- * 실시간 계좌이체 충전은 결제창에서 은행 인증을 거치며 이체가 일어나는 계좌 자체가 본인 확인을 대신하기 때문이다.
- * 1원 인증으로 등록하는 출금 계좌는 돈이 나가는 출금에서만 요구한다 (RefundAcntScreen).
- * 서버(create_charge)도 계좌 없이 충전 거래를 만들 수 있고, 등록된 계좌가 있으면 결제창에 참고로 표시만 한다.
+ * 출금 계좌 등록 여부는 확인하지 않는다. 계좌이체 충전은 결제창의 은행 인증이 본인 확인을 대신하고,
+ * 1원 인증 계좌는 돈이 나가는 출금에서만 요구한다 (RefundAcntScreen).
  */
 const ChargeSelectMethodScreen: React.FC<ChargeSelectMethodScreenProps> = ({ navigation }) => {
   return (
@@ -24,7 +21,6 @@ const ChargeSelectMethodScreen: React.FC<ChargeSelectMethodScreenProps> = ({ nav
           충전수단을 선택해주세요.
         </Typography>
 
-        {/* 충전 수단 카드 두 장을 가로로 나란히. 카드 안은 [아이콘 … 화살표/배지] 줄 아래에 이름을 둔다 */}
         <View style={[layout.rowCenter, { gap: 12, alignItems: 'stretch' }]}>
           {/* 계좌이체 */}
           <Pressable
@@ -51,14 +47,13 @@ const ChargeSelectMethodScreen: React.FC<ChargeSelectMethodScreenProps> = ({ nav
             </View>
           </Pressable>
 
-          {/* 가상계좌: 아직 준비되지 않아 눌리지 않게 두고 "준비중" 배지만 보여준다 */}
+          {/* 가상계좌: 아직 제공하지 않아 눌리지 않는 카드로 두고 "준비중" 배지를 보여준다 */}
           <View
             style={[styles.selectBtn, styles.selectBtnDisabled]}
             accessibilityRole="button"
             accessibilityState={{ disabled: true }}
             accessibilityLabel="가상계좌, 준비중">
             <View style={layout.rowBetween}>
-              {/* 계좌이체와 같은 파랑 두 톤으로 맞춘 png. 준비중이라 아이콘도 연하게 보이도록 투명도를 준다 */}
               <View style={[styles.iconCircle, styles.iconCircleDisabled]}>
                 <Image
                   source={require('@images/icon/virtual_account.png')}
@@ -104,7 +99,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   iconCircleDisabled: { backgroundColor: theme.colors.gray100 },
-  // 준비중 항목: 그림자 대신 연한 테두리만 두어 카드 모양은 유지하되 누를 수 없다는 게 보이게 한다 (화면 배경과 같은 회색을 쓰면 카드 윤곽이 사라진다)
+  // 준비중 카드: 그림자 대신 연한 테두리로 카드 윤곽만 남겨 비활성임을 드러낸다
   selectBtnDisabled: { boxShadow: 'none', borderWidth: 1, borderColor: theme.colors.gray150, opacity: 0.85 },
 });
 

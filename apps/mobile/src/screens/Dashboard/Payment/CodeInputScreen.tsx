@@ -23,7 +23,7 @@ const CodeInputScreen: React.FC<CodeInputScreenProps> = ({ navigation }) => {
   const [code, setCode] = useState<string>('');
   const isButtonDisabled = code.length > 0 ? false : true;
 
-  // 결제코드 입력 이벤트
+  // 결제코드 조회
   const handleChkCode = () => {
     chkPaymentQR(code).then((data) => {
       console.log('결제코드 조회 결과:', data);

@@ -8,7 +8,7 @@ import { getAppWidth } from '@utils/dimensions';
 
 type ToastTone = 'success' | 'error';
 
-/** 톤별 아이콘과 색. 아이콘은 옅게 물든 동그라미 위에 같은 계열의 밝은 색으로 올린다 */
+/** 톤별 아이콘과 색 */
 const TONES: Record<ToastTone, { icon: string; iconColor: string; iconBg: string }> = {
   success: { icon: 'check', iconColor: theme.colors.green400, iconBg: 'rgba(76, 197, 127, 0.18)' },
   error: { icon: 'close', iconColor: theme.colors.red400, iconBg: 'rgba(236, 107, 111, 0.18)' },
@@ -16,9 +16,7 @@ const TONES: Record<ToastTone, { icon: string; iconColor: string; iconBg: string
 
 /**
  * 성공·오류 토스트 공통 모양.
- * - 어두운 반투명 카드가 화면 위에 떠 있는 느낌: 큰 모서리, 얇은 밝은 테두리, 부드럽고 넓은 그림자
- * - 가로 폭은 내용에 맞추고(짧은 문장은 짧게), 최대 폭만 화면 기준으로 제한한다
- * - 아이콘은 글자 블록(한 줄이든 여러 줄이든) 전체의 세로 가운데에 맞춘다
+ * 폭은 내용에 맞추고 최대 폭만 화면 기준으로 제한한다. 아이콘은 글자 블록 전체의 세로 가운데에 맞춘다.
  */
 const ToastItem = ({ text1, text2, tone }: ToastConfigParams<any> & { tone: ToastTone }) => {
   const { icon, iconColor, iconBg } = TONES[tone];

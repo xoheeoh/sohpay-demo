@@ -18,11 +18,7 @@ export const loadMarketingOptIn = async () => {
   }
 };
 
-/**
- * 마케팅 정보 수신 동의 변경 (설정 화면). profiles 의 marketing_opt_in 은 본인이 바꿀 수 있게 열려 있다.
- * 주의: 서버(PostgREST)는 어느 행을 고칠지 조건(WHERE)이 없는 갱신을 거절한다 ("UPDATE requires a WHERE clause").
- * 접근 정책이 내 행만 허용하더라도 조건은 꼭 붙여야 한다.
- */
+/** 마케팅 정보 수신 동의 변경. PostgREST 는 WHERE 없는 UPDATE 를 거절하므로 내 행 조건을 붙인다 */
 export const updateMarketingOptIn = async (optIn: boolean) => {
   try {
     const { data: auth } = await supabase.auth.getUser();
@@ -36,7 +32,7 @@ export const updateMarketingOptIn = async (optIn: boolean) => {
   }
 };
 
-/* 선불 회원 조회 (간소화) */
+/* 선불 회원 조회 */
 export const loadUsrInfoData = async () => {
   try {
     const p = unwrap(
@@ -102,7 +98,7 @@ export const InquiryNotice = async () => {
   }
 };
 
-/** FAQ 카테고리 코드 → 표시 이름. FAQ 화면의 카테고리 선택 옵션도 이 표를 그대로 쓴다 (코드 불일치 방지) */
+/** FAQ 카테고리 코드 → 표시 이름. FAQ 화면의 카테고리 옵션도 이 표를 쓴다 */
 export const FAQ_CTGR_NM: Record<string, string> = { CHARGE: '충전', PAYMENT: '결제', REFUND: '출금', ACCOUNT: '계정' };
 
 /* FAQ 조회 */

@@ -23,9 +23,8 @@ type UseListScreenProps = NativeStackScreenProps<RootStackParamList, 'UseList'>;
 
 const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
   /**
-   * 처음 열릴 때의 조회 조건
-   * - 기본: 1주일 · 결제
-   * - 대시보드 "전체보기"로 들어오면(showAll): 3개월 · 모두. 대시보드 최근 목록은 기간 제한이 없어서, 같은 건들이 여기서도 보이게 넉넉히 연다
+   * 초기 조회 조건. 기본은 1주일·결제, 대시보드 "전체보기"(showAll)로 들어오면 3개월·모두.
+   * 대시보드 최근 목록은 기간 제한이 없어 같은 건들이 여기서도 보이도록 넉넉히 연다.
    */
   const showAll = route.params?.showAll ?? false;
   const initialPeriod = showAll ? '3months' : '1week';
@@ -33,10 +32,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
   const initialGetCd = showAll ? 'ALL' : 'USE';
   const initialGetCdRadio = showAll ? 'all' : 'use';
 
-  /**
-   * 기간 select 클릭하면 해당 BottomSheet 등장
-   * 라디오 버튼 선택 값에 따라 조회 frDt, toDt 설정
-   */
+  /** 기간 조건: 바텀시트의 라디오 선택값으로 frDt·toDt 를 정한다 */
   const [frDt, setFrDt] = useState<string>(convertDateWithoutHypen(initialFrDt));
   const [toDt, setToDt] = useState<string>(convertDateWithoutHypen(getDateWithHypen(new Date())));
 
@@ -46,14 +42,14 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
   const [periodPlaceholder, setPeriodPlaceholder] = useState<string>(showAll ? '3개월' : '1주일');
   const [dropdownKey1, setDropdownKey1] = useState(0); // Dropdown 리렌더링 트리거 키
 
-  // 모달로부터 값 전달받는 이벤트
+  // 모달 선택값 반영
   const handlePeriodChange = (frDt: string, toDt: string, radio: string) => {
     setFrDt(convertDateWithoutHypen(frDt));
     setToDt(convertDateWithoutHypen(toDt));
     setSelectedPeriod(radio);
   };
 
-  // selectedPeriod가 변경되었을 때 placeholder 업데이트
+  // 선택값에 맞춰 placeholder 갱신
   useEffect(() => {
     switch (selectedPeriod) {
       case '1week':
@@ -76,11 +72,8 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
     setDropdownKey1((prevKey) => prevKey + 1);
   }, [selectedPeriod]);
 
-  /**
-   * 거래 종류 select 클릭하면 해당 BottomSheet 등장
-   * 라디오 버튼 선택 값에 따라 getCd 값 설정
-   */
-  const [tempGetCd, setTempGetCd] = useState<string>(initialGetCd); // 거래종류 셀렉트 박스에서 선택된 값 ALL | USE | CHRG | RFND (거래상태 모달에 전달)
+  /** 거래 종류 조건: 바텀시트의 라디오 선택값으로 getCd 를 정한다 */
+  const [tempGetCd, setTempGetCd] = useState<string>(initialGetCd); // 거래상태 모달에 전달하는 선택값 ALL | USE | CHRG | RFND
   const [actualGetCd, setActualGetCd] = useState<string>(initialGetCd); // 실제 조회에 사용할 getCd
   const [getCd, setGetCd] = useState<string>(initialGetCd); // 조회 버튼을 누른 시점의 getCd: ALL 모두 | USE 결제 | CHRG 충전 | RFND 출금
   const [getCdModal, setGetCdModal] = useState<boolean>(false); // 거래종류 선택 BottomSheet
@@ -89,7 +82,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
   const [getCdPlaceholder, setGetCdPlaceholder] = useState<string>(showAll ? '모두' : '결제');
   const [dropdownKey2, setDropdownKey2] = useState(0); // Dropdown 리렌더링 트리거 키
 
-  // 모달로부터 값 전달받는 이벤트
+  // 모달 선택값 반영
   const handleGetCdChange = (selectedGetCd: string, radio: string) => {
     setTempGetCd(selectedGetCd); // 모달에 전달할 값
     setSelectedGetCd(radio);
@@ -101,7 +94,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
     setTrxStCdPlaceholder('모두');
   };
 
-  // selectedGetCd 변경되었을 때 placeholder 업데이트
+  // 선택값에 맞춰 placeholder 갱신
   useEffect(() => {
     switch (selectedGetCd) {
       case 'all':
@@ -124,10 +117,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
     setDropdownKey2((prevKey) => prevKey + 1);
   }, [selectedGetCd]);
 
-  /**
-   * 거래 상태 select 클릭하면 해당 BottomSheet 등장
-   * 라디오 버튼 선택 값에 따라 getCd 값 설정
-   */
+  /** 거래 상태 조건: 바텀시트의 라디오 선택값으로 trxStCd 를 정한다 */
   const [trxStCd, setTrxStCd] = useState<string>('9'); // 결제 - 0 승인 | 1 취소, 충전·출금 - 1 성공 | 2 실패, 9 모두
   const [trxStCdModal, setTrxStCdModal] = useState<boolean>(false); // 거래상태 선택 BottomSheet
 
@@ -135,14 +125,14 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
   const [trxStCdPlaceholder, setTrxStCdPlaceholder] = useState<string>('모두');
   const [dropdownKey3, setDropdownKey3] = useState(0); // Dropdown 리렌더링 트리거 키
 
-  // 모달로부터 값 전달받는 이벤트
+  // 모달 선택값 반영
   const handleTrxStCdChange = (getCd: string, trxStCd: string, radio: string) => {
     setActualGetCd(getCd);
     setTrxStCd(trxStCd);
     setSelectedTrxStCd(radio);
   };
 
-  // selectedTrxStCd 변경되었을 때 placeholder 업데이트
+  // 선택값에 맞춰 placeholder 갱신
   useEffect(() => {
     switch (selectedTrxStCd) {
       case 'confirm':
@@ -168,14 +158,10 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
     setDropdownKey3((prevKey) => prevKey + 1);
   }, [selectedTrxStCd]);
 
-  /**
-   * 조회 버튼을 클릭하면 이용내역 조회
-   * 조회 데이터 및 페이지 상태관리
-   * 스크롤이 리스트 맨 아래에 도달하면 다음 페이지 보이기 (무한 스크롤)
-   */
+  /** 조회 및 무한 스크롤. 조회 버튼으로 첫 페이지를 받고, 목록 끝에 닿으면 다음 페이지를 이어 붙인다 */
   const [listData, setListData] = useState<TransactionListItem[]>([]); // 사용 내역 (모두 조회 시 종류가 섞여 있음)
 
-  // 0.3초 뒤에 실행되는 예약 호출은 그 시점의 state 를 못 보므로, 진행 중 여부와 시작 번호는 ref 로도 들고 있는다
+  // setTimeout 으로 예약된 호출은 최신 state 를 못 보므로 진행 여부와 시작 번호는 ref 로 든다
   const isFetchingRef = useRef(false);
   const startIdxRef = useRef(0);
   const [maxCount] = useState(10); // 한 번에 가져올 최대 항목 수
@@ -183,10 +169,9 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
   const [isLoaded, setIsLoaded] = useState<boolean>(false); // 첫 조회가 한 번이라도 끝났는지 (끝나기 전엔 자리표시자)
   const [hasMore, setHasMore] = useState<boolean>(false); // 더 가져올 데이터 존재 여부
 
-  // 상태값 관리
   const [triggerFetch, setTriggerFetch] = useState(false); // 데이터 fetch 트리거 상태
 
-  // 조회 버튼 클릭 이벤트
+  // 조회 시작
   const handleLoadList = async () => {
     if (!actualGetCd || !trxStCd || !frDt || !toDt) {
       alert({
@@ -201,7 +186,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
 
     // 데이터 초기화 및 조회 트리거
     setListData([]);
-    startIdxRef.current = 0; // 항목 시작 번호
+    startIdxRef.current = 0;
     setHasMore(true);
     setTriggerFetch(true);
   };
@@ -209,12 +194,11 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
   // 상태 업데이트 후 API 호출
   useEffect(() => {
     if (triggerFetch) {
-      fetchData(true); // 데이터 리셋 후 fetch
-      setTriggerFetch(false); // 트리거 초기화
+      fetchData(true);
+      setTriggerFetch(false);
     }
   }, [triggerFetch]);
 
-  // 데이터를 가져오는 함수
   const fetchData = async (reset: boolean = false) => {
     if (isFetchingRef.current || !hasMore) return;
 
@@ -259,7 +243,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
     }, 300); // 디바운스: 300ms 후 실행
   };
 
-  // 화면 진입 시, 위에서 정한 초기 조건(기본 1주일·결제 / 대시보드 전체보기는 3개월·모두)으로 바로 조회
+  // 진입 시 초기 조건으로 바로 조회한다
   useEffect(() => {
     handleLoadList();
   }, []);
@@ -269,7 +253,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
 
   return (
     <ScreenWrapper backgroundColor={theme.colors.bg}>
-      {/* 조회 조건 카드: 기간 · 거래 종류 · 거래 상태 + 조회 버튼 (마이페이지·고객센터 카드와 같은 모양) */}
+      {/* 조회 조건 카드 */}
       <View style={styles.filterCard}>
         <View style={styles.selectBox}>
           {/* 기간 선택 */}
@@ -315,7 +299,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
       {/* 조회 결과 카드: 남은 높이를 다 쓰고 목록만 안에서 스크롤된다 */}
       <View style={styles.listCard}>
         {!isLoaded ? (
-          // 첫 조회가 끝나기 전에는 "없음" 문구 대신 자리표시자를 보여준다 (깜빡임 방지)
+          // 첫 조회가 끝나기 전에는 "없음" 문구 대신 자리표시자를 보여준다
           <View style={styles.listInner}>
             <SkeletonList rows={5} />
           </View>
@@ -326,7 +310,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
             data={listData}
             keyExtractor={(item, index) => `${item.getCd}-${'tid' in item ? item.tid : item.rfndNo}-${index}`}
             renderItem={({ item }) => {
-              // 화면 전체 조회 조건이 아니라 각 건의 종류(item.getCd)로 행 모양을 정한다 ("모두" 조회 시 섞여 있음)
+              // "모두" 조회는 종류가 섞여 있으므로 각 건의 getCd 로 행 모양을 정한다
               if (item.getCd === 'USE') {
                 return <UseComponent getCd={item.getCd} item={item} />;
               } else if (item.getCd === 'CHRG') {
@@ -345,7 +329,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
               isLoading ? (
                 <SkeletonList rows={5} />
               ) : (
-                // 비어 있을 때: 다른 목록 화면과 같은 아이콘 + 문구, 카드 세로 가운데
+                // 빈 상태
                 <View style={styles.empty}>
                   <View style={styles.emptyIcon}>
                     <Icon source="receipt-text-outline" size={20} color={theme.colors.primary} />
@@ -357,8 +341,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
               )
             }
             onEndReached={() => {
-              // 빈 리스트에서도 onEndReached가 호출되며, setTimeout으로 예약된 fetch가
-              // stale closure로 첫 페이지를 한 번 더 이어붙이는 경우가 있어 초기 조회 중에는 막음
+              // 빈 목록에서도 onEndReached 가 불리고, 예약된 fetch 가 stale closure 로 첫 페이지를 다시 붙일 수 있어 초기 조회 중에는 막는다
               if (listData.length === 0) return;
               loadMore();
             }}
@@ -415,7 +398,6 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
   );
 };
 
-// 마이페이지·고객센터 화면과 같은 카드 모양
 const styles = StyleSheet.create({
   filterCard: {
     marginHorizontal: 16,
@@ -438,7 +420,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   listInner: { paddingHorizontal: 16 },
-  // 비어 있을 때: 늘어난 내용 영역의 세로 가운데에 아이콘·문구를 둔다 (홈 최근 내역과 같은 모양)
+  // 빈 상태: 늘어난 내용 영역의 세로 가운데에 둔다
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, paddingVertical: 40 },
   emptyIcon: {
     width: 40,

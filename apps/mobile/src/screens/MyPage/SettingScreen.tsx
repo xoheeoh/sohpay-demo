@@ -13,10 +13,9 @@ import { layout, theme } from '@styles';
 type SettingScreenProps = NativeStackScreenProps<RootStackParamList, 'Setting'>;
 
 const SettingScreen: React.FC<SettingScreenProps> = () => {
-  // Dialog
   const { alert, confirm } = useDialog();
 
-  // 앱 버전. 스토어에 배포되지 않은 데모 앱이라 최신 버전 조회는 하지 않고 현재 버전만 보여준다 (웹은 네이티브 버전이 없어 0.1.0)
+  // 스토어에 배포되지 않은 데모 앱이라 최신 버전 조회 없이 현재 버전만 보여준다. 웹은 네이티브 버전이 없어 0.1.0
   const currentVersion = Application.nativeApplicationVersion ?? '0.1.0';
 
   const handleCheckUpdate = () => {
@@ -28,10 +27,7 @@ const SettingScreen: React.FC<SettingScreenProps> = () => {
     });
   };
 
-  /**
-   * 마케팅 정보 수신 동의. 회원가입 때 받은 선택 동의 값을 여기서 바꿀 수 있다.
-   * null 이면 아직 조회 전이라 스위치 자리에 자리표시자를 보여준다.
-   */
+  // 회원가입 때 받은 마케팅 수신 동의. null 이면 조회 전이라 스위치 자리에 자리표시자를 보여준다
   const [marketingOptIn, setMarketingOptIn] = useState<boolean | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -138,7 +134,6 @@ const SettingScreen: React.FC<SettingScreenProps> = () => {
   );
 };
 
-// 마이페이지 메뉴 카드와 같은 모양
 const styles = StyleSheet.create({
   wrap: { paddingHorizontal: 16, paddingVertical: 24, gap: 24 },
   section: { gap: 8 },
@@ -150,7 +145,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   row: { paddingHorizontal: 16, paddingVertical: 14, gap: 12 },
-  // 카드 밖에 놓는 줄. 카드 안 글자와 같은 선에 맞추기 위해 좌우 여백은 sectionTitle 과 같게 둔다
+  // 카드 밖에 놓는 줄. 카드 안 글자와 같은 선에 맞추기 위해 좌우 여백을 sectionTitle 과 같게 둔다
   plainRow: { paddingHorizontal: 4, paddingVertical: 6, gap: 12 },
   rowDivider: { borderTopWidth: 1, borderTopColor: theme.colors.gray100 },
   pressed: { backgroundColor: theme.colors.gray50 },

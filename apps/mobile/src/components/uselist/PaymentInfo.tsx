@@ -12,7 +12,6 @@ interface PaymentInfoProps {
 }
 
 const PaymentInfo: React.FC<PaymentInfoProps> = ({ getCd, dateTime, item, stateNm }) => {
-  // 타입 가드 함수
   const isUseList = (item: IRefundList | IUseList | IChargeList): item is IUseList => {
     return (item as IUseList).goodsNm !== undefined;
   };
@@ -55,11 +54,11 @@ const PaymentInfo: React.FC<PaymentInfoProps> = ({ getCd, dateTime, item, stateN
         label={getCd === 'RFND' ? '요청번호' : getCd === 'CHRG' ? '충전번호' : '승인번호'}
         value={
           getCd === 'RFND' && isRefundList(item)
-            ? item.rfndNo // 환불의 경우 요청번호
+            ? item.rfndNo
             : isUseList(item)
-              ? item.appNo // 사용의 경우 승인번호
+              ? item.appNo
               : isChargeList(item)
-                ? item.chrgTid // 충전의 경우 충전번호
+                ? item.chrgTid
                 : ''
         }
       />

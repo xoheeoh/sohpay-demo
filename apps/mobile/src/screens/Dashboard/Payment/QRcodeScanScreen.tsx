@@ -14,8 +14,7 @@ import { getAppWidth } from '@utils/dimensions';
 
 type QRcodeScanScreenProps = NativeStackScreenProps<RootStackParamList, 'QRscan'>;
 
-// 웹처럼 카메라를 쓸 수 없는 환경에서 카메라 대신 보여주는 목(mock) 이미지.
-// 컴포넌트 밖에 두어야 화면이 다시 렌더링될 때 이미지가 떼고 붙여지며 깜빡이지 않는다.
+// 카메라를 쓸 수 없는 웹에서 카메라 대신 보여주는 목(mock) 이미지. 컴포넌트 밖에 두어 리렌더 시 깜빡이지 않게 한다
 const CameraMock = () => (
   <View style={StyleSheet.absoluteFill}>
     <Image source={require('@images/mock.jpg')} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
@@ -26,18 +25,15 @@ const QRcodeScanScreen: React.FC<QRcodeScanScreenProps> = ({ navigation }) => {
   // Dialog
   const { confirm } = useDialog();
 
-  // 원본은 react-native-vision-camera 를 썼다. Expo 에서는 expo-camera 로 같은 동작(QR 스캔)을 한다.
   const [permission, requestPermission] = useCameraPermissions();
   const hasPermission = !!permission?.granted;
   const [isScanning, setIsScanning] = useState<boolean>(true);
-  // 카메라는 한 QR 을 1초에 여러 번 읽어 보낸다. state 는 리렌더 뒤에 바뀌므로 ref 로 즉시 잠가 같은 코드를 두 번 조회하지 않게 한다
+  // 카메라가 같은 QR 을 연속으로 읽어 보내므로 state 대신 ref 로 즉시 잠가 중복 조회를 막는다
   const isHandlingRef = useRef(false);
   const isFocused = useIsFocused();
 
-  // 화면 진입 시 카메라 권한을 한 번만 요청한다.
-  // 주의: 권한이 거부된 뒤에도 canAskAgain 이 true 로 남는 환경(웹, 일부 Android)에서는
-  // "요청 → 거부 → 새 permission 객체 → 다시 요청"이 무한 반복되며 화면이 깜빡이므로 ref 로 1회만 실행한다.
-  // 웹은 카메라 대신 CameraMock 을 보여주므로 권한 요청 자체를 건너뛴다.
+  // 카메라 권한은 한 번만 요청한다. 거부 뒤에도 canAskAgain 이 true 로 남는 환경(웹, 일부 Android)에서는
+  // 요청이 무한 반복되며 화면이 깜빡인다. 웹은 CameraMock 을 보여주므로 요청을 건너뛴다.
   const hasRequestedPermission = useRef(false);
   useEffect(() => {
     if (Platform.OS === 'web') return;

@@ -13,10 +13,7 @@ export const shadow = {
   primary: '0 10px 24px rgba(30, 99, 240, 0.28)',
 } as const;
 
-/**
- * 다크 모드 시맨틱 토큰 (준비만 해 둠 - 현재 앱은 라이트 고정)
- * 적용 시에는 colors 의 시맨틱 키(bg/surface/line/text…)를 이 값으로 바꿔 끼우면 된다.
- */
+/** 다크 모드 시맨틱 토큰. 현재 앱은 라이트 고정이며, 적용 시 colors 의 시맨틱 키를 이 값으로 바꾼다 */
 export const darkColors = {
   primary: '#5B8CFF',
   primaryDark: '#2F6BFF',

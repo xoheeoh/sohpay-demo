@@ -26,7 +26,6 @@ export const bankImageMapping: Record<string, any> = {
   '003': require('@images/bank/ibk.png'),
   '002': require('@images/bank/kdb.png'),
   '007': require('@images/bank/sh.png'),
-  // 이후에 추가...
 };
 
 export const getBankName = (code: string): string => {
@@ -35,8 +34,4 @@ export const getBankName = (code: string): string => {
 
 export const getBankImage = (code: string): any => {
   return bankImageMapping[code] || '';
-};
-
-export const getBankCodes = (): string[] => {
-  return Object.keys(bankMapping).sort((a, b) => parseInt(a) - parseInt(b));
 };

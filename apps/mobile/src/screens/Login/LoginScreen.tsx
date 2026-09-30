@@ -21,19 +21,15 @@ import { theme } from '@styles';
 type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
-  // 로그인 입력 정보 상태 관리
   const [userId, setUserId] = useState<string>('');
   const [userPw, setUserPw] = useState<string>('');
   const [idSave, setIdSave] = useState<boolean>(false);
 
-  // 결과 Dialog
   const { alert, confirm } = useDialog();
 
-  // 로그인 실행
   const handleLogin = async () => {
     Keyboard.dismiss();
 
-    // 입력값 검증
     const trimmedUserId = userId.trim();
     const trimmedUserPw = userPw.trim();
 
@@ -66,9 +62,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
       if (data.resultCd === '0000') {
         const { at, rt } = data;
-        await storeEncryptedToken({ at, rt }); // 암호화하여 토큰 저장
+        await storeEncryptedToken({ at, rt });
 
-        // AsyncStorage에 토큰이 남아있는지 확인 (보안 검사)
+        // 보안 점검: 저장소에 토큰이 남아 있는지 확인한다
         await checkTokenInAsyncStorage();
 
         await storeData('mbUid', userId);
@@ -98,7 +94,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           const uidForChangePwd = trimmedUserId;
           const tempPwdForChange = trimmedUserPw;
 
-          // ChangeTempPwd 복귀 시 Login이 다시 마운트되면 AsyncStorage에서 복원되므로, 정상 로그인과 같이 id 저장값을 맞춤
+          // 비밀번호 변경 뒤 로그인 화면이 다시 마운트되면 저장소에서 복원하므로, 정상 로그인과 같게 아이디 저장값을 맞춘다
           if (idSave) {
             await storeData('uid', userId);
             await storeData('idSave', true);
@@ -107,7 +103,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             await storeData('idSave', false);
           }
 
-          // Login이 스택에 남으면 state가 유지됨. 아이디 저장을 끈 경우에는 복귀 시 ID·PW가 남지 않게 비움
+          // 로그인 화면은 스택에 남아 상태가 유지되므로 비밀번호는 비우고, 아이디 저장을 끈 경우 아이디도 비운다
           setUserPw('');
           if (!idSave) {
             setUserId('');
@@ -116,7 +112,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           navigation.navigate('ChangeTempPwd', { uid: uidForChangePwd, tempPwd: tempPwdForChange });
         }
       } else {
-        // 아이디·비밀번호 오류 / 이용할 수 없는 계정(탈퇴) / 네트워크 등 서버가 준 이유를 그대로 보여준다
+        // 아이디·비밀번호 오류, 탈퇴 계정 등 서버가 준 사유를 그대로 보여준다
         await alert({
           title: '로그인',
           message1: '로그인에 실패했습니다.',
@@ -129,7 +125,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     }
   };
 
-  // 저장된 데이터 불러오기
+  // 저장해 둔 아이디를 복원한다
   useEffect(() => {
     const fetchData = async () => {
       const savedUserId = await getData<string>('uid');

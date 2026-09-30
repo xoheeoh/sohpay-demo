@@ -29,9 +29,9 @@ export interface KeyboardAwareScrollViewProps extends Omit<ScrollViewProps, 'con
 }
 
 /**
- * 목적: 화면별로 keyboardHeight/scrollToInput/paddingBottom 튜닝을 반복하지 않기 위한 공통 ScrollView.
- * - 키보드 등장 시 "현재 포커스된 입력"을 자동으로 키보드 위로 올림
- * - BottomBtnBox 같이 absolute 하단 UI가 키보드 위에 뜨는 케이스를 keyboardAccessoryHeight로 반영
+ * 키보드 대응 공통 ScrollView.
+ * - 키보드 등장 시 현재 포커스된 입력칸을 자동으로 키보드 위로 올린다
+ * - BottomBtnBox 같이 absolute 하단 UI 가 키보드 위에 뜨는 경우를 keyboardAccessoryHeight 로 반영한다
  */
 const KeyboardAwareScrollView = React.forwardRef<ScrollView, KeyboardAwareScrollViewProps>(
   (
@@ -102,10 +102,8 @@ const KeyboardAwareScrollView = React.forwardRef<ScrollView, KeyboardAwareScroll
       const node = findNodeHandle(maybeFocusedInput ?? null);
       if (!node) return;
 
-      // "키보드 상단" 위로 확보해야 하는 영역:
-      // - BottomBtnBox 같은 accessory 높이
-      // - 약간의 여유(기기/폰트/인풋 높이 편차)
-      // iOS에서 endCoordinates.screenY는 "키보드 top" 좌표라 safe-area bottom을 별도로 빼면 과보정 되는 케이스가 있음.
+      // 키보드 상단 위로 확보할 영역: accessory 높이 + 기기·폰트 편차 여유.
+      // iOS 의 endCoordinates.screenY 는 키보드 top 좌표라 safe-area bottom 을 따로 빼면 과보정된다.
       const margin = 12;
       const visibleBottomY = keyboardScreenY - keyboardAccessoryHeight - margin;
 
@@ -188,12 +186,11 @@ const KeyboardAwareScrollView = React.forwardRef<ScrollView, KeyboardAwareScroll
     }, [autoScrollStrategy, keyboardAccessoryHeight, insets.bottom]);
 
     const handleScrollBeginDrag = (e: any) => {
-      // 스크롤 시작 시 드롭다운 같은 오버레이가 있다면, 기존 화면 로직에서 닫는 용도로 사용 가능
+      // 화면이 스크롤 시작 시 드롭다운 같은 오버레이를 닫을 수 있게 그대로 전달한다
       onScrollBeginDrag?.(e);
     };
 
-    // NOTE: TextInput focus 이벤트는 bubble/capture로 안정적으로 잡기 어렵기 때문에,
-    // 키보드 show 이벤트 기반 자동 스크롤을 기본 전략으로 둠.
+    // TextInput focus 이벤트는 안정적으로 잡기 어려워 키보드 show 이벤트 기반 자동 스크롤을 기본으로 한다
 
     return (
       <ScrollView

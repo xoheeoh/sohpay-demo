@@ -41,7 +41,6 @@ const QuickMenuTile = ({ icon, label, onPress }: { icon: string; label: string; 
 const ServiceScreen: React.FC<ServiceScreenProps> = ({ navigation }) => {
   const { confirm } = useDialog();
 
-  // 전화 연결
   const handleCall = () => {
     confirm({
       title: '통화연결',
@@ -56,7 +55,6 @@ const ServiceScreen: React.FC<ServiceScreenProps> = ({ navigation }) => {
     });
   };
 
-  // 메일 앱 열기
   const handleEmail = () => {
     Linking.openURL(`mailto:${CS_EMAIL}`).catch((error) => {
       console.error('메일 앱 열기 실패', error);
@@ -134,7 +132,6 @@ const ServiceScreen: React.FC<ServiceScreenProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // 마이페이지(MyPageScreen)와 같은 화면 여백·섹션 간격
   wrap: { paddingHorizontal: 16, paddingVertical: 24, gap: 24 },
   section: { gap: 8 },
   sectionTitle: { paddingHorizontal: 4 },

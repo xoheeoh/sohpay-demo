@@ -22,7 +22,7 @@ const Textarea: React.FC<TextareaProps> = ({ value, setValue, onFocus, onBlur, h
         styles.container,
         {
           height,
-          borderColor: isFocused ? theme.colors.primary : theme.colors.line, // 평소에도 연한 테두리 (다른 입력칸과 동일)
+          borderColor: isFocused ? theme.colors.primary : theme.colors.line, // 입력칸과 같은 테두리 규칙
           backgroundColor: isFocused ? 'white' : theme.colors.gray50,
         },
       ]}
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderRadius: theme.radius.md,
-    ...typographyStyles.body2, // 입력 글자는 타입 스케일의 body2 (다른 입력칸과 동일)
+    ...typographyStyles.body2, // 다른 입력칸과 같은 body2
     color: theme.colors.gray900,
     textAlignVertical: 'top',
   },

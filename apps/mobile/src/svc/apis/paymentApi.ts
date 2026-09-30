@@ -1,6 +1,6 @@
 /**
  * 결제·충전·출금·계좌 API 어댑터.
- * 화면은 원본과 같은 함수 시그니처와 { resultCd, ... } 응답을 그대로 쓴다.
+ * 화면은 { resultCd, ... } 응답 계약을 그대로 쓴다.
  */
 import Toast from 'react-native-toast-message';
 import { ChargeTypeEnum } from '@dt/enum';
@@ -11,7 +11,6 @@ import type {
   IQRdata,
   IRefundAcnt,
   IRefundList,
-  ITransferAcntList,
   IUseList,
   IWithdrawalSuc,
   ListDataItem,
@@ -71,7 +70,7 @@ const failMsgOf = (t: TxRow) => (t.status === 'FAILED' ? (FAILURE_NM[t.failure_c
 /* ── 이용내역 ─────────────────────────────────────────────────── */
 const toUse = (t: TxRow): IUseList => {
   const supply = Math.round(t.amount / 1.1);
-  // 화면 상태 코드: 0 승인 | 1 전체 취소 | 2 부분 취소 (행·상세 컴포넌트가 이 값으로 배지와 색을 정한다)
+  // 화면 상태 코드: 0 승인 | 1 전체 취소 | 2 부분 취소
   const trxStCd = t.status === 'CANCELED' ? '1' : t.status === 'PARTIALLY_CANCELED' ? '2' : '0';
   const isCanceled = t.canceled_amount > 0;
   return {
@@ -99,7 +98,7 @@ const toUse = (t: TxRow): IUseList => {
     cpxTid: '',
     stid: '',
     partCanFlg: t.status === 'PARTIALLY_CANCELED' ? '1' : '0',
-    // 취소 건은 돌려받은 금액 (목록에서 "+ 금액"으로 표시), 승인 건은 결제 금액
+    // 취소 건은 돌려받은 금액, 승인 건은 결제 금액
     moneyAmt: isCanceled ? t.canceled_amount : t.amount,
     pointAmt: 0,
   };
@@ -156,7 +155,7 @@ const toListItem = (t: TxRow): TransactionListItem =>
  * 선불 거래 조회
  * - getCd: ALL 모두 | USE 결제 | CHRG 충전 | RFND 출금
  * - trxStCds: 결제는 0 승인 | 1 취소, 충전·출금은 1 성공 | 2 실패, 9 는 모두
- * 실패(FAILED) 건도 목록에 넣는다. 모의 결제창에서 승인 거절·취소된 충전이 여기에 해당한다. 처리 중(PENDING)만 뺀다.
+ * 실패(FAILED) 건도 목록에 넣고 처리 중(PENDING)만 뺀다.
  */
 export const loadTransactionList = async (
   getCd: string,
@@ -299,7 +298,7 @@ export const requestAcntConfirm = async (bankCd: string, acntNo: string, usrNm: 
     { bankCode: bankCd, accountNo: acntNo, holderName: usrNm },
   );
   if (res.resultCd !== '0000') return res;
-  // 실제 서비스라면 통장 입금 내역에서 보는 값. 데모라 안내로 띄운다.
+  // 데모에서는 입금자명을 토스트로 안내한다
   Toast.show({
     type: 'success',
     text1: `1원이 입금되었습니다 · 입금자명 ${res.depositorName}`,
@@ -341,36 +340,6 @@ export const enrollRefundAcnt = async (_rfndBankCd: string, _rfndAcntNo: string,
 export const editRefundAcnt = async (_rfndBankCd: string, _rfndAcntNo: string, _rfndAcntNm: string) =>
   registerRefundAcnt();
 
-/* 출금 계좌 등록 or 해지 (미사용 — 호환용) */
-export const editTransferAcnt = async (_acntNo: string, _acntNm: string, _bankCd: string, type: string) => {
-  if (type === '2') {
-    const a = await primaryRefundAcnt();
-    if (!a) return fail('BANK_ACCOUNT_NOT_FOUND');
-    try {
-      return fromRpc(unwrap(await supabase.rpc('remove_bank_account', { p_bank_account_id: a.id })) as { ok: boolean });
-    } catch (e) {
-      return toFail(e);
-    }
-  }
-  return registerRefundAcnt();
-};
-
-export const changeMainAcnt = async (_acntNo: string, _bankCd: string) => ok();
-
-/* 충전계좌 내역 조회 — 이 앱은 출금계좌를 충전 출금계좌로도 쓴다 */
-export const loadTransferAcnt = async () => {
-  try {
-    const a = await primaryRefundAcnt();
-    const listData: ITransferAcntList[] = a
-      ? [{ mainAcntFlg: '1', acntNo: a.account_no_masked, bankCd: a.bank_code }]
-      : [];
-    return ok({ listData });
-  } catch (e) {
-    return toFail(e);
-  }
-};
-export const loadChargeAcntList = loadTransferAcnt;
-
 /* ── 충전 ─────────────────────────────────────────────────────── */
 /* 선불 충전 URL 호출 — 화면은 data.returnUrl 을 웹뷰로 연다 */
 export const requestChargeUrl = async (
@@ -397,8 +366,7 @@ export const requestChargeUrl = async (
 
 /**
  * 출금(환불) 요청.
- * idempotencyKey: 화면이 진입 시 한 번 만들어 재시도에도 같은 값을 넘기는 중복 방지 키.
- * 서버(request_refund)는 같은 키의 거래가 이미 있으면 새로 처리하지 않고 그 결과를 돌려준다.
+ * idempotencyKey 는 화면이 진입 시 한 번 만드는 중복 방지 키. 서버는 같은 키의 거래가 있으면 그 결과를 그대로 돌려준다.
  */
 export const requestRefundAcnt = async (refundAmt: string, usrPin: string, idempotencyKey: string) => {
   try {
@@ -449,7 +417,7 @@ export const chkPaymentQR = async (otpCode: string) => {
     const r = unwrap(await supabase.rpc('resolve_payment_request', { p_qr_token: otpCode.trim() })) as ResolveResult;
     const now = new Date().toISOString();
     const qr: IQRdata = {
-      // authNo 자리에 멱등성 키를 실어 결제 화면까지 전달한다 (원본 화면 코드 변경 없이)
+      // authNo 자리에 멱등성 키를 실어 결제 화면까지 전달한다
       authNo: r.attemptKey ?? `PAY-${r.paymentRequestId}`,
       coNm: r.merchant.name,
       goodsAmt: r.amount,

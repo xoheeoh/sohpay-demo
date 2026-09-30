@@ -24,8 +24,7 @@ const TONES: Record<InfoBoxTone, { bg: keyof typeof theme.colors; icon: keyof ty
 
 /**
  * 안내 상자: 연한 배경 위에 [아이콘 + 짧은 안내 문구].
- * 계좌인증·권한 안내·탈퇴 안내 등 화면마다 따로 그리던 상자를 한 모양으로 맞춘다.
- * 아이콘은 첫 줄 글자 높이에 맞춰 두어 여러 줄 문구에서도 위로 뜨지 않는다.
+ * 아이콘은 첫 줄 글자 높이에 맞춰 여러 줄 문구에서도 위로 뜨지 않는다.
  */
 const InfoBox: React.FC<InfoBoxProps> = ({ children, tone = 'gray', icon = 'information-outline', style }) => {
   const colors = TONES[tone];

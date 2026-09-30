@@ -40,8 +40,7 @@ export const emailFor = (mbUid: string) => `${mbUid.trim().toLowerCase()}@demo.s
 export const hasSession = async () => !!(await supabase.auth.getSession()).data.session;
 
 /* ── 응답 모양 ─────────────────────────────────────────────────── */
-// 원본은 axios 의 response.data(any) 를 그대로 돌려줬고 화면도 그 전제로 짜여 있다.
-// 어댑터도 같은 계약을 지키기 위해 any 로 돌려준다. 내부에서는 T 로 모양을 맞춘다.
+// 화면 코드는 응답을 any 로 다루므로 어댑터도 그 계약을 지킨다. 내부에서는 T 로 모양을 맞춘다.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ApiResult<T = {}> = any;
 type Result<T> = { resultCd: string; resultMsg: string } & Partial<T>;
@@ -99,10 +98,10 @@ const MESSAGES: Record<string, string> = {
   weak_password: '비밀번호는 8자 이상으로 설정해 주세요.',
 };
 
-/** 원본 앱이 분기에 쓰던 특수 코드는 유지한다. 그 외는 코드 문자열을 그대로 resultCd 로 돌려준다. */
+/** 화면이 분기에 쓰는 특수 코드. 그 외는 코드 문자열을 그대로 resultCd 로 돌려준다. */
 const LEGACY_CODES: Record<string, string> = {
-  PIN_LOCKED: '9004', // 핀 5회 초과
-  TEMP_PASSWORD: '9003', // 임시 비밀번호로 로그인 → 비밀번호 변경 화면으로
+  PIN_LOCKED: '9004', // PIN 5회 초과 잠금
+  TEMP_PASSWORD: '9003', // 임시 비밀번호 로그인 → 비밀번호 변경 화면
 };
 
 export const fail = (code: string, msg?: string): ApiResult =>
@@ -115,7 +114,7 @@ export const fail = (code: string, msg?: string): ApiResult =>
 export function unwrap<T>(res: { data: T | null; error: { message: string; code?: string } | null }): T {
   if (res.error) {
     const e = new Error(res.error.message) as Error & { code?: string };
-    // 로그인 토큰이 만료·폐기된 경우(PGRST301 = JWT 오류)는 화면이 로그인으로 보낼 수 있게 한 코드로 묶는다
+    // JWT 오류(PGRST301)는 화면이 로그인으로 보낼 수 있게 UNAUTHENTICATED 로 묶는다
     const isAuthError = res.error.code === 'PGRST301' || /jwt/i.test(res.error.message);
     e.code = isAuthError
       ? 'UNAUTHENTICATED'
@@ -136,7 +135,7 @@ export const toFail = (e: unknown): ApiResult => {
 /** RPC 가 ok:false 를 값으로 돌려주는 경우(PIN 계열) */
 export const fromRpc = <T extends { ok?: boolean; code?: string }>(data: T): ApiResult<T> => {
   if (data && data.ok === false) {
-    // 실패 응답에 딸려 오는 부가 정보(예: PIN 남은 시도 횟수 remainingAttempts, 잠금 해제 시각 unlocksAt)도 화면에 넘긴다
+    // 실패 응답의 부가 정보(remainingAttempts, unlocksAt 등)도 화면에 넘긴다
     const { ok: _ok, code, ...extra } = data;
     return { ...extra, ...fail(code ?? '9999') } as ApiResult<T>;
   }
@@ -161,7 +160,7 @@ export async function callFunction<T>(path: string, body: unknown, auth = true):
   }
 }
 
-/* ── 날짜 유틸 (원본 API 가 yyyyMMdd / HHmmss 문자열을 쓴다) ────── */
+/* ── 날짜 유틸 (화면은 yyyyMMdd / HHmmss 문자열을 쓴다) ────── */
 const pad = (n: number) => String(n).padStart(2, '0');
 
 export const ymd = (iso: string) => {

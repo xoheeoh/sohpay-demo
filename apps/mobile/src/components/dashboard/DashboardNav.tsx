@@ -14,7 +14,7 @@ const DashboardNav = () => {
       <View style={styles.container}>
         <Wordmark height={24} />
 
-        {/* 햄버거 버튼: MyPage 헤더의 닫기 버튼과 같은 컴포넌트를 써서 위치·모양이 정확히 일치한다 */}
+        {/* 햄버거 버튼: Header 의 닫기 버튼과 같은 컴포넌트를 써서 위치·모양을 맞춘다 */}
         <NavIconButton icon="menu" accessibilityLabel="메뉴" onPress={() => navigation.navigate('MyPage')} />
       </View>
     </SafeAreaView>
@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16, // Header 의 좌우 여백과 같아야 햄버거·닫기 버튼 위치가 일치한다
+    paddingHorizontal: 16, // Header 와 같은 좌우 여백. 햄버거·닫기 버튼 위치가 일치한다
   },
 });
 

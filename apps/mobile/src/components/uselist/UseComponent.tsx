@@ -36,7 +36,7 @@ const UseComponent: React.FC<UseComponentProps> = ({ getCd, item }) => {
         ? `+ ${formatWon(item.moneyAmt + item.pointAmt)}`
         : '';
 
-  // 이전 화면에서 얻어온 결제 정보의 mid에 해당하는 가맹점 정보 구하기
+  // 목록 행에 가맹점명을 보여주기 위해 mid 로 가맹점 정보를 조회한다
   const [midInfo, setMidInfo] = useState<IMidInfo>();
 
   useEffect(() => {
