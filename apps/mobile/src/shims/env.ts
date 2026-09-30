@@ -1,7 +1,4 @@
-/**
- * 원본은 react-native-dotenv 의 `@env` 모듈을 썼다.
- * Expo 에서는 EXPO_PUBLIC_ 접두어 환경변수가 빌드 시 인라인되므로 여기서 같은 이름으로 내보낸다.
- */
+/** `@env` 별칭으로 내보내는 환경변수. Expo 는 EXPO_PUBLIC_ 접두어 변수를 빌드 시 인라인한다 */
 export const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
 export const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
