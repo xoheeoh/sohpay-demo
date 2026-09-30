@@ -29,14 +29,14 @@ src/
 
 Expo 관리형 프로젝트 안에서 iOS · Android · Web 이 한 코드베이스로 돌도록 고른 모듈입니다.
 
-| 용도 | 모듈 | 비고 |
-|---|---|---|
-| QR 스캔 | expo-camera | 웹에서는 카메라 대신 결제코드 직접 입력 경로 제공 |
-| 세션·토큰 저장 | expo-secure-store (웹: localStorage) | 2KB 제한은 조각 저장으로 처리 |
-| 영수증 이미지 저장 | expo-media-library | 권한 요청과 저장을 한 모듈이 처리. 웹은 미지원 안내 |
-| 앱 버전 표시 | expo-application | 스토어 미배포라 현재 버전만 표시 |
-| 그라데이션 | expo-linear-gradient (`src/shims`) | |
-| 환경변수 | `EXPO_PUBLIC_*` (`src/shims/env`) | 빌드 시 인라인 |
-| 폰트 | expo-font 런타임 로드 | 네이티브 otf, 웹 woff2 |
-| 결제창 · 본인인증 | react-native-webview (웹: iframe 대역, `src/shims/webview`) | 결과는 양쪽 다 `postMessage` |
-| API | Supabase SDK | 화면은 `svc/apis` 어댑터의 `{ resultCd, ... }` 응답만 본다 |
+| 용도               | 모듈                                                        | 비고                                                       |
+| ------------------ | ----------------------------------------------------------- | ---------------------------------------------------------- |
+| QR 스캔            | expo-camera                                                 | 웹에서는 카메라 대신 결제코드 직접 입력 경로 제공          |
+| 세션·토큰 저장     | expo-secure-store (웹: localStorage)                        | 2KB 제한은 조각 저장으로 처리                              |
+| 영수증 이미지 저장 | expo-media-library                                          | 권한 요청과 저장을 한 모듈이 처리. 웹은 미지원 안내        |
+| 앱 버전 표시       | expo-application                                            | 스토어 미배포라 현재 버전만 표시                           |
+| 그라데이션         | expo-linear-gradient (`src/shims`)                          |                                                            |
+| 환경변수           | `EXPO_PUBLIC_*` (`src/shims/env`)                           | 빌드 시 인라인                                             |
+| 폰트               | expo-font 런타임 로드                                       | 네이티브 otf, 웹 woff2                                     |
+| 결제창 · 본인인증  | react-native-webview (웹: iframe 대역, `src/shims/webview`) | 결과는 양쪽 다 `postMessage`                               |
+| API                | Supabase SDK                                                | 화면은 `svc/apis` 어댑터의 `{ resultCd, ... }` 응답만 본다 |
