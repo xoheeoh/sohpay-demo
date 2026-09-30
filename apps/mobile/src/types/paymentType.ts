@@ -7,17 +7,6 @@ export interface IRmnAmt {
   moneyAmt: string;
 }
 
-/* 결제내역 */
-export interface IPaymentList {
-  goodsAmt: number;
-  goodsNm: string;
-  trDt: string;
-  trTm: string;
-  trxStCd: '0' | '1' | '2'; // 0: 승인, 1: 전취소, 2: 후취소
-  appNo: string;
-  mid: string;
-}
-
 /* 이용타입 */
 export enum TransTypeEnum {
   PAY = '결제',
@@ -73,13 +62,6 @@ export interface ListDataItem {
   note?: string; // 14
 }
 
-/* 충전 계좌 */
-export interface ITransferAcntList {
-  mainAcntFlg: string; // 0: 메인계좌 x, 1: 메인계좌 o
-  acntNo: string;
-  bankCd: string;
-}
-
 /* 환불 계좌 */
 export interface IRefundAcnt {
   rfndBankCdNm: string;
@@ -111,9 +93,9 @@ export interface IChargeList {
   ppMthdId: string;
   chrgAmt: number;
   rmnAmt: number;
-  /** 충전 상태: 1 성공 | 2 실패 (모의 결제창에서 승인 거절·취소된 건) */
+  /** 충전 상태: 1 성공 | 2 실패 */
   chrgStCd: string;
-  /** 실패 사유 (실패 건에만). 예) 승인 거절 */
+  /** 실패 사유 (실패 건에만) */
   failMsg?: string;
 }
 
@@ -123,7 +105,7 @@ export interface IRefundList {
   rfndReqDt: string;
   rfndReqTm: string;
   rfndStCd: string; // 0: 요청, 1: 출금, 2: 실패
-  /** 실패 사유 (실패 건에만). 예) 은행 점검으로 이체 실패 */
+  /** 실패 사유 (실패 건에만) */
   failMsg?: string;
   rfndBankCd: string;
   rfndAcntNo: string;
@@ -164,11 +146,7 @@ export interface IUseList {
   pointAmt: number;
 }
 
-/**
- * 이용내역 조회 결과 한 건.
- * "모두" 조회 시 결제·충전·출금이 한 목록에 섞여 내려오므로, 각 건이 자기 종류(getCd)를 갖는다.
- * 화면은 이 getCd 로 행 컴포넌트와 상세 화면 표시 방식을 고른다.
- */
+/** 이용내역 한 건. "모두" 조회는 결제·충전·출금이 섞여 내려오므로 각 건이 종류(getCd)를 갖는다 */
 export type TransactionListItem =
   (IUseList & { getCd: 'USE' }) | (IChargeList & { getCd: 'CHRG' }) | (IRefundList & { getCd: 'RFND' });
 

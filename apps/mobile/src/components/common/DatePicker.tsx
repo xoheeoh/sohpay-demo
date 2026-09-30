@@ -5,14 +5,13 @@ import { layout, theme } from '@styles';
 import { StyleSheet } from 'react-native';
 
 interface DatePickerProps {
-  onDateChange: (selectedDate: string) => void; // 날짜 변경을 부모 컴포넌트로 전달하는 콜백
+  onDateChange: (selectedDate: string) => void;
 }
 
 const DatePicker: React.FC<DatePickerProps> = ({ onDateChange }) => {
-  // 기준이 되는 오늘 날짜 (YYYY-MM-DD 형식)
+  // 기준이 되는 오늘 날짜 (YYYY-MM-DD)
   const INITIAL_DATE = getDateWithHypen(new Date());
 
-  // 선택된 날짜
   const [selected, setSelected] = useState(INITIAL_DATE);
 
   const getDate = (count: number) => {
@@ -25,7 +24,6 @@ const DatePicker: React.FC<DatePickerProps> = ({ onDateChange }) => {
     (day: { dateString: SetStateAction<string> }) => {
       setSelected(day.dateString);
 
-      // 선택된 날짜를 부모 컴포넌트로 전달
       onDateChange(day.dateString as string);
     },
     [onDateChange],
@@ -87,7 +85,6 @@ const DatePicker: React.FC<DatePickerProps> = ({ onDateChange }) => {
         textDayFontSize: 14,
       }}
       onDayPress={onDayPress}
-      // hideExtraDays={true}
       monthFormat={'yyyy년 MM월'}
     />
   );

@@ -15,30 +15,27 @@ import { layout, theme } from '@styles';
 
 type NoticeScreenProps = NativeStackScreenProps<RootStackParamList, 'Notice'>;
 
-// 화면 여백(16) + 본문 패널 여백(14) 를 양쪽으로 뺀 값 = 본문 HTML 이 실제로 차지하는 폭
+// 화면 여백(16)과 본문 패널 여백(14)을 양쪽에서 뺀, 본문 HTML 이 실제로 차지하는 폭
 const CONTENT_SIDE_INSET = (16 + 14) * 2;
 
 /** 공지 구분 배지 색: "중요"는 눈에 띄게 빨강, 그 외(일반 등)는 파랑 */
 const noticeTone = (notiCdNm: string) => (notiCdNm === '중요' ? 'red' : 'blue');
 
 const NoticeScreen: React.FC<NoticeScreenProps> = () => {
-  // 공지사항 리스트
   const [noticeData, setNoticeData] = useState<INoticeList[]>([]);
-  // 첫 조회가 끝났는지 (끝나기 전에는 "공지 없음" 문구를 보여주지 않는다)
+  // 첫 조회가 끝나기 전에는 "공지 없음" 문구를 보여주지 않는다
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // 등록된 공지사항 조회
   useEffect(() => {
     InquiryNotice()
       .then((data) => {
         if (data.resultCd === '0000') {
           console.log('공지사항 조회 결과:', data);
 
-          // 조회 결과 공지사항이 존재하는 경우에만
           if (data.listData !== null) {
             const today = getTodayDate();
 
-            // frDt와 toDt 사이에 포함되는 공지만 필터링
+            // 게시 기간(frDt~toDt) 안에 있는 공지만 보여준다
             const filteredData = data.listData.filter(
               (notice: INoticeList) => today >= notice.frDt && today <= notice.toDt,
             );
@@ -54,7 +51,7 @@ const NoticeScreen: React.FC<NoticeScreenProps> = () => {
 
   const [activeSections, setActiveSections] = useState<number[]>([]);
 
-  // 본문 HTML 렌더링 설정 (웹에서는 앱 프레임 폭 700px 기준)
+  // 본문 HTML 렌더링 설정. 웹에서는 앱 프레임 폭 기준
   const appWidth = useAppWidth();
   const contentWidth = appWidth - CONTENT_SIDE_INSET;
   const renderHtmlBaseStyle = useMemo(
@@ -63,10 +60,10 @@ const NoticeScreen: React.FC<NoticeScreenProps> = () => {
   );
   const renderHtmlDefaultTextProps = useMemo(() => ({ lineBreakStrategyIOS: 'hangul-word' as const }), []);
 
-  // 공지사항 헤더 (항상 보이는 부분): 1:1 상담 문의내역과 같은 두 줄 구성
+  // 헤더(항상 보이는 부분): 구분 배지, 등록일, 제목, 펼침 화살표
   const renderHeader = (section: INoticeList, index: number, isActive: boolean) => (
     <View style={[styles.itemHeader, index > 0 && styles.itemDivider]}>
-      {/* 첫 줄: 공지 구분 배지(왼쪽) / 등록일(오른쪽 끝, 화살표 위까지 차지) */}
+      {/* 첫 줄: 공지 구분 배지 / 등록일 */}
       <View style={[layout.rowBetween, { gap: 8 }]}>
         <Badge label={section.notiCdNm} tone={noticeTone(section.notiCdNm)} />
         <Typography mode="caption1" color="gray400">
@@ -85,7 +82,7 @@ const NoticeScreen: React.FC<NoticeScreenProps> = () => {
     </View>
   );
 
-  // 공지사항 본문 (펼쳤을 때 보이는 부분)
+  // 본문(펼쳤을 때 보이는 부분)
   const renderContent = (section: INoticeList) => (
     <View style={styles.itemBody}>
       <View style={styles.bodyPanel}>
@@ -101,7 +98,7 @@ const NoticeScreen: React.FC<NoticeScreenProps> = () => {
 
   return (
     <ScreenWrapper backgroundColor="white" topComponent={false}>
-      {/* 고정 영역: 건수 (1:1 상담 문의내역·FAQ 와 같은 구성) */}
+      {/* 고정 영역: 건수 */}
       {isLoaded && (
         <View style={styles.fixedTop}>
           <Typography mode="body2" color="gray900">
@@ -117,7 +114,7 @@ const NoticeScreen: React.FC<NoticeScreenProps> = () => {
       {/* 스크롤 영역: 공지 목록만 스크롤된다 */}
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.listContent}>
         {!isLoaded ? (
-          // 조회가 끝나기 전에는 목록 자리에 자리표시자를 보여준다 (다른 목록 화면과 같은 방식)
+          // 조회가 끝나기 전에는 목록 자리에 자리표시자를 보여준다
           <View style={styles.list}>
             <SkeletonList rows={5} />
           </View>
@@ -147,7 +144,6 @@ const NoticeScreen: React.FC<NoticeScreenProps> = () => {
   );
 };
 
-// 1:1 상담 문의내역(InquiryListScreen)·FAQ 와 같은 여백·모양을 쓴다
 const styles = StyleSheet.create({
   fixedTop: { paddingTop: 24, paddingHorizontal: 16, paddingBottom: 16 },
   listContent: { paddingBottom: 24 },

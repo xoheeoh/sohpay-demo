@@ -1,7 +1,6 @@
 /**
  * 회원 API 어댑터.
- * 화면은 원본과 같은 함수 이름·응답 모양({ resultCd, resultMsg, ... })을 그대로 쓴다.
- * 내부만 Supabase Auth / RPC / Edge Function 호출로 바뀌었다.
+ * 화면은 { resultCd, resultMsg, ... } 응답 계약을 그대로 쓰고, 내부는 Supabase Auth / RPC / Edge Function 을 호출한다.
  */
 import { IUserData } from '@typ/userType';
 import { getData } from '@storages/asyncStorage';
@@ -12,7 +11,7 @@ export const memberLogin = async (mbUid: string, pwd: string) => {
   const res = await supabase.auth.signInWithPassword({ email: emailFor(mbUid), password: pwd });
   if (res.error) return fail(res.error.code ?? res.error.message);
 
-  // 비밀번호 찾기로 받은 임시 비밀번호면 로그인시키지 않고 비밀번호 변경으로 보낸다 (원본 코드 9003)
+  // 임시 비밀번호 로그인은 세션을 만들지 않고 비밀번호 변경으로 보낸다 (코드 9003)
   if (res.data.user?.user_metadata?.temp_password) {
     await supabase.auth.signOut();
     return fail('TEMP_PASSWORD');
@@ -26,8 +25,8 @@ export const memberLogin = async (mbUid: string, pwd: string) => {
   return ok({ at: res.data.session?.access_token ?? '', rt: res.data.session?.refresh_token ?? '' });
 };
 
-/* ── 비밀번호 규칙 (원본은 서버 검증. 여기서는 같은 규칙을 클라이언트에서 적용) ── */
-/** 비밀번호 규칙: 영문·숫자·특수문자 각 1개 이상, 8~20자. 입력칸의 실시간 검사(회원가입·비밀번호 변경)도 이 규칙을 그대로 쓴다 */
+/* ── 비밀번호 규칙 (클라이언트 검증) ─────────────────────────── */
+/** 영문·숫자·특수문자 각 1개 이상, 8~20자. 입력칸의 실시간 검사도 이 규칙을 쓴다 */
 export const PWD_RULE = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,20}$/;
 
 export const validationPwd = async (
@@ -53,22 +52,16 @@ export const changeTempPwd = async (uid: string, tempPwd: string, newPwd: string
   const login = await supabase.auth.signInWithPassword({ email: emailFor(uid), password: tempPwd });
   if (login.error) return fail(login.error.code ?? login.error.message);
 
-  // 새 비밀번호로 바꾸고 임시 비밀번호 표시를 끈다. 변경 후에는 새 비밀번호로 다시 로그인하게 한다.
+  // 새 비밀번호로 바꾸고 임시 비밀번호 표시를 끈 뒤, 새 비밀번호로 다시 로그인하게 한다
   const res = await supabase.auth.updateUser({ password: newPwd, data: { temp_password: false } });
   await supabase.auth.signOut();
   if (res.error) return fail(res.error.code ?? res.error.message);
   return ok();
 };
 
-/* ── 토큰 재발급: Supabase SDK 가 자동 처리. 호환용으로만 남겨둔다. ── */
-export const reissuedToken = async () => {
-  const { data } = await supabase.auth.refreshSession();
-  return data.session ? { at: data.session.access_token, rt: data.session.refresh_token } : null;
-};
-
 /* ── 아이디/비밀번호 찾기 ───────────────────────────────────────
  * 본인인증(certData = verificationId)을 마친 뒤에만 가능하다.
- * 서버(account-recovery)가 인증된 이름·입력한 이름·회원 이름이 같은지 대조하고, 쓴 인증은 소진시킨다.
+ * 서버가 인증된 이름·입력한 이름·회원 이름을 대조하고, 인증은 1회만 쓸 수 있다.
  */
 export const findUserId = async (email: string, usrNm: string) => {
   const verificationId = await getData<string>('certData');
@@ -108,7 +101,7 @@ export const requestCertifyUrl = async (identCd: '01' | '02' | '03') => {
 
 /**
  * 인증 결과 확정. 웹뷰가 postMessage 로 넘긴 certData(=verificationId) 를 서버에서 확인한다.
- * 입력한 이름과 인증 이름이 다르면 원본과 같은 코드('9999' + '입력하신 이름…')로 돌려준다.
+ * 입력한 이름과 인증 이름이 다르면 9999 로 돌려준다.
  */
 export const handleCertifyResult = async (usrNm: string, msg: string) => {
   const res = await callFunction<{ name: string; birthDate: string; phone: string; memberAuthKey: string }>(
@@ -129,7 +122,7 @@ export const handleCertifyResult = async (usrNm: string, msg: string) => {
 };
 
 /* ── 가입 ─────────────────────────────────────────────────────── */
-/** 서버(complete_signup)가 받아주는 아이디 규칙. 여기서 먼저 걸러야 "이미 있는 아이디"와 "규칙 위반"을 구분해 안내할 수 있다. */
+/** 서버(complete_signup)와 같은 아이디 규칙. 먼저 걸러서 "이미 있는 아이디"와 "규칙 위반"을 구분해 안내한다 */
 const MB_UID_RULE = /^[a-z0-9_]{6,20}$/;
 
 /** 아이디 사용 가능 여부. 사용 가능 → 0000, 이미 있음 → MB_UID_TAKEN, 규칙 위반 → INVALID_MB_UID */
@@ -166,8 +159,8 @@ export const joinService = async (userData: IUserData) => {
   const res = await supabase.auth.signUp({ email, password: userData.pwd });
 
   if (res.error) {
-    // 이전 시도에서 1단계(인증 계정)만 만들어지고 2단계(프로필)가 실패한 아이디는 계정이 이미 있다고 나온다.
-    // 같은 비밀번호로 로그인이 되고 프로필이 아직 없으면, 새로 만들지 않고 2단계부터 이어서 진행한다.
+    // Auth 계정만 만들어지고 프로필 생성이 실패한 아이디는 user_already_exists 가 난다.
+    // 같은 비밀번호로 로그인되고 프로필이 없으면 프로필 생성부터 이어서 진행한다.
     if (res.error.code === 'user_already_exists') {
       const login = await supabase.auth.signInWithPassword({ email, password: userData.pwd });
       if (login.error) {
@@ -196,20 +189,19 @@ export const joinService = async (userData: IUserData) => {
         p_pin: userData.usrPin,
         p_verification_id: userData.nonce || null, // 가입 플로우에서 nonce 자리에 verificationId 를 담아 둔다
         p_marketing_opt_in: !!userData.optionAgree,
-        // 가입 화면에서 입력받은 연락용 이메일. 프로필이 처음부터 이 값으로 만들어진다 (아이디 찾기가 이 이메일로 회원을 찾는다).
-        // 전에는 가입 뒤 별도 요청으로 덮어썼는데, 그 요청이 실패하면 로그인용 가짜 주소가 남는 문제가 있었다.
+        // 아이디 찾기가 이 연락용 이메일로 회원을 찾으므로 프로필 생성 시점에 함께 저장한다
         p_email: userData.email?.trim().toLowerCase() || null,
       }),
     );
   } catch (e) {
-    // 실제 오류 내용을 남긴다. 화면에는 코드에 맞는 문구(없으면 기본 문구)만 보이므로 원인 추적은 이 로그로 한다.
+    // 화면에는 코드에 맞는 문구만 보이므로 원인은 이 로그로 추적한다
     const err = e as Error & { code?: string };
     console.warn('[회원가입] 프로필 생성 실패:', err.code, err.message);
     await supabase.auth.signOut();
     return toFail(e);
   }
 
-  // 가입 완료 화면은 로그인 상태를 가정하지 않는다(다시 로그인). 세션은 정리한다.
+  // 가입 완료 후에는 다시 로그인하므로 세션을 정리한다
   await supabase.auth.signOut();
   return ok({ mbUid: userData.mbUid });
 };
@@ -260,7 +252,7 @@ export const editUsrProfile = async (pwd: string, email?: string, newPwd?: strin
       if (res.error) return fail(res.error.code ?? res.error.message);
     }
     if (email) {
-      // 서버(PostgREST)는 어느 행을 고칠지 조건(WHERE)이 없는 갱신을 거절한다. 내 행 조건을 꼭 붙인다
+      // PostgREST 는 WHERE 없는 UPDATE 를 거절하므로 내 행 조건을 붙인다
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) return fail('UNAUTHENTICATED');
       unwrap(

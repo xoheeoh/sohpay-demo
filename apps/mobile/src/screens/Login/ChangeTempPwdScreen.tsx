@@ -19,17 +19,12 @@ type ChangeTempPwdScreenProps = NativeStackScreenProps<RootStackParamList, 'Chan
 const ChangeTempPwdScreen: React.FC<ChangeTempPwdScreenProps> = ({ route, navigation }) => {
   const { uid, tempPwd } = route.params;
 
-  /**
-   * 비밀번호 입력 상태관리
-   * 비밀번호 형식에 어긋나면 오류 설정 (영문, 숫자, 특수문자 8~25자)
-   * 비밀번호 확인과 일치하는지 비교
-   */
   const [newPwd, setNewPwd] = useState<string>('');
   const [newPwdChk, setNewPwdChk] = useState<string>('');
   const [newPwError, setNewPwError] = useState<boolean>(false);
   const [newPwChkError, setNewPwChkError] = useState<boolean>(false);
 
-  // pwd가 변경되면 pwdChk의 일치 여부도 재검증
+  // 비밀번호를 고치면 확인칸의 일치 여부도 다시 검사한다
   useEffect(() => {
     if (newPwdChk.length === 0) {
       setNewPwChkError(false);
@@ -40,22 +35,18 @@ const ChangeTempPwdScreen: React.FC<ChangeTempPwdScreenProps> = ({ route, naviga
     setNewPwChkError(!(isValidLen && isMatch));
   }, [newPwd, newPwdChk]);
 
-  // 버튼 활성화 상태 계산
   const isButtonDisabled = !(newPwd.length > 0 && newPwdChk.length > 0 && !newPwError && !newPwChkError);
 
-  // 결과 Dialog
   const { alert, confirm } = useDialog();
 
-  // 비밀번호 변경 이벤트
   const handleChangePwd = async () => {
     try {
-      // 비밀번호 유효성 검사 실행
       if (!uid) return;
 
       const validation = await validationPwd(newPwd, uid);
       console.log('비밀번호 유효성 검사 결과:', validation);
 
-      // 8~25자리, 연속된 숫자 사용 불가능 등의 실패 케이스는 여기에서 처리
+      // 길이·연속 숫자 등 비밀번호 규칙은 서버가 검사한다
       if (validation?.resultCd !== '0000') {
         await alert({
           title: '비밀번호 오류',
@@ -64,13 +55,11 @@ const ChangeTempPwdScreen: React.FC<ChangeTempPwdScreenProps> = ({ route, naviga
         return;
       }
 
-      // 비밀번호 변경 실행
       const changed = await changeTempPwd(uid, tempPwd, newPwd);
       console.log('비밀번호 변경 결과:', changed);
       Keyboard.dismiss();
 
       if (changed?.resultCd === '0000') {
-        // 비밀번호 변경 성공
         const ok = await confirm({
           title: '비밀번호 변경',
           message1: '비밀번호 변경에 성공했습니다.',
@@ -84,7 +73,6 @@ const ChangeTempPwdScreen: React.FC<ChangeTempPwdScreenProps> = ({ route, naviga
           });
         }
       } else {
-        // 비밀번호 변경 실패
         await alert({
           title: '비밀번호 변경',
           message1: '비밀번호 변경에 실패했습니다.',
@@ -135,7 +123,7 @@ const ChangeTempPwdScreen: React.FC<ChangeTempPwdScreenProps> = ({ route, naviga
             value={newPwdChk}
             onChangeText={(text: string) => {
               setNewPwdChk(text);
-              // 길이 + 일치 여부 모두 검증 (입력 중에도 바로 반영)
+              // 입력 중에도 바로 반영되도록 길이와 일치 여부를 함께 검사한다
               if (text.length === 0) {
                 setNewPwChkError(false);
                 return;

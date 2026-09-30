@@ -1,9 +1,6 @@
 /** 앱 딥링크 scheme (AndroidManifest와 동일) */
 export const APP_URL_SCHEME = 'sohpay';
 
-/** Android applicationId (PG사 Android 복귀 설정용) */
-export const APP_PACKAGE_NAME = 'app.sohpay.demo';
-
 /** 앱 내부용 딥링크 (뱅크페이 복귀 URL과 구분) */
 export const APP_RETURN_URL = `${APP_URL_SCHEME}://charge/return`;
 

@@ -15,7 +15,7 @@ const CheckBox: React.FC<CheckBoxProps> = ({ isChecked, setIsChecked, labelCompo
   return (
     <BouncyCheckbox
       fillColor={isChecked ? theme.colors.primary : theme.colors.gray300}
-      unFillColor="white" // 체크 전 안쪽을 흰색으로 채운다 (기본은 투명이라 회색 배경 화면에서는 상자가 회색으로 보인다)
+      unFillColor="white" // 기본은 투명이라 회색 배경 화면에서 상자가 회색으로 보이므로 흰색으로 채운다
       isChecked={isChecked}
       style={[{ gap: 8, flexShrink: 1, alignSelf: 'flex-start' }, style]}
       innerIconStyle={{ borderRadius: 7, borderWidth: isChecked ? 0 : 1.5 }}

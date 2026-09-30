@@ -48,7 +48,7 @@ const ChargeAcntWebScreen: React.FC<ChargeAcntWebScreenProps> = ({ navigation, r
       isResultHandledRef.current = true;
 
       if (success) {
-        // 결제창 화면을 완료 화면으로 갈아치운다. 끝난 결제창이 스택에 남아 뒤로가기로 돌아가지 못하게 하기 위함
+        // 끝난 결제창이 스택에 남지 않도록 완료 화면으로 교체한다
         navigation.replace('ChargeSuc', { chargeAmt });
         return;
       }
@@ -81,7 +81,7 @@ const ChargeAcntWebScreen: React.FC<ChargeAcntWebScreenProps> = ({ navigation, r
       return true;
     }
 
-    // sohpay:// 만으로 복귀한 경우 — 뱅크페이가 이미 앱을 열었으므로 추가 처리 불필요
+    // sohpay:// 만으로 복귀한 경우는 뱅크페이가 앱을 연 것뿐이라 추가 처리가 없다
     return true;
   }, []);
 
@@ -108,7 +108,7 @@ const ChargeAcntWebScreen: React.FC<ChargeAcntWebScreenProps> = ({ navigation, r
 
         if (data?.resultCd === '0000' && data.returnUrl) {
           setIsWebViewLoading(true);
-          setSource(await fetchWebViewHtml(data.returnUrl)); // 실패하면 아래 catch 로 간다
+          setSource(await fetchWebViewHtml(data.returnUrl));
         } else {
           confirm({
             title: '충전 실패',

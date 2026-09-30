@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 24,
     boxShadow: theme.shadow.float,
-    // 웹: Portal 이 700px 프레임 바깥(루트)에 그리므로 프레임 폭(마진 20 제외)에 맞춰 중앙 정렬한다.
+    // 웹: Portal 이 700px 프레임 바깥에 그리므로 프레임 폭에 맞춰 중앙 정렬한다
     ...(Platform.OS === 'web'
       ? { width: '100%' as const, maxWidth: WEB_MAX_WIDTH - 48, alignSelf: 'center' as const }
       : null),

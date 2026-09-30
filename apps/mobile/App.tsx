@@ -109,8 +109,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function App(): React.JSX.Element {
-  // 원본은 네이티브 프로젝트에 폰트를 링크했다. Expo 에서는 런타임에 로드한다.
-  // 웹은 용량이 절반인 woff2, 네이티브는 otf 를 쓴다 (Pretendard, SIL OFL).
+  // 웹은 용량이 작은 woff2, 네이티브는 otf 를 런타임에 로드한다 (Pretendard, SIL OFL)
   const [fontsLoaded] = useFonts(
     Platform.OS === 'web'
       ? {
@@ -130,7 +129,7 @@ function App(): React.JSX.Element {
   /* 앱 실행 시 초기 화면 결정 (권한 고지 1회 + 로그인 상태) ===== */
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
-  const [hasSeenPermissionNotice, setHasSeenPermissionNotice] = useState<boolean>(true); // 기본값 true: 로딩 중 고지 안 보임
+  const [hasSeenPermissionNotice, setHasSeenPermissionNotice] = useState<boolean>(true); // 로딩 중 고지 화면이 깜빡이지 않도록 true 로 시작
 
   useEffect(() => {
     const initApp = async () => {
@@ -152,7 +151,7 @@ function App(): React.JSX.Element {
   }
 
   const getInitialRoute = (): keyof RootStackParamList => {
-    // 개발 중 특정 화면만 바로 열어 보기 (.env 의 EXPO_PUBLIC_DEV_START_SCREEN). 없는 화면 이름을 넣으면 시작 시 오류가 난다.
+    // 개발용 시작 화면 지정 (.env 의 EXPO_PUBLIC_DEV_START_SCREEN)
     if (DEV_START_SCREEN) return DEV_START_SCREEN as keyof RootStackParamList;
     if (!hasSeenPermissionNotice) return 'PermissionNotice';
     return isLoggedIn ? 'Dashboard' : 'Login';
@@ -282,7 +281,7 @@ function App(): React.JSX.Element {
                 />
 
                 {/* 대시보드 - 충전하기 */}
-                {/* 1. 충전 방법 선택 */}
+                {/* 충전 방법 선택 */}
                 <Stack.Screen
                   name="ChargeSelectMethod"
                   component={ChargeSelectMethodScreen}
@@ -291,7 +290,7 @@ function App(): React.JSX.Element {
                   }}
                 />
 
-                {/* 3. 충전 금액 입력 */}
+                {/* 충전 금액 입력 */}
                 <Stack.Screen
                   name="ChargeAmt"
                   component={ChargeAmtScreen}
@@ -300,7 +299,7 @@ function App(): React.JSX.Element {
                   }}
                 />
 
-                {/* 4. 계좌이체 충전 */}
+                {/* 충전 실행 (계좌이체 · PIN · 모의 결제창) */}
                 <Stack.Screen
                   name="TransferAcntCharge"
                   component={TransferAcntChargeScreen}
@@ -323,7 +322,7 @@ function App(): React.JSX.Element {
                   }}
                 />
 
-                {/* 5. 충전 성공 */}
+                {/* 충전 완료 */}
                 <Stack.Screen
                   name="ChargeSuc"
                   component={ChargeSucScreen}
@@ -436,8 +435,7 @@ function App(): React.JSX.Element {
                   name="MyPage"
                   component={MyPageScreen}
                   options={{
-                    // 햄버거 메뉴가 오른쪽 위에 있으므로 오른쪽에서 밀려 들어오게 통일 (iOS 기본과 동일, Android 도 같은 방향으로)
-                    // 웹은 native-stack 이 전환 애니메이션을 지원하지 않아 MyPageScreen 안에서 별도로 처리한다.
+                    // 햄버거 메뉴 위치에 맞춰 두 플랫폼 모두 오른쪽에서 들어온다. 웹은 native-stack 전환 애니메이션이 없어 MyPageScreen 안에서 처리한다
                     animation: 'slide_from_right',
                     header: ({ navigation }) => (
                       <Header

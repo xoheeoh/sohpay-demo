@@ -5,8 +5,7 @@ import { NavigationContainer, NavigationContainerRef } from '@react-navigation/n
 // Navigation 참조를 전역에서 사용하기 위한 변수
 export const navigationRef = React.createRef<NavigationContainerRef<RootStackParamList>>();
 
-// 웹 브라우저 탭 제목. 기본값은 화면 이름(Dashboard, ChargeSelectMethod…)으로 바뀌므로 하나로 고정한다.
-// 네이티브(iOS/Android)에서는 무시된다.
+// 웹 브라우저 탭 제목. 기본값은 화면 이름으로 바뀌므로 하나로 고정한다. 네이티브에서는 무시된다.
 export const WEB_DOCUMENT_TITLE = 'SohPay | 충전하고, 스캔하고, 끝.';
 
 // Provider 설정

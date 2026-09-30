@@ -4,16 +4,13 @@ import { PrimaryButton, Radio } from '@components/common';
 
 interface GetCdModalProps {
   handleSelectedGetCd: () => void;
-  onGetCdChange: (getCd: string, radio: string) => void; // 거래종류, radio value를 부모로 전달하는 콜백
+  onGetCdChange: (getCd: string, radio: string) => void;
   radioValue: string;
 }
 
 const GetCdModal: React.FC<GetCdModalProps> = ({ handleSelectedGetCd, onGetCdChange, radioValue }) => {
-  /**
-   * 라디오 버튼 선택 값에 따라 조회 getCd 설정
-   */
-  const [selectedGetCd, setSelectedGetCd] = useState<string>(radioValue); // 선택된 radio value값
-  const [getCd, setGetCd] = useState<string>(''); // 조회 조건
+  const [selectedGetCd, setSelectedGetCd] = useState<string>(radioValue);
+  const [getCd, setGetCd] = useState<string>('');
 
   // ALL: 결제·충전·출금 모두 | USE: 결제 | CHRG: 충전 | RFND: 출금
   const getCdRadioButtons = [
@@ -23,18 +20,16 @@ const GetCdModal: React.FC<GetCdModalProps> = ({ handleSelectedGetCd, onGetCdCha
     { id: 'refund', label: '출금', value: 'RFND' },
   ];
 
-  // 선택한 radio에 따른 조회 조건 설정
+  // 라디오 선택값 → 조회 getCd
   useEffect(() => {
     const selectedOption = getCdRadioButtons.find((button) => button.id === selectedGetCd);
     if (selectedOption) {
-      setGetCd(selectedOption.value); // 선택된 id의 value 값을 getCd에 설정
+      setGetCd(selectedOption.value);
     }
   }, [selectedGetCd]);
 
-  // 조회 옵션 모달 선택 버튼 활성화 상태 계산
   const isButtonDisabled = !(getCd !== '');
 
-  // 조회 조건 선택 완료 후 해당 값 부모로 전달
   const handleSelectGetCdWithValues = () => {
     onGetCdChange(getCd, selectedGetCd);
     handleSelectedGetCd();

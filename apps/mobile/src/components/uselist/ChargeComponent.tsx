@@ -15,7 +15,7 @@ interface ChargeComponentProps {
 const ChargeComponent: React.FC<ChargeComponentProps> = ({ item, getCd }) => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  // 모의 결제창에서 승인 거절·취소된 건은 "충전실패"로, 금액은 취소 건처럼 회색 취소선 (돈이 들어오지 않았음)
+  // 실패한 충전은 돈이 들어오지 않았으므로 부호 없이 회색 취소선
   const isFailed = item.chrgStCd === '2';
   const categoryNm = isFailed ? '충전실패' : '충전';
 

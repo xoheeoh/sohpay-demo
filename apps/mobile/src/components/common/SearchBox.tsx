@@ -13,7 +13,6 @@ interface SearchBoxProps {
 }
 
 const SearchBox: React.FC<SearchBoxProps> = ({ searchQuery, setSearchQuery, onPress, disabled }) => {
-  // 검색창 활성화 상태
   const [isActive, setIsActive] = useState<boolean>(false);
 
   return (
@@ -30,7 +29,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ searchQuery, setSearchQuery, onPr
         style={[
           styles.container,
           {
-            borderColor: isActive ? theme.colors.primary : theme.colors.line, // 평소에도 연한 테두리 (다른 입력칸과 동일)
+            borderColor: isActive ? theme.colors.primary : theme.colors.line, // 입력칸과 같은 테두리 규칙
             backgroundColor: isActive ? 'white' : theme.colors.gray50,
           },
         ]}
@@ -38,7 +37,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ searchQuery, setSearchQuery, onPr
         onBlur={() => setIsActive(false)}
         value={searchQuery}
         onChangeText={(query: string) => setSearchQuery(query)}
-        onSubmitEditing={onPress} // 엔터 눌렀을 때 실행
+        onSubmitEditing={onPress}
       />
     </View>
   );
@@ -46,8 +45,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ searchQuery, setSearchQuery, onPr
 
 const styles = StyleSheet.create({
   container: {
-    // 주의: 여기에 flex: 1 을 주면 웹에서 브라우저가 height 대신 글자 한 줄 높이로 줄여 버려 모양이 깨진다.
-    // 가로 폭은 바깥 View(flex: 1)가 잡아 주므로 입력창 자체는 높이만 고정한다.
+    // flex: 1 을 주면 웹에서 높이가 글자 한 줄로 줄어 모양이 깨진다. 가로 폭은 바깥 View 가 잡으므로 높이만 고정한다
     borderWidth: 1.5,
     borderRadius: controlSize.lg.radius,
     paddingLeft: 48,
@@ -55,10 +53,10 @@ const styles = StyleSheet.create({
     paddingVertical: Platform.OS === 'ios' ? 14 : 0,
     height: controlSize.lg.height, // 드롭다운·입력칸과 나란히 놓여도 높이가 같다 (lg)
     position: 'relative',
-    ...typographyStyles.body2, // 입력 글자는 타입 스케일의 body2 (다른 입력칸과 동일)
+    ...typographyStyles.body2, // 다른 입력칸과 같은 body2
     color: theme.colors.gray900,
     includeFontPadding: false, // 안드로이드 기본 패딩 제거
-    // 웹 브라우저가 포커스 시 그리는 기본 파란 테두리를 끈다 (우리 테두리 색으로 대신 표시)
+    // 브라우저 기본 포커스 outline 을 끈다. 포커스 표시는 테두리 색이 담당한다
     ...(Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : {}),
   },
   magnifyIcon: {

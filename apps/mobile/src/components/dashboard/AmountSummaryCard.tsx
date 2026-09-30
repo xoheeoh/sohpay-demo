@@ -60,7 +60,6 @@ const AmountSummaryCard: React.FC<AmountSummaryCardProps> = ({ label, amount, ic
   </View>
 );
 
-// 회원정보(UsrInfoScreen)·계좌관리 화면과 같은 카드 모양
 const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,

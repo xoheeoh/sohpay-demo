@@ -21,8 +21,8 @@ import { layout, theme } from '@styles';
 type WithdrawalSucScreenProps = NativeStackScreenProps<RootStackParamList, 'WithdrawalSuc'>;
 
 /**
- * 내용을 "버튼 위 영역"의 가운데에 놓기 위한 추가 아래 여백 (출금·충전·결제·회원가입 완료 화면과 같은 계산).
- * 하단 버튼 상자는 화면 위에 떠 있어 스크롤 영역이 그 뒤까지 이어지므로, 그냥 가운데 정렬하면 아래로 치우쳐 보인다.
+ * 하단 버튼 상자가 스크롤 영역 위에 떠 있어 단순 가운데 정렬은 아래로 치우쳐 보이므로,
+ * 버튼 위 영역 기준으로 가운데를 맞추기 위한 추가 아래 여백.
  */
 const CENTERING_EXTRA_BOTTOM_PADDING = BOTTOM_BTN_BOX_HEIGHT - BOTTOM_BTN_BOX_KEYBOARD_INSET + 24;
 
@@ -41,10 +41,10 @@ const NOTES = [
 ];
 
 const WithdrawalSucScreen: React.FC<WithdrawalSucScreenProps> = ({ navigation }) => {
-  // 저장되어 있던 회원 정보 삭제
+  // 탈퇴한 계정의 토큰과 저장된 아이디를 지운다
   useEffect(() => {
     const fetchData = async () => {
-      await removeEncryptedToken(); // 암호화된 토큰 삭제
+      await removeEncryptedToken();
       await removeData('mbUid');
       await removeData('uid');
       await removeData('idSave');
@@ -53,21 +53,22 @@ const WithdrawalSucScreen: React.FC<WithdrawalSucScreenProps> = ({ navigation })
     fetchData();
   }, []);
 
+  // 완료 화면에서는 뒤로가기를 막고 로그인 화면으로 보낸다
   useFocusEffect(
     useCallback(() => {
       navigation.setOptions({
-        gestureEnabled: false, // 제스처 뒤로가기 방지
+        gestureEnabled: false,
       });
 
       const backAction = () => {
         navigation.reset({
           index: 0,
-          routes: [{ name: 'Login' }], // 무조건 'Login' 화면으로 이동
+          routes: [{ name: 'Login' }],
         });
         return true;
       };
 
-      // 웹에는 하드웨어 뒤로가기 버튼이 없고 BackHandler 도 지원되지 않아(콘솔 오류) 앱에서만 등록한다
+      // 웹에는 BackHandler 가 없어(콘솔 오류) 앱에서만 등록한다
       if (Platform.OS === 'web') return;
       const subscription = BackHandler.addEventListener('hardwareBackPress', backAction);
 
@@ -83,7 +84,6 @@ const WithdrawalSucScreen: React.FC<WithdrawalSucScreenProps> = ({ navigation })
         contentContainerStyle={styles.container}
         keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}
         extraBottomPadding={CENTERING_EXTRA_BOTTOM_PADDING}>
-        {/* 체크 애니메이션 → 완료 문구. 다른 완료 화면과 같은 애니메이션으로 톤을 맞춘다 */}
         <View style={styles.hero}>
           <SuccessAnimation size={160} style={styles.animation} />
 
@@ -97,7 +97,7 @@ const WithdrawalSucScreen: React.FC<WithdrawalSucScreenProps> = ({ navigation })
           </View>
         </View>
 
-        {/* 처리 내용 안내 카드. 결과 숫자가 없는 화면이라 결제·출금 완료의 유리판 카드 대신 조용한 안내 카드를 쓴다 */}
+        {/* 결과 숫자가 없는 화면이라 결제·출금 완료의 강조 카드 대신 조용한 안내 카드를 쓴다 */}
         <View style={styles.noteCard}>
           {NOTES.map((note, index) => (
             <View key={note.title} style={[layout.rowCenter, styles.noteRow, index > 0 && styles.noteDivider]}>
@@ -123,14 +123,14 @@ const WithdrawalSucScreen: React.FC<WithdrawalSucScreenProps> = ({ navigation })
 };
 
 const styles = StyleSheet.create({
-  // 세로 가운데 정렬. 아래 여백은 KeyboardAwareScrollView 가 덮어쓰므로 extraBottomPadding 으로 보정한다.
+  // 아래 여백은 KeyboardAwareScrollView 가 덮어쓰므로 extraBottomPadding 으로 보정한다
   container: { paddingHorizontal: 16, paddingVertical: 24, gap: 50, flexGrow: 1, justifyContent: 'center' },
 
   hero: { gap: 12, alignItems: 'center' },
-  // Lottie 그림은 상자 안에 위 28px, 아래 35px 투명 여백을 두고 그려지므로 음수 여백으로 상쇄해 보이는 그림 기준으로 정렬한다
+  // Lottie 그림 안의 투명 여백(위 28px, 아래 35px)을 음수 여백으로 상쇄해 보이는 그림 기준으로 정렬한다
   animation: { marginTop: -28, marginBottom: -32 },
 
-  // 웹은 프레임이 700px 까지 넓어져 카드가 너무 커 보인다. 다른 완료 화면 카드와 같은 폭으로 제한하고 가운데에 둔다.
+  // 웹은 프레임이 700px 까지 넓어지므로 카드를 휴대폰 폭 정도로 제한한다
   noteCard: {
     width: '100%',
     maxWidth: 400,

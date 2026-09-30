@@ -43,8 +43,8 @@ const RefundAuthScreen = ({ navigation, route }: RefundAuthScreenProps) => {
   const [agree, setAgree] = useState<boolean>(false);
 
   /**
-   * 본인 명의 확인: 예금주명이 로그인한 회원 이름과 같아야 한다 (출금 계좌는 돈이 나가는 곳이라 타인 계좌를 막는다).
-   * 회원 이름은 대시보드에서 저장해 둔 값을 쓰고, 공백 차이("김 데모")는 무시하고 비교한다. 서버도 같은 검사를 한다.
+   * 본인 명의 확인: 출금 계좌는 돈이 나가는 곳이라 예금주명이 회원 이름과 같아야 한다.
+   * 회원 이름은 대시보드에서 저장한 값을 쓰고 공백 차이는 무시한다. 서버도 같은 검사를 한다.
    */
   const [memberName, setMemberName] = useState<string>('');
   useEffect(() => {
@@ -55,7 +55,6 @@ const RefundAuthScreen = ({ navigation, route }: RefundAuthScreenProps) => {
   const isHolderNameMismatch =
     acntUsrNm.length > 0 && memberName.length > 0 && normalizeName(acntUsrNm) !== normalizeName(memberName);
 
-  // 버튼 활성화 유무
   const isButtonDisabled = !(
     bankCd !== '' &&
     acntNo.length > 0 &&
@@ -71,7 +70,6 @@ const RefundAuthScreen = ({ navigation, route }: RefundAuthScreenProps) => {
       console.log('환불계좌 1원 인증 요청 결과:', data);
 
       if (data.resultCd === '0000') {
-        // 환불계좌 1원 인증 입력 화면으로 이동
         navigation.navigate('RefundAuthConfirm', {
           bankCd: bankCd,
           acntNo: acntNo,
@@ -104,7 +102,7 @@ const RefundAuthScreen = ({ navigation, route }: RefundAuthScreenProps) => {
 
           {/* 은행 선택 */}
           <Pressable onPress={() => setOnBankModal(true)} style={styles.selectDropdown}>
-            {/* 선택 전 안내 문구는 입력칸의 자리표시자 라벨과 같은 색으로 */}
+            {/* 선택 전 문구는 입력칸 자리표시자와 같은 색 */}
             <Typography mode="body2" color={bankCd ? 'gray900' : 'gray400'} style={{ width: '80%' }}>
               {bankCd ? getBankName(bankCd) : '은행을 선택해주세요.'}
             </Typography>
@@ -136,7 +134,7 @@ const RefundAuthScreen = ({ navigation, route }: RefundAuthScreenProps) => {
             }
           />
 
-          {/* 다음 단계 안내: 1원 인증이 처음인 사용자가 "다음"을 누르면 무슨 일이 생기는지 알 수 있게 */}
+          {/* 다음 단계 안내 */}
           <InfoBox>
             {`다음을 누르면 입력한 계좌로 1원을 보내드려요. 입금자명에 적힌 숫자 3자리를 다음 화면에 입력하면 인증이 끝납니다.\n데모에서는 실제 입금 없이 인증번호가 화면에 안내됩니다.`}
           </InfoBox>
@@ -190,7 +188,7 @@ const RefundAuthScreen = ({ navigation, route }: RefundAuthScreenProps) => {
 
 const styles = StyleSheet.create({
   wrap: { paddingVertical: 24, paddingHorizontal: 16 },
-  // 아래 입력칸(TextField)과 같은 모서리·배경·테두리를 써서 한 묶음으로 보이게 한다
+  // TextField 와 같은 모서리·배경·테두리로 한 묶음처럼 보이게 한다
   selectDropdown: {
     borderRadius: theme.radius.md,
     paddingHorizontal: 16,

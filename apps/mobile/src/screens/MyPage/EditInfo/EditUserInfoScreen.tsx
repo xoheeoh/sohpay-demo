@@ -18,11 +18,10 @@ import { KeyboardAwareScrollView, ScreenWrapper, TextField, Typography } from '@
 type EditUserInfoScreenProps = NativeStackScreenProps<RootStackParamList, 'EditInfo'>;
 
 const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigation }) => {
-  // 이전 화면에서 얻어온 현재 패스워드 및 사용자 정보 데이터
   const usrData = route.params.usrData;
+  // 변경 요청마다 현재 비밀번호로 인증하므로 상태로 들고 있다
   const [usrPwd, setUsrPwd] = useState<string>(route.params.pwd);
 
-  // Dialog
   const { alert } = useDialog();
 
   const insets = useSafeAreaInsets();
@@ -31,16 +30,12 @@ const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigati
   const pwdRef = useRef<TextInput>(null);
   const pwdChkRef = useRef<TextInput>(null);
 
-  /**
-   * 이메일 입력 상태관리
-   * 이메일 형식에 어긋나면 오류 설정
-   * 이메일 주소 유효한지 검증 먼저 하고, 성공하면 실제 변경 API 사용
-   */
+  // 이메일
   const [usrEmail, setUsrEmail] = useState<string>(usrData.email);
   const [emailError, setEmailError] = useState<boolean>(false);
-  const isEmailButtonDisabled = !(usrEmail.length > 0 && !emailError) || isMaskedEmail(usrEmail); // 이메일 인증 버튼 활성화 상태 (마스킹된 이메일일 때도 비활성화)
+  // 서버가 가려서 보낸(마스킹) 이메일은 그대로 저장할 수 없으므로 비활성화한다
+  const isEmailButtonDisabled = !(usrEmail.length > 0 && !emailError) || isMaskedEmail(usrEmail);
 
-  // 실제 이메일 변경 시도 및 결과
   const handleChangeEmail = () => {
     Keyboard.dismiss();
 
@@ -63,10 +58,7 @@ const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigati
     });
   };
 
-  /**
-   * 비밀번호 변경 시도
-   * 성공 여부 상태관리 및 결과 모달창
-   */
+  // 비밀번호
   const [pwd, setPwd] = useState<string>('');
   const [pwdError, setPwdError] = useState<boolean>(false);
 
@@ -77,16 +69,14 @@ const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigati
   const handleChangePwd = async () => {
     Keyboard.dismiss();
 
-    // 1. 비밀번호 유효성 검증
+    // 비밀번호 규칙(아이디·생년월일·전화번호 포함 여부 등)은 서버가 검사한다
     const mbUid = await getData<string>('mbUid');
     validationPwd(pwd, `${mbUid}`, undefined, usrData.brthDt, usrData.hpNo).then((data) => {
       if (data.resultCd === '0000') {
-        // 2-1. 유효성 검증 통과 - 비밀번호 수정 실행
         editUsrProfile(usrPwd, undefined, pwd).then((data) => {
           if (data.resultCd === '0000') {
-            // 비밀번호 변경 성공 시 현재 비밀번호를 새 비밀번호로 업데이트
+            // 이후 변경 요청은 새 비밀번호로 인증해야 한다
             setUsrPwd(pwd);
-            // 입력 필드 초기화
             setPwd('');
             setPwdChk('');
 
@@ -101,25 +91,23 @@ const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigati
             alert({
               title: 'PW 변경',
               message1: '회원님의 PW 변경에 실패하였습니다.',
-              message2: data.resultMsg, // 서버가 준 이유 (비밀번호 규칙·현재 비밀번호 불일치 등)
+              message2: data.resultMsg, // 비밀번호 규칙 위반, 현재 비밀번호 불일치 등
             });
           }
         });
       } else {
-        // 2-2. 유효성 검증 통과 못함
         alert({
           title: 'PW 변경',
           message1: data.resultMsg,
         });
 
-        // 기존 입력했던 비밀번호 리셋
         setPwd('');
         setPwdChk('');
       }
     });
   };
 
-  // 등록된 내 계좌 조회
+  // 등록된 출금 계좌
   const [acntData, setAcntData] = useState<IRefundAcnt | null>(null);
 
   useFocusEffect(
@@ -134,7 +122,7 @@ const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigati
     }, []),
   );
 
-  // PW와 PW 확인 일치 여부 검증 (pwd 또는 pwdChk가 변경될 때마다)
+  // 비밀번호를 고치면 확인칸의 일치 여부도 다시 검사한다
   useEffect(() => {
     if (pwdChk.length > 0) {
       setPwdChkError(pwd !== pwdChk);
@@ -153,7 +141,7 @@ const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigati
           회원정보 변경
         </Typography>
 
-        {/* 회원정보 상세. 앞 화면에서 비밀번호로 본인 확인을 마친 뒤라 이름·ID 는 가리지 않고 그대로 보여 준다 */}
+        {/* 앞 화면에서 비밀번호로 본인 확인을 마친 뒤라 이름·ID 는 가리지 않는다 */}
         <View style={{ gap: 24, paddingBottom: 0 }}>
           <TextField
             id={'name'}

@@ -20,10 +20,7 @@ const THUMB_SIZE = 27;
 const THUMB_PADDING = (TRACK_HEIGHT - THUMB_SIZE) / 2;
 const THUMB_TRAVEL = TRACK_WIDTH - THUMB_SIZE - THUMB_PADDING * 2;
 
-/**
- * iOS 모양의 켜기/끄기 스위치. 기본 Switch 는 웹·Android·iOS 마다 모양과 색이 달라서
- * (웹은 켜진 손잡이가 청록색으로 고정됨) 앱 색상으로 통일해 직접 그린다.
- */
+/** iOS 모양의 켜기/끄기 스위치. 기본 Switch 는 플랫폼마다 모양과 색이 달라 앱 색상으로 통일해 직접 그린다 */
 const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ value, onValueChange, disabled = false, accessibilityLabel }) => {
   // 0(꺼짐) ~ 1(켜짐). 렌더 중 ref 를 읽지 말라는 lint 규칙 때문에 useRef 대신 useState 초기화 함수를 쓴다
   const [progress] = useState(() => new Animated.Value(value ? 1 : 0));

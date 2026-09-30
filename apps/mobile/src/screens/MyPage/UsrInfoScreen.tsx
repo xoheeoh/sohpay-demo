@@ -19,10 +19,9 @@ type UsrInfoScreenProps = NativeStackScreenProps<RootStackParamList, 'UsrInfo'>;
 const formatAmount = (value: string) => Number(value).toLocaleString('ko-KR');
 
 const UsrInfoScreen: React.FC<UsrInfoScreenProps> = ({ navigation, route }) => {
-  // 이전 화면에서 얻어온 사용자 프로필 정보
   const usrData = route.params.usrData;
 
-  // 회원 잔액 조회 (null: 아직 조회 전 → 금액 자리에 자리표시자가 보인다. 마이페이지 프로필 카드와 같은 방식)
+  // null 이면 조회 전이라 금액 자리에 자리표시자를 보여준다
   const [rmnAmtData, setRmnAmtData] = useState<IRmnAmt | null>(null);
 
   useEffect(() => {
@@ -39,7 +38,7 @@ const UsrInfoScreen: React.FC<UsrInfoScreenProps> = ({ navigation, route }) => {
     fetchData();
   }, []);
 
-  // 등록된 내 계좌 조회 (isAcntLoaded: 조회가 끝나기 전에는 "계좌 등록하기"가 잠깐 보이지 않게 자리표시자를 둔다)
+  // 등록된 출금 계좌. 조회가 끝나기 전에는 "계좌 등록하기"가 잠깐 보이지 않게 자리표시자를 둔다
   const [rfndAcnt, setRfndAcnt] = useState<IRefundAcnt | null>(null);
   const [isAcntLoaded, setIsAcntLoaded] = useState(false);
 
@@ -101,11 +100,11 @@ const UsrInfoScreen: React.FC<UsrInfoScreenProps> = ({ navigation, route }) => {
             )}
           </View>
 
-          {/* 앱 전체에서 쓰는 말은 "출금" (환급·환불은 쓰지 않는다) */}
+          {/* 앱 전체에서 환급·환불 대신 "출금" 으로 통일한다 */}
           <SecondaryButton label={'출금하기'} onPress={() => navigation.navigate('Refund')} size={'lg'} />
         </View>
 
-        {/* 회원 정보 카드. 아바타·큰 이름은 마이페이지 프로필 카드가 맡으므로 여기서는 항목 표로만 보여준다 (겹침 방지) */}
+        {/* 아바타·큰 이름은 마이페이지 프로필 카드가 맡으므로 여기서는 항목 표로만 보여준다 */}
         <View style={styles.card}>
           <Typography mode="subtitle2" color="gray900">
             회원정보
@@ -116,7 +115,7 @@ const UsrInfoScreen: React.FC<UsrInfoScreenProps> = ({ navigation, route }) => {
             <InfoRow label="아이디" value={usrData?.mbUid || '-'} />
             <InfoRow label="이메일" value={usrData?.email || '-'} />
 
-            {/* 등록계좌: 라벨은 눌리지 않고, 오른쪽 계좌번호·화살표만 누르면 계좌관리 화면으로 이동 (없으면 등록, 있으면 변경) */}
+            {/* 라벨은 눌리지 않고 오른쪽 계좌번호·화살표만 눌러 계좌관리로 이동한다 */}
             <View style={[layout.rowBetween, styles.infoRow]}>
               <Typography mode="body2" color="gray500">
                 등록계좌
@@ -179,7 +178,6 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 16,
   },
-  // 출금·충전 확인 화면의 금액 카드(AmountSummaryCard)와 같은 크기
   iconCircle: {
     width: 36,
     height: 36,

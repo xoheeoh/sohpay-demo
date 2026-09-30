@@ -20,19 +20,14 @@ import styles from './JoinStepScreen.styles';
 type JoinStepOneScreenProps = NativeStackScreenProps<RootStackParamList, 'JoinOne'>;
 
 const JoinStepOneScreen: React.FC<JoinStepOneScreenProps> = ({ navigation }) => {
-  /**
-   * 약관 동의 체크박스 상태관리
-   * 개별 체크박스가 모두 선택되면 전체 동의 활성화
-   * 전체 동의 체크박스가 선택되면 모든 체크박스 활성화
-   */
+  // 개별 항목이 모두 선택되면 전체 동의가 켜지고, 전체 동의를 바꾸면 개별 항목도 함께 바뀐다
   const [allCheckbox, setAllCheckbox] = useState<boolean>(false);
 
   const [term1Checkbox, setTerm1Checkbox] = useState<boolean>(false); // 서비스 이용약관 (필수)
-  const [termEfCheckbox, setTermEfCheckbox] = useState<boolean>(false); // 전자금융거래 이용약관 (필수) - 선불전자지급수단의 핵심 동의
+  const [termEfCheckbox, setTermEfCheckbox] = useState<boolean>(false); // 전자금융거래 이용약관 (필수)
   const [term2Checkbox, setTerm2Checkbox] = useState<boolean>(false); // 개인정보 수집·이용 (필수)
   const [term3Checkbox, setTerm3Checkbox] = useState<boolean>(false); // 광고성 정보 수신 (선택)
 
-  // 전체 동의 체크박스 상태 변경
   const handleAllCheckboxChange = (value: React.SetStateAction<boolean>) => {
     const newValue = typeof value === 'boolean' ? value : value(allCheckbox);
     setAllCheckbox(newValue);
@@ -42,7 +37,6 @@ const JoinStepOneScreen: React.FC<JoinStepOneScreenProps> = ({ navigation }) => 
     setTerm3Checkbox(newValue);
   };
 
-  // 개별 체크박스 상태 변경
   const handleTermCheckboxChange = (
     setTerm: React.Dispatch<React.SetStateAction<boolean>>,
     value: React.SetStateAction<boolean>,
@@ -50,7 +44,7 @@ const JoinStepOneScreen: React.FC<JoinStepOneScreenProps> = ({ navigation }) => 
     const newValue = typeof value === 'boolean' ? value : value(false);
     setTerm(newValue);
 
-    // 하위 체크박스 모두 선택 여부 확인
+    // 지금 바뀐 항목은 아직 상태에 반영되지 않았으므로 새 값으로 바꿔 넣고 전체 선택 여부를 계산한다
     const allTermsChecked =
       (typeof value === 'boolean' ? value : value(term1Checkbox)) &&
       (setTerm === setTerm1Checkbox ? newValue : term1Checkbox) &&
@@ -61,18 +55,17 @@ const JoinStepOneScreen: React.FC<JoinStepOneScreenProps> = ({ navigation }) => 
     setAllCheckbox(allTermsChecked);
   };
 
-  // 버튼 활성화 상태 계산 (필수 약관 체크 완료 시)
+  // 필수 약관에 모두 동의해야 활성화된다
   const isButtonDisabled = !(term1Checkbox && termEfCheckbox && term2Checkbox);
 
-  // 선택 약관(광고 수신) 동의 여부를 가입 정보에 담고 다음 단계로 이동.
-  // 새 가입의 첫 단계이므로 이전에 중단된 가입 정보가 남아 있으면 덮어쓴다.
+  // 선택 약관 동의 여부를 가입 정보에 담는다. 새 가입의 첫 단계이므로 남아 있던 가입 정보는 덮어쓴다
   const handleNext = async () => {
     const firstStepData: Partial<IUserData> = { optionAgree: term3Checkbox };
     await storeData('userData', firstStepData);
     navigation.navigate('JoinTwo');
   };
 
-  // 약관 목록. flg 는 약관 상세 화면(TermContent)이 여는 본문 번호로, 마이페이지 약관 목록 순서(0 서비스, 1 전자금융, 2 개인정보 수집, 3 처리방침, 4 제3자, 5 광고)를 따른다
+  // flg 는 약관 상세 화면(TermContent)이 여는 본문 번호로, 마이페이지 약관 목록 순서(0 서비스 ~ 5 광고)를 따른다
   const termList = [
     { title: '서비스 이용약관', flg: 0 },
     { title: '전자금융거래 이용약관', flg: 1 },
@@ -121,7 +114,6 @@ const JoinStepOneScreen: React.FC<JoinStepOneScreenProps> = ({ navigation }) => 
             </Typography>
           </View>
 
-          {/* 약관 동의 체크박스 */}
           <View style={{ gap: 32 }}>
             <CheckBox
               isChecked={allCheckbox}

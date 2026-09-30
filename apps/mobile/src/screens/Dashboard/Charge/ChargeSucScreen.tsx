@@ -21,16 +21,15 @@ import {
 type ChargeSucScreenProps = NativeStackScreenProps<RootStackParamList, 'ChargeSuc'>;
 
 /**
- * 내용을 "버튼 위 영역"의 가운데에 놓기 위한 추가 아래 여백 (출금 완료·회원가입 완료 화면과 같은 계산).
- * 하단 버튼 상자는 화면 위에 떠 있어 스크롤 영역이 그 뒤까지 이어지므로, 그냥 가운데 정렬하면 아래로 치우쳐 보인다.
+ * 하단 버튼 상자가 떠 있어 스크롤 영역이 그 뒤까지 이어지므로,
+ * 내용이 "버튼 위 영역"의 가운데에 오도록 아래 여백을 더한다.
  */
 const CENTERING_EXTRA_BOTTOM_PADDING = BOTTOM_BTN_BOX_HEIGHT - BOTTOM_BTN_BOX_KEYBOARD_INSET + 24;
 
 const ChargeSucScreen: React.FC<ChargeSucScreenProps> = ({ navigation, route }) => {
-  // 이전 화면에서 얻어온 충전금액 파라미터
   const { chargeAmt } = route.params;
 
-  // 완료 화면에서 뒤로 가면 PIN 입력으로 돌아가 다시 충전할 수 있으므로 막는다 (결제·출금 완료 화면과 같은 처리)
+  // 뒤로 가면 PIN 입력으로 돌아가 다시 충전할 수 있으므로 뒤로가기를 막는다
   useFocusEffect(
     useCallback(() => {
       navigation.setOptions({
@@ -45,7 +44,7 @@ const ChargeSucScreen: React.FC<ChargeSucScreenProps> = ({ navigation, route }) 
         return true;
       };
 
-      // 웹에는 하드웨어 뒤로가기 버튼이 없고 BackHandler 도 지원되지 않아(콘솔 오류) 앱에서만 등록한다
+      // 웹에는 BackHandler 가 없어(콘솔 오류) 앱에서만 등록한다
       if (Platform.OS === 'web') return;
       const subscription = BackHandler.addEventListener('hardwareBackPress', backAction);
 
@@ -55,7 +54,7 @@ const ChargeSucScreen: React.FC<ChargeSucScreenProps> = ({ navigation, route }) 
     }, [navigation]),
   );
 
-  // 충전 후 잔액 조회 (null: 아직 조회 전 → 카드에는 자리표시자가 보인다)
+  // 충전 후 잔액. null 이면 조회 전으로 카드에 자리표시자를 보여준다
   const [balanceAfter, setBalanceAfter] = useState<number | null>(null);
 
   useEffect(() => {
@@ -68,7 +67,7 @@ const ChargeSucScreen: React.FC<ChargeSucScreenProps> = ({ navigation, route }) 
     });
   }, []);
 
-  // 결과 카드에 한 줄씩 놓을 항목 (출금 완료 화면과 같은 구성)
+  // 결과 카드 항목
   const rows: GlassReceiptRow[] = [
     { label: '충전 수단', value: '계좌이체' },
     { label: '충전 후 잔액', value: balanceAfter === null ? null : formatWon(balanceAfter) },
@@ -81,7 +80,6 @@ const ChargeSucScreen: React.FC<ChargeSucScreenProps> = ({ navigation, route }) 
         contentContainerStyle={styles.container}
         keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}
         extraBottomPadding={CENTERING_EXTRA_BOTTOM_PADDING}>
-        {/* 체크 애니메이션 → 완료 문구. 출금 완료·회원가입 완료와 같은 애니메이션으로 톤을 맞춘다 */}
         <View style={styles.hero}>
           <SuccessAnimation size={160} style={styles.animation} />
 
@@ -109,11 +107,11 @@ const ChargeSucScreen: React.FC<ChargeSucScreenProps> = ({ navigation, route }) 
 };
 
 const styles = StyleSheet.create({
-  // 세로 가운데 정렬. 아래 여백은 KeyboardAwareScrollView 가 덮어쓰므로 extraBottomPadding 으로 보정한다.
+  // 아래 여백은 KeyboardAwareScrollView 가 덮어쓰므로 extraBottomPadding 으로 보정한다
   container: { paddingHorizontal: 16, paddingVertical: 24, gap: 50, flexGrow: 1, justifyContent: 'center' },
 
   hero: { gap: 12, alignItems: 'center' },
-  // Lottie 그림은 상자 안에 위 28px, 아래 35px 투명 여백을 두고 그려지므로 음수 여백으로 상쇄해 보이는 그림 기준으로 정렬한다
+  // Lottie 상자 안의 투명 여백(위 28px·아래 35px)을 음수 여백으로 상쇄한다
   animation: { marginTop: -28, marginBottom: -32 },
 });
 

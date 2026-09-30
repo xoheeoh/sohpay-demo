@@ -21,24 +21,22 @@ import styles from './FindScreen.styles';
 type FindScreenProps = NativeStackScreenProps<RootStackParamList, 'Find'>;
 
 const FindScreen: React.FC<FindScreenProps> = ({ navigation }) => {
-  // Dialog
   const { alert } = useDialog();
 
-  // 활성화 된 탭 상태관리
   const [activeTab, setActiveTab] = useState<1 | 2>(1); // 1: ID 찾기, 2: PW 찾기
 
-  // ID 찾기 입력 내용 상태관리
+  // ID 찾기 입력값
   const [usrname, setUsrname] = useState<string>('');
   const [idEmail, setIdEmail] = useState<string>('');
   const [usrnameError, setUsrnameError] = useState<boolean>(false);
 
-  // PW 찾기 입력 내용 상태관리
+  // PW 찾기 입력값
   const [usrNm, setUsrNm] = useState<string>('');
   const [usrId, setUsrId] = useState<string>('');
   const [pwEmail, setPwEmail] = useState<string>('');
   const [usrNmError, setUsrNmError] = useState<boolean>(false);
 
-  // 탭이 바뀌면 기존에 입력했던 내용 및 인증 상태 리셋
+  // 탭이 바뀌면 입력값과 인증 상태를 모두 비운다
   useEffect(() => {
     const resetState = async () => {
       setUsrname('');
@@ -50,7 +48,7 @@ const FindScreen: React.FC<FindScreenProps> = ({ navigation }) => {
       setUsrNm('');
       setUsrNmError(false);
 
-      // 기존 본인인증 정보도 제거하여 탭 변경 시 재사용되지 않도록 처리
+      // 저장된 본인인증 결과도 지워 다른 탭에서 재사용되지 않게 한다
       setCertData(null);
       await removeData('certData');
     };
@@ -58,21 +56,15 @@ const FindScreen: React.FC<FindScreenProps> = ({ navigation }) => {
     resetState();
   }, [activeTab]);
 
-  /**
-   * ID, PW 찾기
-   * 성공 시, 성공 화면으로 이동
-   * 실패 시, 실패 모달 등장
-   */
   // 아이디 찾기
   const handleFindId = () => {
     findUserId(idEmail, usrname).then((data) => {
       console.log('아이디 찾기 결과:', data);
 
       if (data.resultCd === '0000') {
-        // 아이디 찾기 성공
         navigation.navigate('FindId', { mbUid: data.mbUid, regDnt: data.regDnt });
       } else {
-        // 아이디 찾기 실패. 가입자 없음이면 정보 확인 안내, 그 외(인증 만료 등)는 서버 문구를 그대로 보여준다
+        // 가입자 없음이면 정보 확인 안내를 덧붙이고, 그 외(인증 만료 등)는 서버 문구만 보여준다
         alert({
           title: 'ID 찾기',
           message1: data.resultMsg,
@@ -88,10 +80,10 @@ const FindScreen: React.FC<FindScreenProps> = ({ navigation }) => {
       console.log('비밀번호 찾기 결과:', data);
 
       if (data.resultCd === '0000') {
-        // 비밀번호 찾기 성공. 데모는 임시 비밀번호를 메일 대신 화면에 보여준다
+        // 데모는 임시 비밀번호를 메일 대신 화면에 보여준다
         navigation.navigate('FindPw', { mbUid: data.mbUid, tempPwd: data.tempPwd });
       } else {
-        // 비밀번호 찾기 실패. 가입자 없음이면 정보 확인 안내, 그 외(인증 만료 등)는 서버 문구를 그대로 보여준다
+        // 가입자 없음이면 정보 확인 안내를 덧붙이고, 그 외(인증 만료 등)는 서버 문구만 보여준다
         alert({
           title: 'PW 찾기',
           message1: data.resultMsg,
@@ -101,31 +93,25 @@ const FindScreen: React.FC<FindScreenProps> = ({ navigation }) => {
     });
   };
 
-  /**
-   * 본인인증
-   * 인증 성공 여부 확인
-   */
+  // 본인인증 완료 여부
   const [authSuc, setAuthSuc] = useState<boolean>(false);
 
-  // 휴대폰 본인인증 버튼 클릭 이벤트
   const handleAuth = async (identCd: '01' | '02') => {
-    // 열린 키보드 닫기 (인증 완료 후 화면 복귀했을 때 대비)
+    // 인증 화면에서 돌아왔을 때 키보드가 남지 않도록 미리 닫는다
     Keyboard.dismiss();
 
-    // ID 찾기 탭에서 이름이 비어있으면 에러 표시하고 본인인증 로직 실행하지 않음
+    // 이름은 인증 결과와 대조하는 값이라 인증 전에 입력되어 있어야 한다
     if (activeTab === 1 && !usrname.trim()) {
       setUsrnameError(true);
       return;
     }
 
-    // PW 찾기 탭에서 이름이 비어있으면 에러 표시하고 본인인증 로직 실행하지 않음
     if (activeTab === 2 && !usrNm.trim()) {
       setUsrNmError(true);
       return;
     }
 
     try {
-      // 인증 화면 URL 요청
       const data = await requestCertifyUrl(identCd);
       if (data.resultCd === '0000') {
         if (data.returnUrl) {
@@ -141,14 +127,14 @@ const FindScreen: React.FC<FindScreenProps> = ({ navigation }) => {
 
   const [certData, setCertData] = useState<string | null>(null);
 
-  // 화면 포커스 시 certData 로드 및 상태 초기화
+  // 인증 화면에서 돌아오면 저장된 인증 결과를 읽어 온다
   useFocusEffect(
     useCallback(() => {
       const loadCertData = async () => {
         const stored = await getData<string>('certData');
         setCertData(stored);
 
-        // 화면 재진입 시 인증 상태 초기화 (이름 수정 가능하도록)
+        // 재검증이 끝나기 전까지는 미완료로 되돌려 이름을 고칠 수 있게 한다
         if (stored) {
           setAuthSuc(false);
         }
@@ -157,20 +143,18 @@ const FindScreen: React.FC<FindScreenProps> = ({ navigation }) => {
     }, []),
   );
 
-  // 입력값 상태/인증 데이터 변경 시 비교
+  // 저장된 인증 결과가 입력한 이름과 일치하는지 서버에 확인한다
   useEffect(() => {
     const checkAuthName = async () => {
       if (!certData) return;
 
-      // 활성 탭에 따라 해당 탭의 이름 값으로 본인인증 결과 확인
       const targetName = activeTab === 1 ? usrname : usrNm;
       const data = await handleCertifyResult(targetName, certData);
 
-      // 본인인증 확인 성공
       if (data.resultCd === '0000') {
         setAuthSuc(true);
       } else if (data.resultCd === '9999' && data.resultMsg.includes('입력하신 이름')) {
-        // 본인인증은 성공했지만 입력한 정보와 다름
+        // 인증 자체는 됐지만 입력한 이름과 다른 경우
         alert({
           title: '오류',
           message1: '본인 인증 정보가 입력하신 이름과 일치하지 않습니다.',
@@ -178,7 +162,7 @@ const FindScreen: React.FC<FindScreenProps> = ({ navigation }) => {
         });
         setAuthSuc(false);
 
-        // 정보 수정 후 본인 인증을 다시 시도할 수 있도록
+        // 이름을 고친 뒤 다시 인증할 수 있도록 결과를 지운다
         setCertData(null);
         await removeData('certData');
       }
@@ -187,7 +171,7 @@ const FindScreen: React.FC<FindScreenProps> = ({ navigation }) => {
     checkAuthName();
   }, [certData, activeTab, usrname, usrNm]);
 
-  // 버튼 활성화 상태 계산 (각 탭일 때, 입력 칸이 모두 입력되고 본인인증 완료해야 활성화)
+  // 입력 칸이 모두 채워지고 본인인증까지 끝나야 활성화된다
   const isButtonDisabled =
     activeTab === 1 ? !(usrname.trim() && idEmail.trim() && authSuc) : !(usrId.trim() && pwEmail.trim() && authSuc);
 
@@ -218,7 +202,6 @@ const FindScreen: React.FC<FindScreenProps> = ({ navigation }) => {
                 value={usrname}
                 onChangeText={(text: string) => {
                   setUsrname(text);
-                  // 이름이 입력되면 에러 상태 초기화
                   if (usrnameError && text.trim()) {
                     setUsrnameError(false);
                   }
@@ -255,7 +238,6 @@ const FindScreen: React.FC<FindScreenProps> = ({ navigation }) => {
                 value={usrNm}
                 onChangeText={(text: string) => {
                   setUsrNm(text);
-                  // 이름이 입력되면 에러 상태 초기화
                   if (usrNmError && text.trim()) {
                     setUsrNmError(false);
                   }

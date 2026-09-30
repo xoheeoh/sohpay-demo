@@ -5,8 +5,8 @@ import { Platform } from 'react-native';
 const SecureStore = Platform.OS === 'web' ? null : (require('expo-secure-store') as typeof import('expo-secure-store'));
 
 /* ── 보안 저장소 ──────────────────────────────────────────────────
- * 원본은 react-native-encrypted-storage 를 썼다. Expo 에서는 expo-secure-store(Keychain/Keystore)로 대체한다.
- * SecureStore 는 값 하나에 2KB 제한이 있어 긴 값은 조각내어 저장한다. 웹은 SecureStore 가 없어 localStorage 를 쓴다.
+ * expo-secure-store(Keychain/Keystore)는 값 하나에 2KB 제한이 있어 긴 값은 조각내어 저장한다.
+ * 웹은 SecureStore 가 없어 localStorage 를 쓴다.
  */
 const CHUNK = 1800;
 
@@ -77,41 +77,10 @@ export const storeEncryptedToken = async (token: { at: string; rt: string }): Pr
   }
 };
 
-// userToken 복호화 읽기
-export const getEncryptedToken = async <T>(): Promise<T | null> => {
-  try {
-    const value = await EncryptedStorage.getItem('userToken');
-    if (value) {
-      return JSON.parse(value) as T;
-    }
-  } catch (error: any) {
-    console.error('토큰 복호화 읽기 오류:', error.message);
-  }
-  return null;
-};
-
-// userToken 암호화 병합 저장
-export const mergeEncryptedToken = async (newData: Partial<{ at: string; rt: string }>): Promise<void> => {
-  try {
-    // 기존 데이터 가져오기
-    const existingData = await EncryptedStorage.getItem('userToken');
-    const parsedData = existingData ? JSON.parse(existingData) : {};
-
-    // 기존 데이터와 새로운 데이터 병합
-    const mergedData = { ...parsedData, ...newData };
-
-    // 병합된 데이터 저장
-    await EncryptedStorage.setItem('userToken', JSON.stringify(mergedData));
-  } catch (error: any) {
-    console.error('토큰 암호화 병합 저장 오류:', error.message);
-    throw error;
-  }
-};
-
 // userToken 암호화 삭제
 export const removeEncryptedToken = async (): Promise<void> => {
   try {
-    // 화면(로그아웃·탈퇴)이 토큰 삭제 = 로그아웃으로 쓰므로 Supabase 세션도 함께 끝낸다.
+    // 화면은 토큰 삭제를 로그아웃으로 쓰므로 Supabase 세션도 함께 끝낸다
     const { supabase } = await import('@apis/client');
     await supabase.auth.signOut().catch(() => {});
     await EncryptedStorage.removeItem('userToken');
@@ -128,14 +97,11 @@ export const removeEncryptedToken = async (): Promise<void> => {
  */
 export const mergeData = async <T>(key: string, newData: Partial<T>): Promise<void> => {
   try {
-    // 기존 데이터 가져오기
     const existingData = await AsyncStorage.getItem(key);
     const parsedData: T = existingData ? JSON.parse(existingData) : ({} as T);
 
-    // 기존 데이터와 새로운 데이터 병합
     const mergedData = { ...parsedData, ...newData };
 
-    // 병합된 데이터 저장
     await AsyncStorage.setItem(key, JSON.stringify(mergedData));
   } catch (error: any) {
     console.error(`${key} 데이터 병합 오류:`, error.message);
@@ -164,16 +130,6 @@ export const removeData = async (key: string) => {
   }
 };
 
-// 데이터 저장 여부 확인하기
-export const containKeys = async (key: string) => {
-  try {
-    const keys = await AsyncStorage.getAllKeys();
-    return keys.includes(key);
-  } catch (error: any) {
-    console.error('데이터 저장 여부 확인 오류:', error.message);
-  }
-};
-
 // AsyncStorage에 토큰 관련 키가 남아있는지 확인하고 삭제하는 함수
 export const checkTokenInAsyncStorage = async (autoRemove: boolean = true): Promise<void> => {
   try {
@@ -187,7 +143,6 @@ export const checkTokenInAsyncStorage = async (autoRemove: boolean = true): Prom
     const keysToRemove: string[] = [];
     let hasToken = false;
 
-    // 토큰 관련 키 확인
     for (const key of tokenRelatedKeys) {
       if (allKeys.includes(key)) {
         const value = await AsyncStorage.getItem(key);
@@ -228,7 +183,6 @@ export const checkTokenInAsyncStorage = async (autoRemove: boolean = true): Prom
       console.error('발견된 토큰 키:', Object.keys(foundTokens));
 
       if (autoRemove) {
-        // 발견된 토큰 키들을 자동으로 삭제
         for (const key of keysToRemove) {
           try {
             await AsyncStorage.removeItem(key);

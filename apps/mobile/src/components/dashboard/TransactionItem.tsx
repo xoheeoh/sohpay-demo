@@ -13,10 +13,9 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ data }) => {
   // PAY:결제, CANCEL:취소, PARTCANCEL:부분취소, RFND:출금, PPNP:충전
   const getContent = (ctgr: TransType) => {
     if (ctgr === 'CANCEL' || ctgr === 'PARTCANCEL' || ctgr === 'PAY') {
-      return data?.coNm; // 결제, 취소에 관한 내역은 상점명 표시
+      return data?.coNm; // 결제·취소는 상점명
     } else if (ctgr === 'PPNP') {
-      // 충전은 수단 이름(계좌이체 / 가상계좌). 상세 화면과 같은 값을 보여준다
-      return data?.coNm || '충전';
+      return data?.coNm || '충전'; // 충전은 수단 이름(계좌이체 / 가상계좌)
     } else if (ctgr === 'RFND') {
       return getBankName(data?.rfndBankCd || '') + ' ' + (data?.rfndAcntNo || '');
     }
@@ -24,7 +23,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ data }) => {
 
   const isCancel = data?.transType === 'CANCEL' || data?.transType === 'PARTCANCEL';
 
-  // 금액 표기와 색은 이용내역 목록·상세와 같은 규칙(formatWon · getTrxAmountColor)을 쓴다
+  // 금액 표기·색은 이용내역과 같은 규칙(formatWon · getTrxAmountColor)을 쓴다
   const amountKind = isCancel
     ? 'cancel'
     : data?.transType === 'PPNP'
@@ -33,16 +32,16 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ data }) => {
         ? 'refund'
         : 'pay';
   const amountText = isCancel
-    ? `+ ${formatWon(data?.ccAmt)}` // 취소, 부분취소 금액
+    ? `+ ${formatWon(data?.ccAmt)}`
     : data?.transType === 'PPNP'
-      ? `+ ${formatWon(data?.goodsAmt)}` // 충전 금액
+      ? `+ ${formatWon(data?.goodsAmt)}`
       : data?.transType === 'RFND'
-        ? `- ${formatWon(data?.rfndAmt)}` // 출금 금액
-        : `- ${formatWon(data?.goodsAmt)}`; // 결제 금액
+        ? `- ${formatWon(data?.rfndAmt)}`
+        : `- ${formatWon(data?.goodsAmt)}`;
 
   return (
     <View style={styles.container}>
-      {/* 거래일 (MM/DD) - 점(.)으로 이으면 시각처럼 읽혀서 빗금으로 구분 */}
+      {/* 거래일 (MM/DD). 점으로 이으면 시각처럼 읽혀 빗금을 쓴다 */}
       <Typography mode="caption1" color="gray400" style={styles.date}>
         {data?.trDt.slice(4, 6)}/{data?.trDt.slice(6, 8)}
       </Typography>

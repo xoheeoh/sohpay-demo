@@ -15,18 +15,18 @@ import {
 import styles from './FindScreen.styles';
 
 /**
- * 내용을 "버튼 위 영역"의 가운데에 놓기 위한 추가 아래 여백 (가입·충전·출금 완료 화면과 같은 계산).
- * 하단 버튼 상자는 화면 위에 떠 있어 스크롤 영역이 그 뒤까지 이어지므로, 그냥 가운데 정렬하면 아래로 치우쳐 보인다.
+ * 하단 버튼 상자가 스크롤 영역 위에 떠 있어 단순 가운데 정렬은 아래로 치우쳐 보이므로,
+ * 버튼 위 영역 기준으로 가운데를 맞추기 위한 추가 아래 여백.
  */
 const CENTERING_EXTRA_BOTTOM_PADDING = BOTTOM_BTN_BOX_HEIGHT - BOTTOM_BTN_BOX_KEYBOARD_INSET + 24;
 
 type FindPwScreenProps = NativeStackScreenProps<RootStackParamList, 'FindPw'>;
 
 const FindPwScreen: React.FC<FindPwScreenProps> = ({ navigation, route }) => {
-  // 이전 화면에서 얻은 회원 ID 값. tempPwd 는 데모 전용: 메일을 보내지 않아 임시 비밀번호를 화면에 표시한다
+  // tempPwd 는 데모 전용: 메일을 보내지 않아 임시 비밀번호를 화면에 표시한다
   const { mbUid, tempPwd } = route.params;
 
-  // 제스처 뒤로가기 방지
+  // 완료 화면에서는 뒤로가기를 막고 로그인 화면으로 보낸다
   useEffect(() => {
     navigation.setOptions({
       gestureEnabled: false,
@@ -35,12 +35,12 @@ const FindPwScreen: React.FC<FindPwScreenProps> = ({ navigation, route }) => {
     const backAction = () => {
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Login' }], // 'Login' 화면으로 이동 (스택 리셋)
+        routes: [{ name: 'Login' }],
       });
       return true; // 기본 뒤로가기 동작 방지
     };
 
-    // 웹에는 하드웨어 뒤로가기 버튼이 없고 BackHandler 도 지원되지 않아(콘솔 오류) 앱에서만 등록한다
+    // 웹에는 BackHandler 가 없어(콘솔 오류) 앱에서만 등록한다
     if (Platform.OS === 'web') return;
     const subscription = BackHandler.addEventListener('hardwareBackPress', backAction);
 
@@ -55,11 +55,9 @@ const FindPwScreen: React.FC<FindPwScreenProps> = ({ navigation, route }) => {
         contentContainerStyle={[styles.wrap, styles.successWrap]}
         keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}
         extraBottomPadding={CENTERING_EXTRA_BOTTOM_PADDING}>
-        {/* 체크 애니메이션 → 완료 문구 (ID 찾기·다른 완료 화면과 같은 구성) */}
         <View style={styles.hero}>
           <SuccessAnimation size={160} style={styles.animation} />
 
-          {/* 결과 메시지 */}
           <View style={{ alignItems: 'center', gap: 6 }}>
             <Typography mode="heading3" color="gray900">
               {tempPwd ? '임시 PW 발급에 성공하였습니다.' : '임시 PW 발송에 성공하였습니다.'}
@@ -73,7 +71,7 @@ const FindPwScreen: React.FC<FindPwScreenProps> = ({ navigation, route }) => {
         </View>
 
         <View style={styles.resultBlock}>
-          {/* 계정 정보 카드. 데모 전용으로 임시 비밀번호까지 보여준다 (메일 발송이 없어서) */}
+          {/* 데모는 메일을 보내지 않아 임시 비밀번호를 카드에 함께 보여준다 */}
           <View style={styles.infoCard}>
             <View style={styles.infoRow}>
               <Typography mode="body2" color="gray600">

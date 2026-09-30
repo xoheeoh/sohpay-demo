@@ -9,7 +9,7 @@ import { controlSize, theme } from '@styles';
 interface DropdownProps {
   placeholder: string;
   options: string[];
-  onSelect?: (selectedOption: string) => void; // 선택한 옵션을 부모로 전달
+  onSelect?: (selectedOption: string) => void;
   /** 크기 단계. lg 는 입력칸·검색창과 나란히 놓이는 기본, md 는 목록 위 필터처럼 작은 자리용 */
   size?: 'lg' | 'md';
   onOpen?: 'options' | 'modal';
@@ -26,10 +26,9 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
     { placeholder, options, onSelect, size = 'lg', onOpen = 'options', openEvent, dismissKeyboardOnOpen = true },
     ref,
   ) => {
-    // 드롭다운 셀렉트 박스 열림 상태
     const [isOpen, setIsOpen] = useState<boolean>(false);
-    const [selectedOption, setSelectedOption] = useState<string>(placeholder); // 선택된 옵션
-    const [activeOption, setActiveOption] = useState<string | null>(null); // 현재 active 상태인 옵션
+    const [selectedOption, setSelectedOption] = useState<string>(placeholder);
+    const [activeOption, setActiveOption] = useState<string | null>(null);
     const [dropdownLayout, setDropdownLayout] = useState<{ left: number; width: number; top: number; height: number }>({
       left: 0,
       width: 0,
@@ -37,20 +36,16 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
       height: 0,
     }); // 옵션 목록의 화면상 위치와 크기
 
-    // 내부 ref 생성
     const localRef = useRef<View | null>(null);
 
-    // 부모에서 전달된 ref를 내부 ref와 연결
     useImperativeHandle(ref, () => ({
       close: () => setIsOpen(false),
     }));
 
-    // 화면 이동(해당 화면이 blur 되거나 unmount 될 때) 시 드롭다운을 닫기
+    // 화면을 벗어날 때 열린 드롭다운을 닫는다
     useFocusEffect(
       useCallback(() => {
-        // 화면이 focus 될 때는 별도 동작 없음
         return () => {
-          // 화면이 blur 되거나 unmount 될 때 열린 드롭다운을 닫기
           setIsOpen(false);
         };
       }, []),
@@ -69,16 +64,14 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
       openEvent?.();
     };
 
-    // 셀렉트 박스의 화면상 위치를 재서 옵션 목록을 그 바로 아래에 띄운다.
-    // 주의: findNodeHandle + UIManager.measure 는 웹(react-native-web)에서 에러를 던진다.
-    // View ref 의 measureInWindow 는 앱·웹 모두에서 동작하고, Portal 도 창(window) 기준으로 그리므로 좌표가 그대로 맞는다.
+    // 셀렉트 박스 위치를 재서 옵션 목록을 바로 아래에 띄운다.
+    // findNodeHandle + UIManager.measure 는 웹에서 에러가 나므로 measureInWindow 를 쓴다. Portal 도 창 기준으로 그려 좌표가 그대로 맞는다.
     const measureDropdown = () => {
       localRef.current?.measureInWindow((x, y, width, height) => {
-        // 옵션 개수에 따른 높이 계산
-        const optionHeight = 48; // 각 옵션의 높이 (optionItem의 padding 포함)
-        const verticalPadding = 16; // optionBox의 paddingVertical (8 + 8)
-        const verticalBorder = OPTION_BOX_BORDER_WIDTH * 2; // optionBox 테두리 위아래 (높이에 포함되므로 더해줘야 옵션이 잘리지 않음)
-        const maxHeight = 200; // 최대 높이
+        const optionHeight = 48; // optionItem 높이 (padding 포함)
+        const verticalPadding = 16; // optionBox paddingVertical (8 + 8)
+        const verticalBorder = OPTION_BOX_BORDER_WIDTH * 2; // 테두리도 높이에 포함되므로 더해야 옵션이 잘리지 않는다
+        const maxHeight = 200;
         const calculatedHeight = Math.min(options.length * optionHeight + verticalPadding + verticalBorder, maxHeight);
 
         setDropdownLayout({
@@ -91,9 +84,9 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
     };
 
     const handleSelectOption = (option: string) => {
-      setSelectedOption(option); // 선택된 옵션 설정
-      setIsOpen(false); // 드롭다운 닫기
-      onSelect?.(option); // 부모로 선택한 옵션 전달
+      setSelectedOption(option);
+      setIsOpen(false);
+      onSelect?.(option);
     };
 
     return (
@@ -102,14 +95,14 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
           style={[
             styles.select,
             {
-              borderColor: isOpen ? theme.colors.primary : theme.colors.line, // 평소에도 연한 테두리 (입력칸과 동일)
+              borderColor: isOpen ? theme.colors.primary : theme.colors.line, // 입력칸과 같은 테두리 규칙
               backgroundColor: isOpen ? theme.colors.white : theme.colors.gray50,
               height: controlSize[size].height,
               borderRadius: controlSize[size].radius,
             },
           ]}
           onPress={onOpen === 'options' ? handlePress : handleModalOpen}>
-          {/* 다른 입력칸(TextInput)과 같은 body2. 옵션 목록 글자와도 동일 */}
+          {/* 입력칸·옵션 목록과 같은 body2 */}
           <Typography mode="body2" color="gray900" numberOfLines={1} style={{ flexShrink: 1 }}>
             {selectedOption}
           </Typography>

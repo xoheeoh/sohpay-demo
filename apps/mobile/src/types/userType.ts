@@ -1,9 +1,3 @@
-/* 로그인 토큰 정보 */
-export interface IUserToken {
-  at: string;
-  rt: string;
-}
-
 /* 회원 프로필 정보 */
 export interface IUserProfile {
   mbUid: string;

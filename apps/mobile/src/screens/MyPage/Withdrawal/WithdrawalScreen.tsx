@@ -18,7 +18,7 @@ import {
 type WithdrawalScreenProps = NativeStackScreenProps<RootStackParamList, 'Withdrawal'>;
 
 const WithdrawalScreen: React.FC<WithdrawalScreenProps> = ({ navigation }) => {
-  // uid 정보 불러오기
+  // 어느 계정을 탈퇴하는지 보여주기 위한 로그인 아이디
   const [uid, setUid] = useState<string>('');
 
   useEffect(() => {
@@ -33,14 +33,8 @@ const WithdrawalScreen: React.FC<WithdrawalScreenProps> = ({ navigation }) => {
     fetchData();
   }, []);
 
-  // Dialog
   const { alert } = useDialog();
 
-  /**
-   * 패스워드 입력 후 일치하면 다음 화면으로 이동
-   * 패스워드 값이 입력되어야 다음 버튼 활성화
-   * 패스워드 불일치 시, 실패 모달창 노출
-   */
   const [pwd, setPwd] = useState<string>('');
   const isButtonDisabled = !(pwd.length > 0);
 
@@ -49,10 +43,8 @@ const WithdrawalScreen: React.FC<WithdrawalScreenProps> = ({ navigation }) => {
 
     checkUsrPwd(pwd).then((data) => {
       if (data.resultCd === '0000') {
-        // 비밀번호 검증 성공
-        navigation.navigate('WithdrawalAgr', { pwd: pwd }); // 탈퇴 동의 화면으로 이동
+        navigation.navigate('WithdrawalAgr', { pwd: pwd });
       } else {
-        // 실패 모달창 보여주기
         alert({
           title: '비밀번호 불일치',
           message1: '입력하신 정보가 일치하지 않습니다.',
@@ -79,7 +71,7 @@ const WithdrawalScreen: React.FC<WithdrawalScreenProps> = ({ navigation }) => {
         </View>
 
         <View style={{ gap: 24 }}>
-          {/* 로그인한 본인만 들어오는 화면이라 ID 를 가리지 않는다. 어느 계정을 탈퇴하는지 보여 주는 역할 */}
+          {/* 로그인한 본인만 들어오는 화면이라 ID 를 가리지 않고, 어느 계정을 탈퇴하는지 보여준다 */}
           <TextField
             disabled
             id={'uid'}

@@ -20,8 +20,8 @@ import { layout, theme } from '@styles';
 type WithdrawalAgrScreenProps = NativeStackScreenProps<RootStackParamList, 'WithdrawalAgr'>;
 
 /**
- * 탈퇴 시 정보가 어떻게 처리되는지.
- * 거래 기록은 전자금융거래법에 따라 5년 보관 의무가 있어 "폐기"라고 쓰지 않는다 (서버도 계정 상태만 탈퇴로 바꾼다).
+ * 탈퇴 시 정보 처리 내용.
+ * 거래 기록은 전자금융거래법에 따라 5년 보관 의무가 있어 "폐기"라고 쓰지 않으며, 서버도 계정 상태만 탈퇴로 바꾼다.
  */
 const WITHDRAWAL_EFFECTS = [
   { icon: 'account-outline', label: '회원정보', desc: '아이디·비밀번호·본인인증 정보 이용 중단' },
@@ -30,17 +30,11 @@ const WITHDRAWAL_EFFECTS = [
 ];
 
 const WithdrawalAgrScreen: React.FC<WithdrawalAgrScreenProps> = ({ navigation, route }) => {
-  // 이전 화면에서 가져온 패스워드
+  // 앞 화면에서 확인한 계정 비밀번호. 탈퇴 요청에 다시 쓴다
   const pwd = route.params.pwd;
 
-  // Dialog
   const { alert, confirm } = useDialog();
 
-  /**
-   * 탈퇴 동의 여부 확인
-   * 동의 체크박스 체크: 회원 탈퇴 버튼 활성화
-   * 버튼 클릭 시 회원 탈퇴 함수 실행
-   */
   const [agrChecked, setAgrChecked] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isButtonDisabled = !agrChecked || isSubmitting;
@@ -53,13 +47,12 @@ const WithdrawalAgrScreen: React.FC<WithdrawalAgrScreenProps> = ({ navigation, r
     setIsSubmitting(false);
 
     if (data.resultCd === '0000') {
-      // 회원 탈퇴 성공
-      navigation.navigate('WithdrawalSuc'); // 성공 화면으로 이동
+      navigation.navigate('WithdrawalSuc');
       return;
     }
 
     if (data.resultCd === 'BALANCE_REMAINING') {
-      // 잔액이 남아 있어 서버가 거절: 출금 화면으로 바로 갈 수 있게 한다
+      // 잔액이 남아 있어 서버가 거절한 경우 출금 화면으로 바로 갈 수 있게 한다
       const goRefund = await confirm({
         title: '잔액이 남아 있어요',
         message1: '잔액을 모두 출금한 뒤에 탈퇴할 수 있습니다.',
@@ -70,7 +63,7 @@ const WithdrawalAgrScreen: React.FC<WithdrawalAgrScreenProps> = ({ navigation, r
       return;
     }
 
-    // 그 외 실패(네트워크 등): 서버가 준 이유를 그대로 보여주고 이 화면에 남는다
+    // 그 외 실패는 서버 문구를 그대로 보여주고 이 화면에 남는다
     alert({
       title: '회원탈퇴 실패',
       message1: data.resultMsg,
@@ -115,7 +108,7 @@ const WithdrawalAgrScreen: React.FC<WithdrawalAgrScreenProps> = ({ navigation, r
             ))}
           </View>
 
-          {/* 잔액 조건: 서버가 잔액이 남아 있으면 탈퇴를 거절하므로 미리 알려준다 */}
+          {/* 서버는 잔액이 남아 있으면 탈퇴를 거절하므로 미리 알려준다 */}
           <InfoBox tone="yellow">잔액이 남아 있으면 탈퇴할 수 없어요. 먼저 잔액을 모두 출금해 주세요.</InfoBox>
         </View>
 
@@ -144,7 +137,6 @@ const WithdrawalAgrScreen: React.FC<WithdrawalAgrScreenProps> = ({ navigation, r
   );
 };
 
-// 회원정보·출금 확인 화면과 같은 카드 모양
 const styles = StyleSheet.create({
   wrap: { paddingHorizontal: 16, paddingVertical: 24, gap: 16 },
   // 카드 안쪽 여백(20)에 맞춰 체크박스 시작 위치를 카드 내용과 나란히 둔다

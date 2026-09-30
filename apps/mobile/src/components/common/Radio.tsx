@@ -3,8 +3,7 @@ import { theme } from '@styles';
 
 import { typographyStyles } from './Typography';
 
-// 라디오 원의 크기. 모든 값이 정수 px가 되도록 잡아서 어느 화면에서도 점이 정중앙에 온다.
-// 바깥 원 22 - 테두리(2 x 2) = 안쪽 공간 18, 점 10 → 위아래·좌우 여백이 정확히 4px씩.
+// 라디오 원 크기. 바깥 22 - 테두리 2x2 = 안쪽 18, 점 10 → 여백이 정확히 4px 씩 정수가 되어 점이 정중앙에 온다
 const OUTER_SIZE = 22;
 const DOT_SIZE = 10;
 const BORDER_SELECTED = 2;
@@ -19,7 +18,7 @@ interface RadioButtonData {
 interface RadioProps {
   selectedId: string;
   setSelectedId: (id: string) => void;
-  radioButtons: RadioButtonData[]; // 부모로부터 전달받는 radioButtons 데이터
+  radioButtons: RadioButtonData[];
 }
 
 const Radio: React.FC<RadioProps> = ({ selectedId, setSelectedId, radioButtons }) => {
@@ -72,8 +71,8 @@ const styles = StyleSheet.create({
   },
   label: {
     marginLeft: 10,
-    ...typographyStyles.body2, // 크기·줄높이·자간은 타입 스케일의 body2
-    fontFamily: 'Pretendard-Medium', // 굵기만 선택지 라벨답게 Medium 으로 유지
+    ...typographyStyles.body2,
+    fontFamily: 'Pretendard-Medium', // 선택지 라벨은 body2 에서 굵기만 Medium
     color: theme.colors.gray900,
   },
 });

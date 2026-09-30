@@ -9,7 +9,7 @@ import { theme } from '@styles';
 
 type RefundScreenProps = NativeStackScreenProps<RootStackParamList, 'Refund'>;
 
-/** 빠른 금액 버튼. 충전 금액 화면과 같은 구성 */
+/** 빠른 금액 버튼 */
 const QUICK_AMOUNTS: QuickAmount[] = [
   { label: '+1만', value: 10000 },
   { label: '+5만', value: 50000 },
@@ -17,7 +17,7 @@ const QUICK_AMOUNTS: QuickAmount[] = [
 ];
 
 const RefundScreen: React.FC<RefundScreenProps> = ({ navigation }) => {
-  // 회원 잔액 출금 가능 금액 불러오기
+  // 출금 가능 금액 조회
   const [rmnAmt, setRmnAmt] = useState<number>(0);
 
   useEffect(() => {
@@ -33,12 +33,9 @@ const RefundScreen: React.FC<RefundScreenProps> = ({ navigation }) => {
   // 잔액 출금 금액 (숫자만 담긴 문자열)
   const [withdrawalAmt, setWithdrawalAmt] = useState('');
 
-  /**
-   * 출금 금액 검증 (충전 금액 화면과 같은 방식: 틀린 값이면 금액 아래 문구가 빨갛게 바뀌고 다음 버튼이 꺼진다)
-   * 서버(request_refund)도 0원 이하·잔액 초과를 거절하므로 같은 기준으로 미리 알려준다
-   */
+  /** 출금 금액 검증. 서버(request_refund)도 0원 이하·잔액 초과를 거절하므로 같은 기준으로 미리 알려준다 */
   const validateWithdrawalAmount = (amount: string): { isValid: boolean; errorMessage?: string } => {
-    // 값이 입력되지 않은 최초 상태: 오류로 보지 않는다 (버튼만 꺼짐)
+    // 미입력 상태는 오류로 보지 않고 버튼만 비활성화한다
     if (!amount) {
       return { isValid: true };
     }
@@ -54,7 +51,6 @@ const RefundScreen: React.FC<RefundScreenProps> = ({ navigation }) => {
     return { isValid: true };
   };
 
-  // 다음 버튼 활성화 상태 (비어 있거나 검증에 걸리면 비활성화)
   const validation = validateWithdrawalAmount(withdrawalAmt);
   const isButtonDisabled = !withdrawalAmt || !validation.isValid;
 
@@ -76,7 +72,7 @@ const RefundScreen: React.FC<RefundScreenProps> = ({ navigation }) => {
         disabled={isButtonDisabled}
         label={'다음'}
         onPress={() => {
-          // 틀린 값이면 버튼이 꺼져 있어 여기까지 오지 않지만, 안전장치로 한 번 더 막는다
+          // 버튼이 꺼져 있어 보통 오지 않지만 안전장치로 한 번 더 막는다
           if (isButtonDisabled) return;
           navigation.navigate('RefundAcnt', { amt: Number(withdrawalAmt) });
         }}

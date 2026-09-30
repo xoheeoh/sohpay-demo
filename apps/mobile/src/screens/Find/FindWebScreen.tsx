@@ -13,13 +13,11 @@ import { theme } from '@styles';
 type FindWebScreenProps = NativeStackScreenProps<RootStackParamList, 'FindAuthWeb'>;
 
 const FindWebScreen: React.FC<FindWebScreenProps> = ({ navigation, route }) => {
-  // 이전 화면에서 얻어온 본인인증 uri
   const uri = route.params.uri;
 
-  // Dialog
   const { confirm } = useDialog();
 
-  // 인증 화면 HTML. 주소를 바로 열지 않고 본문을 받아 넣는 이유는 utils/webViewHtml.ts 참고
+  // 주소를 바로 열지 않고 HTML 본문을 받아 넣는 이유는 utils/webViewHtml.ts 참고
   const [source, setSource] = useState<WebViewHtmlSource | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -45,25 +43,21 @@ const FindWebScreen: React.FC<FindWebScreenProps> = ({ navigation, route }) => {
   }, [uri, confirm, navigation]);
 
   const handleMessage = async (event: any) => {
-    // 웹뷰에서 전달된 데이터 읽기
     const { data } = event.nativeEvent;
 
     try {
-      // JSON 파싱 시도. 네이티브 Android 웹뷰는 [이벤트명, payload] 배열로, 그 외는 payload 객체로 온다
+      // 네이티브 Android 웹뷰는 [이벤트명, payload] 배열로, 그 외는 payload 객체로 온다
       const parsedData = JSON.parse(data);
       const payload = Array.isArray(parsedData) ? parsedData[1] : parsedData;
       console.log('Parsed Data from WebView:', payload);
 
-      // 닫기 버튼 메시지 처리
       if (payload?.type === 'CLOSE_WEBVIEW') {
         navigation.goBack();
         console.log('페이지 닫기!');
         return;
       }
 
-      // 인증 결과가 아닌 메시지는 무시한다.
-      // 브라우저에 끼어드는 보안 프로그램·확장 프로그램이 iframe 안에서 임의의 메시지({"uniConnect":true} 등)를 보내기도 하는데,
-      // 이걸 실패로 처리하면 실제 결과가 오기도 전에 실패 알림이 뜬다.
+      // 보안 프로그램·브라우저 확장이 iframe 안에서 임의 메시지({"uniConnect":true} 등)를 보내므로 인증 결과가 아닌 메시지는 무시한다
       if (!payload || typeof payload.resultCd !== 'string') {
         console.log('본인인증 결과가 아닌 메시지라 무시:', payload);
         return;
@@ -88,7 +82,6 @@ const FindWebScreen: React.FC<FindWebScreenProps> = ({ navigation, route }) => {
     }
   };
 
-  // 웹뷰에 주입할 JavaScript
   const injectedJavaScript = `
     (function() {
       const originalPostMessage = window.postMessage;
@@ -127,7 +120,7 @@ const FindWebScreen: React.FC<FindWebScreenProps> = ({ navigation, route }) => {
           style={{ flex: 1 }}
           originWhitelist={['*']}
           onMessage={handleMessage}
-          injectedJavaScript={injectedJavaScript} // JavaScript 주입
+          injectedJavaScript={injectedJavaScript}
           onLoadStart={() => setLoading(true)}
           onLoadEnd={() => setLoading(false)}
         />

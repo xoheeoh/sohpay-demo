@@ -20,10 +20,9 @@ import {
 type EditUserCheckScreenProps = NativeStackScreenProps<RootStackParamList, 'EditCheck'>;
 
 const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, route }) => {
-  // 이전 화면에서 얻어온 사용자 데이터 및 화면 플래그
   const { usrData, flg } = route.params;
 
-  // 플래그에 따라 화면 헤더 설정
+  // 진입 목적(회원정보·간편 비밀번호)에 따라 헤더 제목을 바꾼다
   useEffect(() => {
     navigation.setOptions({
       header: () => (
@@ -32,13 +31,9 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
     });
   }, [navigation]);
 
-  // Dialog
   const { alert, confirm } = useDialog();
 
-  /**
-   * 마이페이지가 회원 정보를 아직 못 받았거나(조회 중·세션 만료) 실패한 채로 들어오면 usrData 가 null 이다.
-   * 그대로 진행하면 usrData.usrNm 접근에서 앱이 죽으므로 안내 후 돌려보낸다.
-   */
+  // 마이페이지가 회원 정보를 못 받은 채(조회 중·세션 만료) 들어오면 usrData 가 null 이므로 안내 후 돌려보낸다
   useEffect(() => {
     if (usrData) return;
     alert({
@@ -48,40 +43,30 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
     }).then(() => navigation.goBack());
   }, [usrData, alert, navigation]);
 
-  /**
-   * 패스워드 입력 후 일치하면 다음 화면으로 이동
-   * 패스워드 값이 입력되어야 다음 버튼 활성화
-   * 패스워드 불일치 시, 실패 모달창 노출
-   */
   const [pwd, setPwd] = useState<string>('');
   const isButtonDisabled = !(pwd.length > 0);
 
-  /**
-   * 확인에 통과한 계정 비밀번호 보관용.
-   * 간편 비밀번호 변경은 본인인증 화면을 다녀온 뒤에 다음 화면으로 넘어가는데, 그 사이 입력칸(pwd)은 이미 비워지므로
-   * 입력칸 상태와 따로 들고 있어야 한다 (전에는 빈 값이 넘어가 마지막 변경 API 에서 "비밀번호가 일치하지 않습니다" 로 실패했다).
-   */
+  // 본인인증을 다녀오는 동안 입력칸은 비워지므로 확인된 비밀번호를 따로 보관한다
   const verifiedPwdRef = useRef<string>('');
 
   const handleChkPwd = () => {
     if (!usrData) return;
     checkUsrPwd(pwd).then((data) => {
       if (data.resultCd === '0000') {
-        // 비밀번호 검증 성공
         if (flg === 'usrInfo') {
           navigation.navigate('EditInfo', {
             usrData,
             pwd: pwd,
-          }); // 정보 변경 상세화면으로 이동
+          });
 
-          // 다시 화면에 돌아왔을 때를 대비해 입력값 리셋
+          // 돌아왔을 때 비밀번호가 남지 않게 비운다
           setPwd('');
           Keyboard.dismiss();
         } else if (flg === 'pinNo') {
           Keyboard.dismiss();
-          verifiedPwdRef.current = pwd; // 본인인증이 끝난 뒤 EditPinNo 로 넘길 값
+          verifiedPwdRef.current = pwd;
 
-          // 핀 번호 변경 화면으로 이동 전, 본인 인증
+          // 간편 비밀번호 변경은 본인인증을 먼저 거친다
           confirm({
             title: '본인인증',
             message1: '간편 비밀번호 변경 전, 본인인증을 진행해 주세요.',
@@ -92,14 +77,13 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
             }
           });
 
-          // 다시 화면에 돌아왔을 때를 대비해 입력값 리셋
+          // 돌아왔을 때 비밀번호가 남지 않게 비운다
           setPwd('');
           Keyboard.dismiss();
         }
       } else {
         Keyboard.dismiss();
 
-        // 실패 모달창 보여주기
         alert({
           title: '비밀번호 불일치',
           message1: '입력하신 정보가 일치하지 않습니다.',
@@ -110,13 +94,8 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
     });
   };
 
-  /**
-   * 본인인증
-   * 인증 성공 여부 확인
-   */
   const handleAuth = async () => {
     try {
-      // 인증 화면 URL 요청
       const data = await requestCertifyUrl('01');
       if (data.resultCd === '0000') {
         if (data.returnUrl) {
@@ -130,18 +109,18 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
     }
   };
 
-  // 본인인증 완료 후 화면 복귀 시, 데이터 읽어오기
+  // 인증 화면이 저장해 둔 인증 결과
   const [certData, setCertData] = useState<string | null>(null);
 
+  // 인증 화면에서 돌아오면 저장된 인증 결과를 읽어 온다
   useFocusEffect(
     useCallback(() => {
       const loadCertData = async () => {
-        // 본인인증 화면에서 저장했던 certData 가져오기
         const storedCertData = await getData<string>('certData');
 
         if (storedCertData) {
           console.log('전달받은 간편인증 정보:', storedCertData);
-          setCertData(storedCertData); // 상태에 certData 저장
+          setCertData(storedCertData);
         } else {
           console.log('전달받은 간편인증 정보 없음');
         }
@@ -151,16 +130,14 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
     }, []),
   );
 
-  // certData가 업데이트 되었을 때 memberAuthKey 얻기
+  // 인증 결과가 로그인한 계정의 이름과 일치하는지 확인한다
   useEffect(() => {
     const checkAuthName = async () => {
       if (!certData || !usrData) return;
 
-      // 본인 인증 결과 확인
       const data = await handleCertifyResult(usrData.usrNm, certData);
 
       if (data.resultCd === '0000') {
-        // 본인인증 정보와 계정 정보가 같음
         confirm({
           title: '본인인증',
           message1: '본인인증이 완료되었습니다.',
@@ -169,13 +146,12 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
           if (ok) {
             navigation.navigate('EditPinNo', {
               usrData,
-              pwd: verifiedPwdRef.current, // 입력칸(pwd)은 이미 비워졌으므로 보관해 둔 값을 넘긴다
-            }); // 핀 번호 입력 화면으로 이동
+              pwd: verifiedPwdRef.current, // 입력칸은 이미 비워졌으므로 보관해 둔 값을 넘긴다
+            });
             verifiedPwdRef.current = '';
           }
         });
       } else if (data.resultCd === '9999' && data.resultMsg.includes('입력하신 이름')) {
-        // 본인인증 정보와 계정 정보가 다름
         alert({
           title: '오류',
           message1: '본인 인증 정보가 로그인하신 계정 정보와 일치하지 않습니다.',
@@ -183,7 +159,7 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
         });
       }
 
-      // 인증 성공 or 실패 후 certData 정리
+      // 한 번 쓴 인증 결과는 성공·실패와 관계없이 지운다
       setCertData(null);
       await removeData('certData');
     };
@@ -207,7 +183,7 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
         </View>
 
         <View style={{ gap: 24 }}>
-          {/* 로그인한 본인만 들어오는 화면이라 ID 를 가리지 않는다. 어느 계정의 비밀번호를 묻는지 보여 주는 역할 */}
+          {/* 로그인한 본인만 들어오는 화면이라 ID 를 가리지 않고, 어느 계정의 비밀번호를 묻는지 보여준다 */}
           <TextField
             disabled
             id={'uid'}

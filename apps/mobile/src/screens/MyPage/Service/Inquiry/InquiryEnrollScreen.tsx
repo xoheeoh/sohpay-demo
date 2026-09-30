@@ -10,9 +10,9 @@ interface InquiryEnrollScreenProps {
   setContent: (value: string) => void;
   mappedOption: string;
   setMappedOption: (value: string) => void;
-  onButtonStateChange: (disabled: boolean) => void; // 부모로 상태 전달 콜백
-  dropdownRef?: React.RefObject<any>; // 드롭다운 제어용 ref (스크롤 시 닫기 위함)
-  parentScrollRef: React.RefObject<ScrollView>; // 키보드 오픈 시 부모 스크롤 제어
+  onButtonStateChange: (disabled: boolean) => void; // 부모의 하단 버튼 활성화 상태를 갱신한다
+  dropdownRef?: React.RefObject<any>; // 스크롤이 시작되면 드롭다운을 닫기 위한 ref
+  parentScrollRef: React.RefObject<ScrollView>; // 키보드가 열릴 때 부모 스크롤을 제어한다
 }
 
 const InquiryEnrollScreen: React.FC<InquiryEnrollScreenProps> = ({
@@ -33,18 +33,16 @@ const InquiryEnrollScreen: React.FC<InquiryEnrollScreenProps> = ({
     출금: '03',
     계정: '04',
   };
-  const [selectedOption, setSelectedOption] = useState<string>('항목을 선택하세요.'); // 선택된 항목(카테고리)
+  const [selectedOption, setSelectedOption] = useState<string>('항목을 선택하세요.');
 
-  // 카테고리 선택 처리
   const handleSelectOption = (option: string) => {
-    setSelectedOption(option); // 표시용 옵션 업데이트
-    setMappedOption(optionMapping[option]); // 검색용 value 업데이트
+    setSelectedOption(option);
+    setMappedOption(optionMapping[option]);
   };
 
-  const [isChecked, setIsChecked] = useState<boolean>(false); // 체크박스 동의
+  const [isChecked, setIsChecked] = useState<boolean>(false);
   const textareaContainerRef = useRef<View | null>(null);
 
-  // 버튼 활성화 상태 계산
   const isButtonDisabled = !(
     title.length > 0 &&
     selectedOption !== '항목을 선택하세요.' &&
@@ -53,7 +51,7 @@ const InquiryEnrollScreen: React.FC<InquiryEnrollScreenProps> = ({
     isChecked
   );
 
-  // 버튼 활성화 상태 부모로 전달
+  // 하단 버튼은 부모 화면에 있어 활성화 상태를 올려 보낸다
   useEffect(() => {
     onButtonStateChange(isButtonDisabled);
   }, [isButtonDisabled, onButtonStateChange]);
@@ -74,7 +72,7 @@ const InquiryEnrollScreen: React.FC<InquiryEnrollScreenProps> = ({
       <Dropdown
         ref={dropdownRef}
         placeholder={selectedOption}
-        options={Object.keys(optionMapping)} // 매핑 객체의 키를 옵션으로 사용
+        options={Object.keys(optionMapping)}
         onSelect={(option) => handleSelectOption(option)}
       />
 

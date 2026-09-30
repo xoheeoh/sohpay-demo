@@ -19,8 +19,8 @@ const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({
   backgroundColor = 'white',
 }) => {
   const paddingAnim = useRef(new Animated.Value(1)).current; // 1: 기본 padding, 0: 타이트
-  const [opacityAnim] = useState(new Animated.Value(1)); // 초기값: 보임
-  const [keyboardVisible, setKeyboardVisible] = useState<boolean>(false); // 키패드 존재 여부
+  const [opacityAnim] = useState(new Animated.Value(1));
+  const [keyboardVisible, setKeyboardVisible] = useState<boolean>(false);
   const [actualKeyboardHeight, setActualKeyboardHeight] = useState<number>(0);
 
   useEffect(() => {

@@ -3,7 +3,7 @@ import { theme } from '@styles';
 
 /**
  * SohPay 워드마크. Poppins Medium 아웃라인 + 민트 점을 path 로 넣어 폰트 파일 없이 렌더링한다.
- * height 만 주면 비율에 맞게 폭이 정해진다. (로고 이미지 자리에 들어간다)
+ * height 만 주면 비율에 맞게 폭이 정해진다.
  */
 const VIEW_BOX = '7.6 -152.0 763.4 207.8';
 const RATIO = 763.4 / 207.8;

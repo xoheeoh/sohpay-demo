@@ -1,6 +1,6 @@
 /* 이메일 유효성 검사 */
 export function validateEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // 이메일 형식 정규 표현식
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
