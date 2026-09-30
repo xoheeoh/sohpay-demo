@@ -33,7 +33,7 @@ on conflict (qr_token) do update
        supply_amount = excluded.supply_amount, vat = excluded.vat,
        expires_at = excluded.expires_at, reusable = true, status = 'OPEN';
 
--- 공지 본문은 HTML 문자열이다. (전신 내부 앱에서 관리자가 HTML 편집기로 작성·저장했고, 앱은 그 형식을 RenderHtml 로 그린다)
+-- 공지 본문은 HTML 문자열이다. (관리자 HTML 편집기 출력물을 전제로 앱이 RenderHtml 로 그린다)
 -- 평문에 줄 바꿈 문자를 넣으면 HTML 규칙상 띄어쓰기로 합쳐져 화면에서 줄이 나뉘지 않으므로, 문단은 <p> 로 감싼다.
 insert into public.notices (title, body, is_pinned, published_at) values
   ('서비스 점검 안내',

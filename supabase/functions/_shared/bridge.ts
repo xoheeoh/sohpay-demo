@@ -4,7 +4,7 @@ import { html } from './http.ts';
 /**
  * 결제창/인증창 결과를 앱에 돌려주는 페이지.
  *
- * 앱의 웹뷰는 window.postMessage 로 결과 JSON 을 받는다 (원본 PG 연동과 같은 방식).
+ * 앱의 웹뷰는 window.postMessage 로 결과 JSON 을 받는다.
  *   · 네이티브 WebView : window.ReactNativeWebView.postMessage
  *     - Android 는 [이벤트명, payload] 배열, iOS 는 payload 객체를 기대한다
  *   · 웹(iframe)       : window.parent.postMessage

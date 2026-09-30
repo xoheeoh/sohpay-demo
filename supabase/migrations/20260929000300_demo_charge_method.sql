@@ -4,7 +4,7 @@
 -- 앱의 충전수단 선택 화면은 가상계좌를 "준비중"으로 두는데, 데모 이력에는 가상계좌 충전 1건이 있어
 -- 이야기가 어긋났다. 이미 들어간 데모 데이터는 UPDATE 로 바꾸고, 재시드(scripts/seed-demo.mjs) 때
 -- 같은 구성이 다시 들어가지 않도록 demo_bootstrap 도 계좌이체만 쓰게 갱신한다.
--- (20260916000000_demo_bootstrap.sql 의 안내대로 원본 파일은 건드리지 않고 여기서 create or replace 한다)
+-- (이미 적용된 20260916000000_demo_bootstrap.sql 은 건드리지 않고 여기서 create or replace 한다)
 -- =====================================================================
 
 update public.transactions

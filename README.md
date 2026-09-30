@@ -5,14 +5,14 @@
   </picture>
 </p>
 
-충전 · QR 결제 · 환불이 되는 선불 지갑 앱입니다. React Native(Expo) 한 코드베이스로 iOS · Android · Web 에서 동작합니다.
+충전 · QR 결제 · 출금이 되는 선불 지갑 앱입니다. React Native(Expo) 한 코드베이스로 iOS · Android · Web 에서 동작합니다.
 
 <!-- 배포 후 채우기: 웹 데모 URL, 스크린샷 또는 GIF 3~4장 (홈 / QR 결제 / 충전 결제창 / 이용 내역) -->
 
 ## 데모 계정
 
 바로 로그인해 볼 수 있는 계정입니다. 두 계정 모두 잔액 145,500원과 최근 3개월치 샘플 거래 내역(결제·취소·부분취소·충전·출금)이 들어 있고,
-환불 계좌(신한은행)가 미리 등록되어 있습니다.
+출금 계좌(신한은행)가 미리 등록되어 있습니다.
 
 | 아이디 | 비밀번호 | 간편 비밀번호(PIN) | 용도 |
 |---|---|---|---|
@@ -40,7 +40,7 @@
    건을 눌러 영수증 형태의 상세를 보거나 이미지로 저장할 수 있습니다.
 4. **충전** — 홈 `충전` → 계좌이체 → 금액 → 간편 비밀번호 → 모의 결제창. `결제 승인` / `승인 거절` / `결제 취소` 를
    각각 눌러 보면 앱이 세 가지 결과를 어떻게 다르게 처리하는지 볼 수 있습니다. 거절·취소한 충전은 이용내역에 "충전실패"로 남습니다.
-5. **출금** — 홈 `출금` → 금액 → 계좌 확인 → 간편 비밀번호 → 완료. 데모 계정에는 환불 계좌가 미리 등록되어 있고,
+5. **출금** — 홈 `출금` → 금액 → 계좌 확인 → 간편 비밀번호 → 완료. 데모 계정에는 출금 계좌가 미리 등록되어 있고,
    계좌가 없는 계정(새로 가입한 계정)에서는 1원 인증 화면으로 안내됩니다. 1원 인증 흐름은 마이페이지 `계좌 관리` 의
    계좌 변경으로도 볼 수 있습니다. 모의 인증이라 "입금된 1원의 입금자명" 토스트에 인증번호 3자리가 함께 표시됩니다.
 6. **1:1 상담** — 마이페이지 `고객센터` → `1:1 상담`. `문의내역` 탭에 답변완료 2건·답변중 2건 예시가 들어 있고,
@@ -78,7 +78,7 @@
 sohpay-demo/
   apps/mobile/                  앱 (Expo SDK 57 · React Native 0.86 · TypeScript)
     App.tsx                     네비게이션 스택(React Navigation native-stack) · 전역 프로바이더 · 폰트 로딩
-    src/screens/                화면 51개 — Login · Join · Find · Dashboard(Charge · Payment · Refund · Use) · MyPage · Pin
+    src/screens/                화면 50개 — Login · Join · Find · Dashboard(Charge · Payment · Refund · Use) · MyPage · Pin
     src/components/common/      디자인 시스템 — Typography · Button 3종 · TextField · Dropdown · BottomSheet · PopupModal · Badge · PinPad …
     src/components/dashboard/   홈 전용 (잔액 카드 · 결제 버튼 · 은행 선택 · 거래 행)
     src/components/uselist/     이용내역 전용 (거래 행 · 필터 시트 · 상세 정보 행)
@@ -96,9 +96,9 @@ sohpay-demo/
 
 | 영역 | 선택 | 이유 |
 |---|---|---|
-| 프레임워크 | Expo (managed) | 원본 RN CLI 프로젝트를 네이티브 모듈 변경 없이 iOS · Android · Web 한 코드베이스로. 바꾼 모듈은 [`apps/mobile/README.md`](apps/mobile/README.md) 에 표로 정리 |
-| 네비게이션 | React Navigation native-stack | 화면 51개를 하나의 스택으로. 헤더는 공통 `Header` 컴포넌트로 교체해 디자인 통제 |
-| API 연동 | 어댑터 계층 (`svc/apis`) | 서버가 바뀌어도 화면은 원래 응답 계약(`resultCd`)만 보도록 격리. 화면 코드에 API 클라이언트가 등장하지 않음 |
+| 프레임워크 | Expo (managed) | 네이티브 프로젝트 설정 없이 iOS · Android · Web 을 한 코드베이스로. 플랫폼별로 갈라지는 모듈은 [`apps/mobile/README.md`](apps/mobile/README.md) 에 표로 정리 |
+| 네비게이션 | React Navigation native-stack | 화면 50개를 하나의 스택으로. 헤더는 공통 `Header` 컴포넌트로 교체해 디자인 통제 |
+| API 연동 | 어댑터 계층 (`svc/apis`) | 서버가 바뀌어도 화면은 응답 계약(`resultCd`)만 보도록 격리. 화면 코드에 API 클라이언트가 등장하지 않음 |
 | 스타일 | `StyleSheet` + 디자인 토큰 | 색은 `theme.colors.<key>` 또는 `Typography color="<key>"` 로만. 화면 코드에 hex 값 없음 |
 | 폰트 | Pretendard (OFL) | 네이티브는 otf, 웹은 절반 용량의 woff2 를 `Platform` 분기로 로드 |
 | 세션 저장 | expo-secure-store / localStorage | 네이티브는 Keychain · Keystore, 웹은 localStorage 로 분기 |
@@ -107,21 +107,21 @@ sohpay-demo/
 
 ### 지킨 원칙
 
-**화면은 서버를 모른다.** 원본 앱이 사내 API 에 맞춰 쓰던 화면 코드를 그대로 두고, `svc/apis` 어댑터가 같은 응답 모양을 만들어
-줍니다. 덕분에 서버를 통째로 바꿨는데도 화면 쪽 변경은 거의 없었고, 명세가 바뀌면 고칠 곳도 한 군데입니다.
+**화면은 서버를 모른다.** 화면은 `{ resultCd, resultMsg, ... }` 응답 계약만 보고, `svc/apis` 어댑터가 Supabase 호출을
+그 모양으로 바꿔 줍니다. 서버 구현이 바뀌어도 고칠 곳은 어댑터 한 군데입니다.
 
 **돈이 움직이는 요청은 재시도해도 한 번만 실행된다.** 결제의 멱등성 키는 QR 을 해석하는 시점에 서버가 발급하고 결제 화면까지
 그대로 전달됩니다. 간편 비밀번호를 틀려 다시 입력해도 서버는 같은 요청으로 보고, 새로 스캔하면 새 결제가 됩니다.
 
 **오류는 코드로 받고, 문구는 앱이 정한다.** `INSUFFICIENT_BALANCE`, `REQUEST_EXPIRED`, `PIN_LOCKED` 같은 코드를
-`svc/apis/client.ts` 한 곳에서 문구로 바꿉니다. 원본 화면이 분기에 쓰던 특수 코드(예: PIN 잠김 `9004`)도 여기서 맞춰 줍니다.
+`svc/apis/client.ts` 한 곳에서 문구로 바꿉니다. 화면이 분기에 쓰는 코드(예: PIN 잠김 `9004`)로의 변환도 여기서 합니다.
 
 **웹에서도 같은 화면이 깨지지 않는다.** WebView · SecureStore · 카메라 · 사진 저장처럼 웹에 없는 것은 각각 iframe ·
 localStorage · 코드 입력 · 지연 로드로 대체했고, 그 분기는 컴포넌트와 어댑터 안에 있어 화면 코드에는 드러나지 않습니다.
 웹 화면은 최대 700px 프레임으로 가운데 정렬해 모바일 레이아웃을 그대로 보여 줍니다.
 
 **디자인은 토큰에서 시작한다.** 색 · 라운드 · 여백 · 그림자를 `src/styles` 에 모으고 공통 컴포넌트가 그것만 참조하게 해서,
-이번 리디자인처럼 51개 화면의 룩을 바꿀 때도 화면 파일 대부분은 건드리지 않았습니다. 다크 모드 토큰도 같은 자리에 준비되어 있습니다.
+50개 화면의 룩을 바꿀 때도 화면 파일 대부분은 건드리지 않습니다. 다크 모드 토큰도 같은 자리에 준비되어 있습니다.
 
 ---
 

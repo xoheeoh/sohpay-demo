@@ -10,13 +10,13 @@
 |---|---|
 | 금액은 원(KRW) 단위 정수 | 화면에서 `toLocaleString` 만 적용, 소수 처리 없음 |
 | 돈이 움직이는 요청은 `idempotency_key` 필수. 재요청 시 `replayed: true` | 재시도 시 같은 키 재사용 |
-| PIN 실패는 예외가 아니라 `{ ok: false, code, remainingAttempts }` 응답 | `assertOk()` 로 검사 후 남은 횟수 표시 |
+| PIN 실패는 예외가 아니라 `{ ok: false, code, remainingAttempts }` 응답 | `fromRpc()` 로 `resultCd` 로 변환, 남은 횟수 표시 |
 | 그 외 실패는 오류 코드 문자열로 응답 (`error.message`) | `apps/mobile/src/svc/apis/client.ts` 에서 문구로 변환 |
 | 조회는 RLS 로 본인 데이터만 반환 | 쿼리에 사용자 필터를 넣지 않음 |
 
 ## 1. 인증
 
-Supabase Auth(이메일/비밀번호) 기반. 앱 화면에서는 기존 앱과 동일하게 **아이디(mbUid)**를 입력받고,
+Supabase Auth(이메일/비밀번호) 기반. 앱 화면에서는 **아이디(mbUid)**를 입력받고,
 클라이언트가 `{mbUid}@demo.sohpay.app` 형태로 변환해 로그인한다. (데모용 매핑, 서버에 원문 저장 없음)
 
 | 동작 | 호출 |
@@ -95,12 +95,12 @@ GET /rest/v1/transactions
 | `REQUEST_ALREADY_USED` | 이미 결제된 QR |
 | `DAILY_LIMIT_EXCEEDED` | 1일 한도 초과 |
 
-## 6. 결제 취소 / 환불
+## 6. 결제 취소 / 출금
 
 | 동작 | 호출 |
 |---|---|
 | 결제 취소(가맹점) | `POST /rest/v1/rpc/cancel_payment` — `{ transaction_id, amount? }` 부분취소 지원 |
-| 잔액 환불(계좌) | `POST /rest/v1/rpc/request_refund` — `{ amount, pin, bank_account_id, idempotency_key }` |
+| 잔액 출금(계좌) | `POST /rest/v1/rpc/request_refund` — `{ amount, pin, bank_account_id, idempotency_key }` |
 
 ## 7. 계좌 관리
 
@@ -147,7 +147,7 @@ GET /rest/v1/transactions
 | 충전 | `charges` → 결제창 웹뷰 → `transactions` 상태 폴링 |
 | QR 결제 | `resolve_payment_request` → `execute_payment` |
 | 이용 내역 · 상세 · 취소 | `transactions` (필터·페이지네이션), `cancel_payment` |
-| 환불 | `bank_accounts` → `request_refund` |
+| 출금 | `bank_accounts` → `request_refund` |
 | 계좌 등록 | `account-verify/start` → `account-verify/confirm` → `register_bank_account` |
 | 전체 (내 정보 · PIN · 탈퇴) | `profiles`, `verify_pin`, `change_pin`, `withdraw_member` |
 | 공지 · FAQ | `notices`, `faqs` |
