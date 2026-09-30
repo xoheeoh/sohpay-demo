@@ -69,14 +69,9 @@ const PayCompletedScreen: React.FC<PayCompletedScreenProps> = ({ navigation, rou
         <View style={styles.hero}>
           <SuccessAnimation size={160} style={styles.animation} />
 
-          <View style={{ alignItems: 'center', gap: 6 }}>
-            <Typography mode="heading3" color="gray900">
-              결제가 완료되었어요
-            </Typography>
-            <Typography mode="body2" color="gray600" style={{ textAlign: 'center' }}>
-              {data.coNm}에서 결제한 내역이 이용내역에 기록되었습니다.
-            </Typography>
-          </View>
+          <Typography mode="heading3" color="gray900">
+            결제가 완료되었어요
+          </Typography>
         </View>
 
         <GlassReceiptCard badgeLabel="결제 완료" amountLabel="결제 금액" amount={data.goodsAmt} rows={rows} />

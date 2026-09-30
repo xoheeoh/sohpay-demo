@@ -132,7 +132,7 @@ const ServiceScreen: React.FC<ServiceScreenProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, paddingVertical: 24, gap: 24 },
+  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topCard, paddingBottom: theme.screen.bottom, gap: 24 },
   section: { gap: 8 },
   sectionTitle: { paddingHorizontal: 4 },
 

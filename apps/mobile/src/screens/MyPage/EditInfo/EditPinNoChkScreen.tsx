@@ -161,7 +161,7 @@ const EditPinNoChkScreen: React.FC<EditPinNoChkScreenProps> = ({ navigation, rou
         onKeyPress={handleKeyPress}
         onShuffle={handleShuffle}
         onDelete={handleDelete}
-      />{' '}
+      />
     </ScreenWrapper>
   );
 };

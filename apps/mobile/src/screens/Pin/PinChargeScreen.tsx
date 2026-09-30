@@ -155,7 +155,7 @@ const PinChargeScreen: React.FC<PinChargeScreenProps> = ({ navigation, route }) 
         onShuffle={handleShuffle}
         onDelete={handleDelete}
         error={error}
-      />{' '}
+      />
     </ScreenWrapper>
   );
 };

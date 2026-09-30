@@ -49,7 +49,8 @@ const TrxStCdModal: React.FC<TrxStCdModalProps> = ({ handleSelectedTrxStCd, onTr
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <Radio selectedId={selectedTrxStCd} setSelectedId={setSelectedTrxStCd} radioButtons={trxStCdRadioButtons} />
       </ScrollView>
-      <View style={{ paddingVertical: 24 }}>
+      {/* 아래 여백은 BottomSheet 가 준다 */}
+      <View style={{ paddingTop: 24 }}>
         <PrimaryButton
           key={isButtonDisabled.toString()}
           disabled={isButtonDisabled}

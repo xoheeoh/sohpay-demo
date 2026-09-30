@@ -82,7 +82,7 @@ const PermissionNoticeScreen: React.FC<PermissionNoticeScreenProps> = ({ navigat
           </View>
         </View>
 
-        <View style={{ paddingBottom: 24 }}>
+        <View style={{ paddingBottom: theme.screen.bottom }}>
           <PrimaryButton label="네, 확인했어요." size="lg" onPress={handleConfirm} />
         </View>
       </View>

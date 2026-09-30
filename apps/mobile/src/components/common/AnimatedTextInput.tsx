@@ -13,6 +13,7 @@ import {
 import { Icon } from 'react-native-paper';
 
 import { typographyStyles } from './Typography';
+import { useNotifyInputFocus } from './KeyboardAwareScrollView';
 
 interface AnimatedTextInputProps extends TextInputProps {
   id: string;
@@ -30,6 +31,7 @@ const AnimatedTextInput = React.forwardRef<TextInput, AnimatedTextInputProps>((p
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const inputRef = useRef<TextInput>(null);
   const animatedLabelPosition = React.useRef(new Animated.Value(value ? 1 : 0)).current;
+  const notifyInputFocus = useNotifyInputFocus();
 
   useEffect(() => {
     // 동일 위치에서 다른 필드로 바뀌는 경우 포커스 상태 초기화
@@ -61,6 +63,7 @@ const AnimatedTextInput = React.forwardRef<TextInput, AnimatedTextInputProps>((p
   const handleFocus = () => {
     if (disabled || editable === false) return;
     setIsFocused(true);
+    notifyInputFocus();
     Animated.timing(animatedLabelPosition, {
       toValue: 1,
       duration: 200,
@@ -85,7 +88,7 @@ const AnimatedTextInput = React.forwardRef<TextInput, AnimatedTextInputProps>((p
     top: animatedLabelPosition.interpolate({
       inputRange: [0, 1],
       // 플랫폼별 폰트 메트릭이 달라 라벨 위치가 다르다. 웹은 <input> 이 세로 중앙 정렬을 하지 않아 styles.input 의 paddingTop 과 함께 맞춘다
-      outputRange: Platform.select({ ios: [16, 10], web: [18, 10], default: [8, -1] }) as number[],
+      outputRange: Platform.select({ ios: [16, 10], web: [18, 10], default: [20, 10] }) as number[],
     }),
     fontSize: animatedLabelPosition.interpolate({
       inputRange: [0, 1],
@@ -172,6 +175,7 @@ const styles = StyleSheet.create({
     left: 16,
     fontFamily: 'Pretendard-Medium',
     letterSpacing: -0.2,
+    includeFontPadding: false, // 안드로이드는 글자 위아래에 여백을 더 넣어 top 값이 어긋나므로 제거
   },
   input: {
     ...typographyStyles.body2, // SearchBox·Textarea·Dropdown 과 같은 body2

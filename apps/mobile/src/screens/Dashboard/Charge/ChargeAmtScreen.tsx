@@ -82,7 +82,7 @@ const ChargeAmtScreen: React.FC<ChargeAmtScreenProps> = ({ navigation }) => {
         question="얼마를 충전할까요?"
         amount={chargeAmt}
         onChangeAmount={setChargeAmt}
-        hint="1,000원 단위로, 보유 머니 포함 최대 200만 원까지 충전할 수 있어요."
+        hint="1,000원 단위로 최대 200만 원까지 충전할 수 있어요."
         error={validation.errorMessage}
         quickAmounts={QUICK_AMOUNTS}
         onMax={fillMax}

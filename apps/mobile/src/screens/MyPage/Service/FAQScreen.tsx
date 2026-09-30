@@ -169,9 +169,8 @@ const FAQScreen: React.FC<FAQScreenProps> = () => {
           <Typography mode="body2" color="gray900">
             전체{' '}
             <Typography mode="subtitle3" color="blue500">
-              ({faqList.length}
+              ({faqList.length}건)
             </Typography>
-            건)
           </Typography>
         )}
       </View>
@@ -215,9 +214,9 @@ const FAQScreen: React.FC<FAQScreenProps> = () => {
 };
 
 const styles = StyleSheet.create({
-  fixedTop: { paddingTop: 24, paddingHorizontal: 16, paddingBottom: 16, gap: 24, zIndex: 1 },
+  fixedTop: { paddingTop: theme.screen.topForm, paddingHorizontal: 16, paddingBottom: 16, gap: 24, zIndex: 1 },
   search: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  listContent: { paddingBottom: 24 },
+  listContent: { paddingBottom: theme.screen.bottom },
 
   // 질문 한 건
   list: { paddingHorizontal: 16 },

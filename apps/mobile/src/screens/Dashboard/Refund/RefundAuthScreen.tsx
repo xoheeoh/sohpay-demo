@@ -136,7 +136,7 @@ const RefundAuthScreen = ({ navigation, route }: RefundAuthScreenProps) => {
 
           {/* 다음 단계 안내 */}
           <InfoBox>
-            {`다음을 누르면 입력한 계좌로 1원을 보내드려요. 입금자명에 적힌 숫자 3자리를 다음 화면에 입력하면 인증이 끝납니다.\n데모에서는 실제 입금 없이 인증번호가 화면에 안내됩니다.`}
+            {`다음을 누르면 입력한 계좌로 1원을 보내드려요.\n입금자명에 적힌 숫자 3자리를 다음 화면에 입력하면 인증이 끝납니다.\n데모에서는 실제 입금 없이 인증번호가 화면에 안내됩니다.`}
           </InfoBox>
         </View>
 
@@ -187,7 +187,7 @@ const RefundAuthScreen = ({ navigation, route }: RefundAuthScreenProps) => {
 };
 
 const styles = StyleSheet.create({
-  wrap: { paddingVertical: 24, paddingHorizontal: 16 },
+  wrap: { paddingTop: theme.screen.topForm, paddingHorizontal: 16 },
   // TextField 와 같은 모서리·배경·테두리로 한 묶음처럼 보이게 한다
   selectDropdown: {
     borderRadius: theme.radius.md,
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.line,
     ...layout.rowBetween,
   },
-  divider: { backgroundColor: theme.colors.gray100, height: 1, marginHorizontal: 16 },
+  divider: { backgroundColor: theme.colors.gray100, height: 1, marginHorizontal: 16, marginTop: 16 },
   iconButton: { margin: 0, width: 24, height: 24 },
 });
 

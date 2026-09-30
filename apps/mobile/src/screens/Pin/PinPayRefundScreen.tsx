@@ -209,7 +209,7 @@ const PinPayRefundScreen: React.FC<PinPayRefundScreenProps> = ({ navigation, rou
         onShuffle={handleShuffle}
         onDelete={handleDelete}
         error={error}
-      />{' '}
+      />
     </ScreenWrapper>
   );
 };

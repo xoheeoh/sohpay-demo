@@ -167,7 +167,7 @@ const JoinStepThreeChkScreen: React.FC<JoinStepThreeChkScreenProps> = ({ navigat
             </View>
           </View>
         }
-      />{' '}
+      />
     </ScreenWrapper>
   );
 };

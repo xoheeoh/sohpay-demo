@@ -3,6 +3,7 @@ import { StyleSheet, TextInput } from 'react-native';
 import { theme } from '@styles';
 
 import { typographyStyles } from './Typography';
+import { useNotifyInputFocus } from './KeyboardAwareScrollView';
 
 interface TextareaProps {
   value: string;
@@ -15,6 +16,7 @@ interface TextareaProps {
 
 const Textarea: React.FC<TextareaProps> = ({ value, setValue, onFocus, onBlur, height = 120 }) => {
   const [isFocused, setIsFocused] = useState<boolean>(false);
+  const notifyInputFocus = useNotifyInputFocus();
 
   return (
     <TextInput
@@ -33,6 +35,7 @@ const Textarea: React.FC<TextareaProps> = ({ value, setValue, onFocus, onBlur, h
       onChangeText={setValue}
       onFocus={() => {
         setIsFocused(true);
+        notifyInputFocus();
         onFocus?.();
       }}
       onBlur={() => {

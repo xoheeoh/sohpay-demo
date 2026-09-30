@@ -80,7 +80,7 @@ const ChargeSelectMethodScreen: React.FC<ChargeSelectMethodScreenProps> = ({ nav
 };
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, gap: 24, paddingVertical: 24 },
+  wrap: { paddingHorizontal: 16, gap: 24, paddingTop: theme.screen.topForm, paddingBottom: theme.screen.bottom },
   selectBtn: {
     flex: 1,
     padding: 16,

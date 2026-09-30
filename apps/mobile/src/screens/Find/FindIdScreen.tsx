@@ -89,10 +89,6 @@ const FindIdScreen: React.FC<FindIdScreenProps> = ({ navigation, route }) => {
               </Typography>
             </View>
           </View>
-
-          <Typography mode="caption1" color="gray500" style={{ textAlign: 'center' }}>
-            데모 환경은 메일을 보내지 않아 결과를 화면에만 표시합니다.
-          </Typography>
         </View>
       </KeyboardAwareScrollView>
 

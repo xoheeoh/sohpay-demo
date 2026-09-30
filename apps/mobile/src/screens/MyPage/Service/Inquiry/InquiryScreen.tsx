@@ -14,6 +14,7 @@ import {
 } from '@components/common';
 import InquiryEnrollScreen from './InquiryEnrollScreen';
 import InquiryListScreen from './InquiryListScreen';
+import { theme } from '@styles';
 
 type InquiryScreenProps = NativeStackScreenProps<RootStackParamList, 'Inquiry'>;
 
@@ -135,7 +136,7 @@ const InquiryScreen: React.FC<InquiryScreenProps> = () => {
 };
 
 const styles = StyleSheet.create({
-  tabWrap: { paddingTop: 24, paddingHorizontal: 16 },
+  tabWrap: { paddingTop: theme.screen.topForm, paddingHorizontal: 16 },
 });
 
 export default InquiryScreen;

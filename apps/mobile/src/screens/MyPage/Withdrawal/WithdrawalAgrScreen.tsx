@@ -138,7 +138,7 @@ const WithdrawalAgrScreen: React.FC<WithdrawalAgrScreenProps> = ({ navigation, r
 };
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, paddingVertical: 24, gap: 16 },
+  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topCard, gap: 16 },
   // 카드 안쪽 여백(20)에 맞춰 체크박스 시작 위치를 카드 내용과 나란히 둔다
   agree: { paddingHorizontal: 4, paddingTop: 4 },
   card: {

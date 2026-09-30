@@ -13,6 +13,7 @@ import {
   TextField,
   Typography,
 } from '@components/common';
+import { theme } from '@styles';
 
 type ChangeTempPwdScreenProps = NativeStackScreenProps<RootStackParamList, 'ChangeTempPwd'>;
 
@@ -154,7 +155,7 @@ const ChangeTempPwdScreen: React.FC<ChangeTempPwdScreenProps> = ({ route, naviga
 const styles = StyleSheet.create({
   wrap: {
     paddingHorizontal: 16,
-    paddingVertical: 24,
+    paddingTop: theme.screen.topForm,
     gap: 16,
     flexGrow: 1,
   },

@@ -14,6 +14,7 @@ import { useDialog } from '@contexts/DialogContext';
 import { PWD_RULE, editUsrProfile, validationPwd } from '@apis/usrApi';
 import { loadRefundAcnt } from '@apis/paymentApi';
 import { KeyboardAwareScrollView, ScreenWrapper, TextField, Typography } from '@components/common';
+import { theme } from '@styles';
 
 type EditUserInfoScreenProps = NativeStackScreenProps<RootStackParamList, 'EditInfo'>;
 
@@ -260,7 +261,7 @@ const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigati
 };
 
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: 16, paddingVertical: 24 },
+  container: { paddingHorizontal: 16, paddingTop: theme.screen.topForm, paddingBottom: theme.screen.bottom },
 });
 
 export default EditUserInfoScreen;

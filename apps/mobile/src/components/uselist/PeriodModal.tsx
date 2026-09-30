@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.overlay,
   },
   datePickerContainer: { width: '100%', maxWidth: 400 },
-  buttonBox: { paddingVertical: 24 },
+  buttonBox: { paddingTop: 24 }, // 아래 여백은 BottomSheet 가 준다
 });
 
 export default PeriodModal;

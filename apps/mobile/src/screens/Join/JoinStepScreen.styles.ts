@@ -2,8 +2,9 @@ import { StyleSheet } from 'react-native';
 import { theme } from '@styles';
 
 const styles = StyleSheet.create({
-  container: { paddingVertical: 24, paddingHorizontal: 16, gap: 32 },
-  stepBox: { flexDirection: 'row', alignItems: 'center', position: 'absolute', top: 24, right: 16 },
+  container: { paddingTop: theme.screen.topForm, paddingHorizontal: 16, gap: 32 },
+  // 단계 표시는 내용 첫 줄과 같은 높이에 붙인다
+  stepBox: { flexDirection: 'row', alignItems: 'center', position: 'absolute', top: theme.screen.topForm, right: 16 },
   stepBadgeActive: {
     borderRadius: 50,
     width: 24,

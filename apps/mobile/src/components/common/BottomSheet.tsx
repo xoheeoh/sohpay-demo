@@ -21,6 +21,9 @@ const CLOSE_DRAG_DISTANCE = 120; // 이 거리(px) 이상 끌어내리면 닫힘
 const CLOSE_DRAG_VELOCITY = 0.5; // 거리가 짧아도 이 속도(px/ms) 이상으로 빠르게 내리면 닫힘
 const DRAG_START_DISTANCE = 5; // 이 거리(px)보다 적게 움직이면 탭으로 보고 드래그를 시작하지 않음
 
+// 시트 내용물(버튼 등) 아래에 안전 영역 위로 더하는 여백. 안드로이드는 제스처 막대가 이미 공간을 차지해 BottomBtnBox 와 같은 12 로 둔다
+const SHEET_BOTTOM_GAP = Platform.select({ android: 12, default: 24 }) as number;
+
 /**
  * 시트(또는 시트의 일부 영역)에 붙여서 아래로 끌어내리면 닫히게 하는 제스처 핸들러를 만든다.
  * - 끌고 있는 동안: 손가락을 따라 시트가 내려간다 (위로는 올라가지 않음)
@@ -137,7 +140,8 @@ const SimpleBottomSheet: React.FC<SimpleBottomSheetProps> = ({ visible, setVisib
           </View>
 
           {/* 콘텐츠 영역 */}
-          <View style={[styles.content, { paddingBottom: insets.bottom }]}>{content}</View>
+          {/* 내용물 아래 여백은 시트가 한 곳에서 책임진다. 안전 영역(제스처 막대·홈 인디케이터) 위에 SHEET_BOTTOM_GAP 만 더한다 */}
+          <View style={[styles.content, { paddingBottom: insets.bottom + SHEET_BOTTOM_GAP }]}>{content}</View>
         </Animated.View>
       </View>
     </Modal>

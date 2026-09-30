@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { FlatList, Image, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { FlatList, Image, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Divider, Icon } from 'react-native-paper';
@@ -219,8 +219,8 @@ const styles = StyleSheet.create({
   // 내용이 화면보다 짧을 때 남는 높이를 아래 카드가 채우도록 늘린다
   wrap: {
     paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: Platform.OS === 'android' ? 24 : 16,
+    paddingTop: theme.screen.topCard,
+    paddingBottom: theme.screen.bottom,
     gap: 16,
     flexGrow: 1,
   },

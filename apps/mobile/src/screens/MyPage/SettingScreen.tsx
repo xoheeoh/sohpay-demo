@@ -135,7 +135,7 @@ const SettingScreen: React.FC<SettingScreenProps> = () => {
 };
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, paddingVertical: 24, gap: 24 },
+  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topForm, paddingBottom: theme.screen.bottom, gap: 24 },
   section: { gap: 8 },
   sectionTitle: { paddingHorizontal: 4 },
   card: {

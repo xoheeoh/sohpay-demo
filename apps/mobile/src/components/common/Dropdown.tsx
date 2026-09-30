@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Keyboard, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { Icon, Portal } from 'react-native-paper';
 import { useFocusEffect } from '@react-navigation/native';
@@ -21,6 +21,15 @@ interface DropDownHandle {
   close: () => void;
 }
 
+type WindowPoint = { x: number; y: number };
+
+/**
+ * 옵션 목록은 셀렉트 박스의 창 좌표를 재서 Portal(최상위 층)에 그린다.
+ * 화면 스크롤 뷰 밖에 그려지므로 형제 요소에 가리지 않고, 목록 안 스크롤이 바깥 스크롤에 먹히지 않는다.
+ * 좌표는 두 가지를 보정한다.
+ * - 키보드가 떠 있으면 화면이 밀려 있어 잘못 재므로, 키보드가 닫히고 배치가 돌아온 뒤에 잰다.
+ * - Portal 층의 위치도 같은 방법으로 재서 차이를 뺀다. 층이 창 맨 위가 아닌 환경에서도 맞는다.
+ */
 const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
   (
     { placeholder, options, onSelect, size = 'lg', onOpen = 'options', openEvent, dismissKeyboardOnOpen = true },
@@ -29,14 +38,13 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [selectedOption, setSelectedOption] = useState<string>(placeholder);
     const [activeOption, setActiveOption] = useState<string | null>(null);
-    const [dropdownLayout, setDropdownLayout] = useState<{ left: number; width: number; top: number; height: number }>({
-      left: 0,
-      width: 0,
-      top: 0,
-      height: 0,
-    }); // 옵션 목록의 화면상 위치와 크기
 
-    const localRef = useRef<View | null>(null);
+    const selectRef = useRef<View | null>(null);
+    const portalLayerRef = useRef<View | null>(null);
+    const [selectBox, setSelectBox] = useState<{ left: number; width: number; top: number } | null>(null);
+    const [portalOrigin, setPortalOrigin] = useState<WindowPoint | null>(null);
+    // 키보드가 닫히길 기다리는 구독. 화면을 떠나거나 다시 누르면 정리한다
+    const pendingOpenRef = useRef<{ remove: () => void } | null>(null);
 
     useImperativeHandle(ref, () => ({
       close: () => setIsOpen(false),
@@ -47,40 +55,47 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
       useCallback(() => {
         return () => {
           setIsOpen(false);
+          pendingOpenRef.current?.remove();
+          pendingOpenRef.current = null;
         };
       }, []),
     );
 
+    useEffect(() => () => pendingOpenRef.current?.remove(), []);
+
+    // findNodeHandle + UIManager.measure 는 웹에서 에러가 나므로 measureInWindow 를 쓴다
+    const measureAndOpen = () => {
+      selectRef.current?.measureInWindow((x, y, width, height) => {
+        setSelectBox({ left: x, width, top: y + height + OPTION_BOX_GAP });
+        setIsOpen(true);
+      });
+    };
+
     const handlePress = () => {
-      if (dismissKeyboardOnOpen) Keyboard.dismiss();
-      if (!isOpen) {
-        measureDropdown(); // 열 때마다 다시 잰다 (스크롤로 위치가 바뀌었을 수 있음)
+      if (isOpen) {
+        setIsOpen(false);
+        return;
       }
-      setIsOpen((prev) => !prev);
+
+      if (dismissKeyboardOnOpen && Keyboard.isVisible()) {
+        // 키보드가 내려가고 스크롤 여백이 원래대로 돌아온 뒤에 재야 위치가 맞는다
+        Keyboard.dismiss();
+        pendingOpenRef.current?.remove();
+        const sub = Keyboard.addListener('keyboardDidHide', () => {
+          sub.remove();
+          pendingOpenRef.current = null;
+          setTimeout(measureAndOpen, 50);
+        });
+        pendingOpenRef.current = sub;
+        return;
+      }
+
+      measureAndOpen();
     };
 
     const handleModalOpen = () => {
       if (dismissKeyboardOnOpen) Keyboard.dismiss();
       openEvent?.();
-    };
-
-    // 셀렉트 박스 위치를 재서 옵션 목록을 바로 아래에 띄운다.
-    // findNodeHandle + UIManager.measure 는 웹에서 에러가 나므로 measureInWindow 를 쓴다. Portal 도 창 기준으로 그려 좌표가 그대로 맞는다.
-    const measureDropdown = () => {
-      localRef.current?.measureInWindow((x, y, width, height) => {
-        const optionHeight = 48; // optionItem 높이 (padding 포함)
-        const verticalPadding = 16; // optionBox paddingVertical (8 + 8)
-        const verticalBorder = OPTION_BOX_BORDER_WIDTH * 2; // 테두리도 높이에 포함되므로 더해야 옵션이 잘리지 않는다
-        const maxHeight = 200;
-        const calculatedHeight = Math.min(options.length * optionHeight + verticalPadding + verticalBorder, maxHeight);
-
-        setDropdownLayout({
-          left: x,
-          width,
-          top: y + height + 8, // 셀렉트 박스 아래 + 간격
-          height: calculatedHeight,
-        });
-      });
     };
 
     const handleSelectOption = (option: string) => {
@@ -89,8 +104,13 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
       onSelect?.(option);
     };
 
+    // Portal 층의 창 좌표. 셀렉트 박스 좌표와 같은 창 기준이라 둘의 차이가 곧 보정값이다
+    const measurePortalOrigin = () => {
+      portalLayerRef.current?.measureInWindow((x, y) => setPortalOrigin({ x, y }));
+    };
+
     return (
-      <View ref={localRef} style={{ position: 'relative' }}>
+      <View ref={selectRef} style={{ position: 'relative' }}>
         <Pressable
           style={[
             styles.select,
@@ -110,35 +130,43 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
           <Icon source={isOpen ? 'chevron-up' : 'chevron-down'} size={20} color={theme.colors.gray500} />
         </Pressable>
 
-        {/* 옵션 리스트 */}
-        {isOpen && (
+        {/* 옵션 리스트. 바깥을 누르면 닫힌다. Portal 층 좌표를 알기 전에는 목록을 그리지 않아 잘못된 자리에 한 번 보이는 깜빡임을 막는다 */}
+        {isOpen && selectBox && (
           <Portal>
             <View
-              style={[
-                styles.optionBox,
-                {
-                  left: dropdownLayout.left,
-                  width: dropdownLayout.width,
-                  top: dropdownLayout.top,
-                  height: dropdownLayout.height,
-                },
-              ]}>
-              <FlatList
-                nestedScrollEnabled={true}
-                data={options}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item }) => (
-                  <Pressable
-                    style={[styles.optionItem, activeOption === item && styles.active]}
-                    onPress={() => handleSelectOption(item)}
-                    onPressIn={() => setActiveOption(item)}
-                    onPressOut={() => setActiveOption(null)}>
-                    <Typography mode="body2" color="gray900">
-                      {item}
-                    </Typography>
-                  </Pressable>
-                )}
-              />
+              ref={portalLayerRef}
+              style={StyleSheet.absoluteFill}
+              onLayout={measurePortalOrigin}
+              collapsable={false}>
+              <Pressable style={StyleSheet.absoluteFill} onPress={() => setIsOpen(false)} />
+              {portalOrigin && (
+                <View
+                  style={[
+                    styles.optionBox,
+                    {
+                      left: selectBox.left - portalOrigin.x,
+                      width: selectBox.width,
+                      top: selectBox.top - portalOrigin.y,
+                    },
+                  ]}>
+                  <FlatList
+                    nestedScrollEnabled={true}
+                    data={options}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={({ item }) => (
+                      <Pressable
+                        style={[styles.optionItem, activeOption === item && styles.active]}
+                        onPress={() => handleSelectOption(item)}
+                        onPressIn={() => setActiveOption(item)}
+                        onPressOut={() => setActiveOption(null)}>
+                        <Typography mode="body2" color="gray900">
+                          {item}
+                        </Typography>
+                      </Pressable>
+                    )}
+                  />
+                </View>
+              )}
             </View>
           </Portal>
         )}
@@ -147,8 +175,10 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
   },
 );
 
-// 옵션 리스트 상자의 테두리 두께 (높이 계산에도 쓰이므로 상수로 분리)
-const OPTION_BOX_BORDER_WIDTH = 1;
+// 셀렉트 박스와 옵션 리스트 사이 간격
+const OPTION_BOX_GAP = 8;
+// 옵션 리스트 상자의 최대 높이. 넘치면 안에서 스크롤된다
+const OPTION_BOX_MAX_HEIGHT = 200;
 
 const styles = StyleSheet.create({
   select: {
@@ -160,11 +190,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  // 높이는 내용에 맞게 자라고 최대치만 둔다. 항목 높이를 숫자로 계산해 고정하면 글자 크기가 바뀔 때 아래에 빈 공간이 남는다
   optionBox: {
     position: 'absolute',
+    maxHeight: OPTION_BOX_MAX_HEIGHT,
     backgroundColor: 'white',
     borderRadius: theme.radius.lg,
-    borderWidth: OPTION_BOX_BORDER_WIDTH,
+    borderWidth: 1,
     borderColor: theme.colors.line, // 셀렉트 박스의 평소 테두리와 같은 색
     paddingHorizontal: 8,
     paddingVertical: 8,

@@ -40,7 +40,8 @@ const GetCdModal: React.FC<GetCdModalProps> = ({ handleSelectedGetCd, onGetCdCha
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <Radio selectedId={selectedGetCd} setSelectedId={setSelectedGetCd} radioButtons={getCdRadioButtons} />
       </ScrollView>
-      <View style={{ paddingVertical: 24 }}>
+      {/* 아래 여백은 BottomSheet 가 준다 */}
+      <View style={{ paddingTop: 24 }}>
         <PrimaryButton
           key={isButtonDisabled.toString()}
           disabled={isButtonDisabled}

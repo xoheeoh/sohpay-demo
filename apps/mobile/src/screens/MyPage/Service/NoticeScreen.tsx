@@ -104,9 +104,8 @@ const NoticeScreen: React.FC<NoticeScreenProps> = () => {
           <Typography mode="body2" color="gray900">
             전체{' '}
             <Typography mode="subtitle3" color="blue500">
-              ({noticeData.length}
+              ({noticeData.length}건)
             </Typography>
-            건)
           </Typography>
         </View>
       )}
@@ -145,8 +144,8 @@ const NoticeScreen: React.FC<NoticeScreenProps> = () => {
 };
 
 const styles = StyleSheet.create({
-  fixedTop: { paddingTop: 24, paddingHorizontal: 16, paddingBottom: 16 },
-  listContent: { paddingBottom: 24 },
+  fixedTop: { paddingTop: theme.screen.topForm, paddingHorizontal: 16, paddingBottom: 16 },
+  listContent: { paddingBottom: theme.screen.bottom },
 
   // 공지 한 건
   list: { paddingHorizontal: 16 },

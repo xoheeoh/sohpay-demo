@@ -26,8 +26,9 @@ const SelectBank = ({ onSelectBank, setVisible }: SelectBankProps) => {
   const available = windowWidth - horizontalPadding - gap * (columns - 1);
   const itemWidth = Math.floor(available / columns);
 
+  // 아래 여백은 BottomSheet 가 준다
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingBottom: 24, gap }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap }}>
       {bankList.map((item) => (
         <Pressable
           key={item.code}

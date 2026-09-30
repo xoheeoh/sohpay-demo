@@ -30,9 +30,11 @@ const UseDetailScreen: React.FC<UseDetailScreenProps> = ({ route }) => {
   /**
    * 갤러리 저장 권한은 expo-media-library 로 요청한다 (사진 추가 권한만).
    * 웹에는 네이티브 모듈이 없어 로드 시점에 오류가 나므로 네이티브에서만 지연 로드한다.
+   * 기본 진입점은 SDK 57 부터 새 객체형 API 라 별도 네이티브 모듈(ExpoMediaLibraryNext)을 요구하고 Expo Go 에 없다.
+   * 권한 요청·저장 두 함수만 쓰므로 예전 API 가 있는 legacy 경로를 쓴다.
    */
   const loadMediaLibrary = () =>
-    Platform.OS === 'web' ? null : (require('expo-media-library') as typeof import('expo-media-library'));
+    Platform.OS === 'web' ? null : (require('expo-media-library/legacy') as typeof import('expo-media-library/legacy'));
 
   const ensureGalleryPermission = async (): Promise<boolean> => {
     const MediaLibrary = loadMediaLibrary();
@@ -274,7 +276,7 @@ const UseDetailScreen: React.FC<UseDetailScreenProps> = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 32, gap: 8 },
+  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topCard, paddingBottom: theme.screen.bottom, gap: 8 },
   saveBtn: {
     alignSelf: 'flex-end',
     flexDirection: 'row',
