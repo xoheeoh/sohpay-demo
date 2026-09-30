@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
 
 import { BOTTOM_BTN_BOX_HEIGHT, Typography } from '@components/common';
@@ -36,6 +36,25 @@ const KEY_ROWS: (string | 'back')[][] = [
   ['7', '8', '9'],
   ['00', '0', 'back'],
 ];
+
+// Pretendard 의 글자 위 여백(ascender)·아래 여백(descender) 비율. 글꼴 파일의 hhea 표 값 1950/2048, 494/2048
+const FONT_ASCENT = 0.952;
+const FONT_DESCENT = 0.241;
+
+/** 줄 높이 안에서 글자는 세로 중앙에 놓이므로(웹·iOS·안드로이드 공통), 기준선이 글자 상자 바닥에서 떨어진 거리는 이렇게 정해진다 */
+const baselineFromBottom = (fontSize: number, lineHeight: number) =>
+  (lineHeight - fontSize * (FONT_ASCENT + FONT_DESCENT)) / 2 + fontSize * FONT_DESCENT;
+
+const AMOUNT_FONT_SIZE = 40;
+const AMOUNT_LINE_HEIGHT = 48;
+const UNIT_FONT_SIZE = 20; // heading3
+// '원' 을 숫자 기준선보다 이만큼 위에 둔다. 브라우저는 줄 상자를 정수 픽셀로 맞추느라 같은 계산값에서도 '원' 이 조금 낮게 보여 웹만 더 띄운다
+const UNIT_LIFT = Platform.select({ web: 3.5, default: 2 }) as number;
+
+// '원' 의 기준선이 숫자 기준선보다 UNIT_LIFT 만큼 위에 오도록 '원' 의 줄 높이를 역산한다 (≈ 37.8)
+const unitLineHeight =
+  2 * (baselineFromBottom(AMOUNT_FONT_SIZE, AMOUNT_LINE_HEIGHT) + UNIT_LIFT - UNIT_FONT_SIZE * FONT_DESCENT) +
+  UNIT_FONT_SIZE * (FONT_ASCENT + FONT_DESCENT);
 
 /**
  * 은행 앱 이체 화면 방식의 금액 입력. 큰 금액 숫자 아래에 빠른 금액 버튼과 자체 숫자 키패드를 붙인다.
@@ -80,6 +99,7 @@ const AmountEntry: React.FC<AmountEntryProps> = ({
         </Typography>
 
         <View style={styles.amountBlock}>
+          {/* alignItems: 'baseline' 은 안드로이드에서 줄 높이를 지정한 글자의 기준선을 못 잡아 위 정렬처럼 되므로, 상자 아래 끝을 맞추고 '원' 의 줄 높이로 기준선 위치를 조절한다 */}
           <View style={styles.amountRow}>
             <Typography
               mode="heading1"
@@ -89,7 +109,7 @@ const AmountEntry: React.FC<AmountEntryProps> = ({
               adjustsFontSizeToFit>
               {numeric.toLocaleString('ko-KR')}
             </Typography>
-            <Typography mode="heading3" color={error ? 'red500' : hasValue ? 'gray700' : 'gray300'}>
+            <Typography mode="heading3" color={error ? 'red500' : hasValue ? 'gray700' : 'gray300'} style={styles.unit}>
               원
             </Typography>
           </View>
@@ -162,10 +182,17 @@ const AmountEntry: React.FC<AmountEntryProps> = ({
 
 const styles = StyleSheet.create({
   wrap: { flex: 1 },
-  top: { flex: 1, paddingHorizontal: 16, paddingTop: 24, paddingBottom: 16, gap: 24 },
+  top: { flex: 1, paddingHorizontal: 16, paddingTop: theme.screen.topForm, paddingBottom: 16, gap: 24 },
   amountBlock: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
-  amountRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6, maxWidth: '100%' },
-  amount: { fontSize: 40, lineHeight: 48, letterSpacing: -1.2, flexShrink: 1 },
+  amountRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 6, maxWidth: '100%' },
+  amount: {
+    fontSize: AMOUNT_FONT_SIZE,
+    lineHeight: AMOUNT_LINE_HEIGHT,
+    letterSpacing: -1.2,
+    flexShrink: 1,
+    includeFontPadding: false,
+  },
+  unit: { lineHeight: unitLineHeight, includeFontPadding: false },
   sub: { textAlign: 'center', minHeight: 20 },
 
   chips: { flexDirection: 'row', justifyContent: 'center', gap: 8, flexWrap: 'wrap' },
@@ -180,14 +207,14 @@ const styles = StyleSheet.create({
   chipMax: { backgroundColor: theme.colors.primarySoft },
   chipPressed: { opacity: 0.6 },
 
-  // 하단 고정 버튼 상자가 위에 겹치므로 그 높이만큼 아래 여백을 둔다
+  // 하단 고정 버튼 상자가 위에 겹치므로 그 높이만큼만 아래 여백을 둔다. 상자 자체의 위 여백(16)이 키와 버튼 사이 간격이 된다
   keypad: {
     backgroundColor: theme.colors.gray50,
     borderTopLeftRadius: theme.radius.xxl + 4,
     borderTopRightRadius: theme.radius.xxl + 4,
     paddingTop: 16,
     paddingHorizontal: 16,
-    paddingBottom: BOTTOM_BTN_BOX_HEIGHT + 8,
+    paddingBottom: BOTTOM_BTN_BOX_HEIGHT,
     gap: 8,
   },
   keyRow: { flexDirection: 'row', gap: 8 },

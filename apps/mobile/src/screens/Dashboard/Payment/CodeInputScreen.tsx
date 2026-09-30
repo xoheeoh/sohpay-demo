@@ -13,6 +13,7 @@ import {
   TextField,
   Typography,
 } from '@components/common';
+import { theme } from '@styles';
 
 type CodeInputScreenProps = NativeStackScreenProps<RootStackParamList, 'CodeInput'>;
 
@@ -75,7 +76,7 @@ const CodeInputScreen: React.FC<CodeInputScreenProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  inputBox: { paddingVertical: 24, paddingHorizontal: 16, gap: 16 },
+  inputBox: { paddingTop: theme.screen.topForm, paddingHorizontal: 16, gap: 16 },
 });
 
 export default CodeInputScreen;

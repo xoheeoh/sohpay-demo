@@ -401,7 +401,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
 const styles = StyleSheet.create({
   filterCard: {
     marginHorizontal: 16,
-    marginTop: 24,
+    marginTop: theme.screen.topCard,
     padding: 16,
     gap: 16,
     backgroundColor: theme.colors.surface,

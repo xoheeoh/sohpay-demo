@@ -16,6 +16,7 @@ import {
   TextField,
   Typography,
 } from '@components/common';
+import { theme } from '@styles';
 
 type EditUserCheckScreenProps = NativeStackScreenProps<RootStackParamList, 'EditCheck'>;
 
@@ -217,7 +218,7 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
 };
 
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: 16, paddingVertical: 24 },
+  container: { paddingHorizontal: 16, paddingTop: theme.screen.topForm },
 });
 
 export default EditUserCheckScreen;

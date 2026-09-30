@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import { theme } from '@styles';
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, paddingVertical: 24, gap: 24 },
+  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topForm, gap: 24 },
 
   // ── 성공 화면(ID 찾기 · 임시 PW) ─────────────────────────────────
   successWrap: { gap: 50, flex: 1, justifyContent: 'center' },

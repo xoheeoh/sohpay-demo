@@ -179,7 +179,7 @@ const InfoRow: React.FC<{ label: string; value: string; valueColor?: 'gray900' |
 );
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, paddingVertical: 24, gap: 16 },
+  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topCard, gap: 16 },
   card: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,

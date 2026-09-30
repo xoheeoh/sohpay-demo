@@ -115,9 +115,9 @@ const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenP
       <KeyboardAwareScrollView
         ref={scrollViewRef}
         contentContainerStyle={{
-          gap: 32,
+          gap: 16,
           paddingHorizontal: 16,
-          paddingTop: 24,
+          paddingTop: theme.screen.topForm,
         }}
         keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}
         extraBottomPadding={60}
@@ -171,7 +171,7 @@ const RefundAuthConfirmScreen = ({ navigation, route }: RefundAuthConfirmScreenP
           </Typography>
         </View>
 
-        <View style={{ gap: 12 }}>
+        <View style={{ gap: 16 }}>
           <TextField
             id={'certNum'}
             inputMode={'numeric'}

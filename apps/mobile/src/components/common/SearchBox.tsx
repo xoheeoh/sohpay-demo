@@ -59,12 +59,14 @@ const styles = StyleSheet.create({
     // 브라우저 기본 포커스 outline 을 끈다. 포커스 표시는 테두리 색이 담당한다
     ...(Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : {}),
   },
+  // 입력칸 전체 높이에 걸쳐 세로 중앙에 둔다. top 값을 직접 적으면 입력칸 높이가 바뀔 때 어긋난다
   magnifyIcon: {
     position: 'absolute',
     left: 16,
-    top: 14,
+    top: 0,
+    bottom: 0,
     width: 24,
-    height: 24,
+    justifyContent: 'center',
     zIndex: 99,
   },
 });

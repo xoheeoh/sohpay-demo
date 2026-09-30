@@ -23,7 +23,8 @@ const CheckBox: React.FC<CheckBoxProps> = ({ isChecked, setIsChecked, labelCompo
       textComponent={labelComponent}
       size={22}
       iconStyle={{ borderRadius: 7 }}
-      iconComponent={<Icon source="check" size={16} color={isChecked ? 'white' : 'transparent'} />}
+      // 체크 전에는 아이콘을 그리지 않는다. 투명색으로 숨기면 안드로이드에서 검정으로 보인다
+      iconComponent={isChecked ? <Icon source="check" size={16} color="white" /> : undefined}
     />
   );
 };

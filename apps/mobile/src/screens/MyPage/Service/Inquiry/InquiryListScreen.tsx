@@ -227,9 +227,8 @@ const InquiryListScreen: React.FC<InquiryListScreenProps> = ({ dropdownRef }) =>
           <Typography mode="body2" color="gray900">
             전체{' '}
             <Typography mode="subtitle3" color="blue500">
-              ({viewNum}
+              ({viewNum}건)
             </Typography>
-            건)
           </Typography>
         )}
       </View>
@@ -275,9 +274,10 @@ const InquiryListScreen: React.FC<InquiryListScreenProps> = ({ dropdownRef }) =>
 };
 
 const styles = StyleSheet.create({
+  // 탭 바 아래에 들어가는 내용물이라 헤더 간격 토큰이 아닌 탭과의 간격(24)을 쓴다. 문의하기 탭(InquiryEnrollScreen)과 같은 값
   fixedTop: { paddingTop: 24, paddingHorizontal: 16, paddingBottom: 16, gap: 24, zIndex: 1 },
   search: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  listContent: { paddingBottom: 24 },
+  listContent: { paddingBottom: theme.screen.bottom },
 
   // 문의 한 건
   list: { paddingHorizontal: 16 },

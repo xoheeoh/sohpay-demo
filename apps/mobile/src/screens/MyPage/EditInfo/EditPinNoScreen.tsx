@@ -120,7 +120,7 @@ const EditPinNoScreen: React.FC<EditPinNoScreenProps> = ({ navigation, route }) 
         onKeyPress={handleKeyPress}
         onShuffle={handleShuffle}
         onDelete={handleDelete}
-      />{' '}
+      />
     </ScreenWrapper>
   );
 };

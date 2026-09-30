@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Keyboard, LayoutAnimation, UIManager, ViewStyle } from 'react-native';
+import { Animated, Easing, Keyboard, LayoutAnimation, ViewStyle } from 'react-native';
 import PrimaryButton from '../PrimaryButton';
 import { BottomBtnBoxProps } from './BottomBtnBox.ios';
 
@@ -14,13 +14,6 @@ const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({
   const [opacityAnim] = useState(new Animated.Value(1));
   const bottomAnim = useRef(new Animated.Value(0)).current;
   const [keyboardVisible, setKeyboardVisible] = useState<boolean>(false);
-
-  // 안드로이드는 LayoutAnimation 을 명시적으로 켜야 한다
-  useEffect(() => {
-    if (UIManager.setLayoutAnimationEnabledExperimental) {
-      UIManager.setLayoutAnimationEnabledExperimental(true);
-    }
-  }, []);
 
   useEffect(() => {
     const didShowSub = Keyboard.addListener('keyboardDidShow', (event) => {
@@ -89,9 +82,10 @@ const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({
       inputRange: [0, 1],
       outputRange: [0, 16],
     }),
+    // ScreenWrapper 가 제스처 막대 높이만큼 이미 비워 두므로, 그 위에 더하는 여백은 iOS(24)보다 작게 잡는다
     paddingBottom: paddingAnim.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, 24],
+      outputRange: [0, 12],
     }),
     paddingTop: paddingAnim.interpolate({
       inputRange: [0, 1],

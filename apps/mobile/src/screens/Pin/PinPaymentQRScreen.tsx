@@ -191,7 +191,7 @@ const PinPaymentQRScreen: React.FC<PinPaymentQRScreenProps> = ({ navigation, rou
         onShuffle={handleShuffle}
         onDelete={handleDelete}
         error={error}
-      />{' '}
+      />
     </ScreenWrapper>
   );
 };

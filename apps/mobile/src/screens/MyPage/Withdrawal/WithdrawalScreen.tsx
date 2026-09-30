@@ -14,6 +14,7 @@ import {
   TextField,
   Typography,
 } from '@components/common';
+import { theme } from '@styles';
 
 type WithdrawalScreenProps = NativeStackScreenProps<RootStackParamList, 'Withdrawal'>;
 
@@ -105,7 +106,7 @@ const WithdrawalScreen: React.FC<WithdrawalScreenProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: 16, paddingVertical: 24 },
+  container: { paddingHorizontal: 16, paddingTop: theme.screen.topForm },
 });
 
 export default WithdrawalScreen;
