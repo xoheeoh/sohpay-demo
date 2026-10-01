@@ -25,9 +25,11 @@ const DRAG_START_DISTANCE = 5; // 이 거리(px)보다 적게 움직이면 탭�
 const SHEET_BOTTOM_GAP = Platform.select({ android: 12, default: 24 }) as number;
 
 /**
- * 시트(또는 시트의 일부 영역)에 붙여서 아래로 끌어내리면 닫히게 하는 제스처 핸들러를 만든다.
+ * 핸들·헤더 같은 전용 드래그 구역에 붙여서 아래로 끌어내리면 닫히게 하는 제스처 핸들러를 만든다.
  * - 끌고 있는 동안: 손가락을 따라 시트가 내려간다 (위로는 올라가지 않음)
  * - 손을 뗄 때: 충분히 내렸거나 빠르게 내렸으면 닫고, 아니면 제자리로 돌아온다
+ * 터치가 시작될 때 바로 잡는다. 움직인 뒤에 잡는 방식(onMoveShouldSetPanResponder)은 안드로이드에서 판정이 넘어오지 않아 드래그가 안 된다.
+ * 그래서 안의 버튼 터치를 가로채지 않도록 시트 전체가 아닌 구역에만 붙인다. 구역 안의 버튼은 더 안쪽 요소라 먼저 터치를 가져간다.
  */
 function useDragToClose(panY: Animated.Value, snapBack: Animated.CompositeAnimation, close: () => void) {
   // snapBack/close는 매 렌더마다 새로 만들어지므로, 항상 최신 것을 쓰도록 ref에 담아둔다
@@ -37,7 +39,8 @@ function useDragToClose(panY: Animated.Value, snapBack: Animated.CompositeAnimat
   const panResponder = useMemo(
     () =>
       PanResponder.create({
-        // 탭은 그대로 두고(닫기 버튼이 눌리도록), 세로로 어느 정도 움직였을 때만 드래그로 인식
+        onStartShouldSetPanResponder: () => true,
+        // 시작을 놓친 경우(다른 요소가 먼저 잡았다가 놓은 경우)를 위한 보조 판정
         onMoveShouldSetPanResponder: (_, gesture) =>
           Math.abs(gesture.dy) > DRAG_START_DISTANCE && Math.abs(gesture.dy) > Math.abs(gesture.dx),
         // 웹: 드래그 중 글자가 선택되면 브라우저가 제스처 종료를 요청하므로 거절해 계속 끌 수 있게 한다
@@ -117,26 +120,26 @@ const SimpleBottomSheet: React.FC<SimpleBottomSheetProps> = ({ visible, setVisib
           <View style={styles.background} />
         </TouchableWithoutFeedback>
 
-        {/* 스크롤이 없는 시트라서 시트 전체(핸들·헤더·콘텐츠)를 잡고 끌어내려도 닫힘 */}
         <Animated.View
-          {...dragToCloseHandlers}
           style={{
             ...styles.container,
             transform: [{ translateY: translateY }],
           }}>
-          {/* 고정 헤더 영역 */}
-          <View style={styles.grabber} />
-          <View style={styles.header}>
-            <Typography mode="subtitle1" color="gray900" style={styles.title}>
-              {title}
-            </Typography>
-            <IconButton
-              icon={'close'}
-              size={20}
-              onPress={closeModal}
-              style={styles.closeBtn}
-              iconColor={theme.colors.gray700}
-            />
+          {/* 드래그 구역: 핸들과 헤더. 여기를 잡고 끌어내리면 닫힌다 */}
+          <View {...dragToCloseHandlers}>
+            <View style={styles.grabber} />
+            <View style={styles.header}>
+              <Typography mode="subtitle1" color="gray900" style={styles.title}>
+                {title}
+              </Typography>
+              <IconButton
+                icon={'close'}
+                size={20}
+                onPress={closeModal}
+                style={styles.closeBtn}
+                iconColor={theme.colors.gray700}
+              />
+            </View>
           </View>
 
           {/* 콘텐츠 영역 */}
