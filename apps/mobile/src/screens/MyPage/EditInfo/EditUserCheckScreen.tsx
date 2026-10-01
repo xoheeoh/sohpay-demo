@@ -55,7 +55,8 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
     checkUsrPwd(pwd).then((data) => {
       if (data.resultCd === '0000') {
         if (flg === 'usrInfo') {
-          navigation.navigate('EditInfo', {
+          // 비밀번호 확인은 통과하면 끝난 단계라 스택에서 빼고 넘어간다. 변경 화면에서 뒤로 가면 마이페이지로 돌아간다
+          navigation.replace('EditInfo', {
             usrData,
             pwd: pwd,
           });
@@ -145,7 +146,8 @@ const EditUserCheckScreen: React.FC<EditUserCheckScreenProps> = ({ navigation, r
           confirmText: '확인',
         }).then((ok) => {
           if (ok) {
-            navigation.navigate('EditPinNo', {
+            // 비밀번호 확인·본인인증은 끝난 단계라 스택에서 빼고 넘어간다. PIN 설정 화면에서 뒤로 가면 마이페이지로 돌아간다
+            navigation.replace('EditPinNo', {
               usrData,
               pwd: verifiedPwdRef.current, // 입력칸은 이미 비워졌으므로 보관해 둔 값을 넘긴다
             });

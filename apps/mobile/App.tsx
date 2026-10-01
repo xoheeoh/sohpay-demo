@@ -469,14 +469,8 @@ function App(): React.JSX.Element {
                   name="WithdrawalAgr"
                   component={WithdrawalAgrScreen}
                   options={{
-                    header: ({ navigation }) => (
-                      <Header
-                        title="회원탈퇴"
-                        bgColor={theme.colors.bg}
-                        leftButton
-                        leftEvent={() => navigation.pop(2)}
-                      />
-                    ),
+                    // 비밀번호 확인 화면은 replace 로 스택에서 빠지므로 기본 뒤로 가기가 곧 회원정보 화면이다
+                    header: () => <Header title="회원탈퇴" bgColor={theme.colors.bg} leftButton />,
                   }}
                 />
                 <Stack.Screen

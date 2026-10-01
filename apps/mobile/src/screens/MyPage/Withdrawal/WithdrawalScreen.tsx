@@ -44,7 +44,8 @@ const WithdrawalScreen: React.FC<WithdrawalScreenProps> = ({ navigation }) => {
 
     checkUsrPwd(pwd).then((data) => {
       if (data.resultCd === '0000') {
-        navigation.navigate('WithdrawalAgr', { pwd: pwd });
+        // 비밀번호 확인은 통과하면 끝난 단계라 스택에서 빼고 넘어간다. 동의 화면에서 뒤로 가면 헤더 버튼·안드로이드 뒤로 가기·iOS 스와이프 모두 회원정보 화면으로 돌아간다
+        navigation.replace('WithdrawalAgr', { pwd: pwd });
       } else {
         alert({
           title: '비밀번호 불일치',
