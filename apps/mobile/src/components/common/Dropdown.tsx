@@ -142,29 +142,32 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
               {portalOrigin && (
                 <View
                   style={[
-                    styles.optionBox,
+                    styles.optionBoxShadow,
                     {
                       left: selectBox.left - portalOrigin.x,
                       width: selectBox.width,
                       top: selectBox.top - portalOrigin.y,
                     },
                   ]}>
-                  <FlatList
-                    nestedScrollEnabled={true}
-                    data={options}
-                    keyExtractor={(item, index) => index.toString()}
-                    renderItem={({ item }) => (
-                      <Pressable
-                        style={[styles.optionItem, activeOption === item && styles.active]}
-                        onPress={() => handleSelectOption(item)}
-                        onPressIn={() => setActiveOption(item)}
-                        onPressOut={() => setActiveOption(null)}>
-                        <Typography mode="body2" color="gray900">
-                          {item}
-                        </Typography>
-                      </Pressable>
-                    )}
-                  />
+                  {/* 그림자는 바깥 View 가, 둥근 모서리 안쪽 잘라내기는 상자가 맡는다. iOS 는 한 뷰에 둘을 함께 걸면 모서리가 둥글게 잘리지 않는다 */}
+                  <View style={styles.optionBox}>
+                    <FlatList
+                      nestedScrollEnabled={true}
+                      data={options}
+                      keyExtractor={(item, index) => index.toString()}
+                      renderItem={({ item }) => (
+                        <Pressable
+                          style={[styles.optionItem, activeOption === item && styles.active]}
+                          onPress={() => handleSelectOption(item)}
+                          onPressIn={() => setActiveOption(item)}
+                          onPressOut={() => setActiveOption(null)}>
+                          <Typography mode="body2" color="gray900">
+                            {item}
+                          </Typography>
+                        </Pressable>
+                      )}
+                    />
+                  </View>
                 </View>
               )}
             </View>
@@ -191,8 +194,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   // 높이는 내용에 맞게 자라고 최대치만 둔다. 항목 높이를 숫자로 계산해 고정하면 글자 크기가 바뀔 때 아래에 빈 공간이 남는다
+  optionBoxShadow: { position: 'absolute', borderRadius: theme.radius.lg, boxShadow: theme.shadow.float },
   optionBox: {
-    position: 'absolute',
     maxHeight: OPTION_BOX_MAX_HEIGHT,
     backgroundColor: 'white',
     borderRadius: theme.radius.lg,
@@ -201,7 +204,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 8,
     overflow: 'hidden',
-    boxShadow: theme.shadow.float,
   },
   optionItem: { paddingHorizontal: 16, paddingVertical: 12, borderRadius: theme.radius.sm },
   active: { backgroundColor: theme.colors.gray100 },

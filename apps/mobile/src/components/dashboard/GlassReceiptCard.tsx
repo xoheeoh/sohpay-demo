@@ -43,56 +43,59 @@ const GlassReceiptCard: React.FC<GlassReceiptCardProps> = ({ badgeLabel, amountL
       style={styles.glowMint}
     />
 
-    <View style={styles.card}>
-      {/* 위쪽 빛 반사 */}
-      <LinearGradient
-        colors={['rgba(255, 255, 255, 0.9)', 'rgba(255, 255, 255, 0)']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={styles.highlight}
-        pointerEvents="none"
-      />
+    {/* 그림자는 바깥 View 가, 둥근 모서리 안쪽 잘라내기는 카드가 맡는다. iOS 는 한 뷰에 둘을 함께 걸면 모서리가 둥글게 잘리지 않는다 */}
+    <View style={styles.cardShadow}>
+      <View style={styles.card}>
+        {/* 위쪽 빛 반사 */}
+        <LinearGradient
+          colors={['rgba(255, 255, 255, 0.9)', 'rgba(255, 255, 255, 0)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={styles.highlight}
+          pointerEvents="none"
+        />
 
-      <View style={styles.head}>
-        <Wordmark height={18} color={theme.colors.primary} />
-        <View style={styles.badge}>
-          <Typography mode="caption2" color="blue700">
-            {badgeLabel}
-          </Typography>
-        </View>
-      </View>
-
-      <View style={{ gap: 4 }}>
-        <Typography mode="body2" color="blue700">
-          {amountLabel}
-        </Typography>
-        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
-          <Typography mode="heading1" color="blue900" style={styles.amount}>
-            {formatAmount(amount)}
-          </Typography>
-          <Typography mode="subtitle1" color="blue800">
-            원
-          </Typography>
-        </View>
-      </View>
-
-      <View style={styles.divider} />
-
-      <View style={{ gap: 10 }}>
-        {rows.map((row) => (
-          <View key={row.label} style={styles.row}>
-            <Typography mode="body2" color="blue700">
-              {row.label}
+        <View style={styles.head}>
+          <Wordmark height={18} color={theme.colors.primary} />
+          <View style={styles.badge}>
+            <Typography mode="caption2" color="blue700">
+              {badgeLabel}
             </Typography>
-            {row.value === null ? (
-              <Skeleton width={96} height={14} style={styles.rowSkeleton} />
-            ) : (
-              <Typography mode="subtitle3" color="blue900" numberOfLines={1} style={styles.rowValue}>
-                {row.value}
-              </Typography>
-            )}
           </View>
-        ))}
+        </View>
+
+        <View style={{ gap: 4 }}>
+          <Typography mode="body2" color="blue700">
+            {amountLabel}
+          </Typography>
+          <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
+            <Typography mode="heading1" color="blue900" style={styles.amount}>
+              {formatAmount(amount)}
+            </Typography>
+            <Typography mode="subtitle1" color="blue800">
+              원
+            </Typography>
+          </View>
+        </View>
+
+        <View style={styles.divider} />
+
+        <View style={{ gap: 10 }}>
+          {rows.map((row) => (
+            <View key={row.label} style={styles.row}>
+              <Typography mode="body2" color="blue700">
+                {row.label}
+              </Typography>
+              {row.value === null ? (
+                <Skeleton width={96} height={14} style={styles.rowSkeleton} />
+              ) : (
+                <Typography mode="subtitle3" color="blue900" numberOfLines={1} style={styles.rowValue}>
+                  {row.value}
+                </Typography>
+              )}
+            </View>
+          ))}
+        </View>
       </View>
     </View>
   </View>
@@ -104,6 +107,10 @@ const styles = StyleSheet.create({
   // 카드 뒤 빛 덩어리. 모서리 밖으로 살짝 새어 나와 유리 너머 색이 비치는 느낌을 준다
   glowBlue: { position: 'absolute', top: -28, left: -24, width: 220, height: 220, borderRadius: 110 },
   glowMint: { position: 'absolute', right: -30, bottom: -36, width: 200, height: 200, borderRadius: 100 },
+  cardShadow: {
+    borderRadius: theme.radius.xl,
+    boxShadow: '0 16px 40px rgba(30, 99, 240, 0.16), 0 2px 6px rgba(30, 99, 240, 0.08)', // 떠 있는 느낌의 파란 그림자
+  },
   card: {
     borderRadius: theme.radius.xl,
     padding: 22,
@@ -112,7 +119,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.62)', // 반투명 흰색: 뒤의 빛 덩어리가 연하게 비친다
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.85)', // 유리 가장자리의 밝은 테두리
-    boxShadow: '0 16px 40px rgba(30, 99, 240, 0.16), 0 2px 6px rgba(30, 99, 240, 0.08)', // 떠 있는 느낌의 파란 그림자
   },
   // 카드 위쪽 1/3 에 깔리는 흰 하이라이트 (빛 반사)
   highlight: { position: 'absolute', top: 0, left: 0, right: 0, height: 72 },

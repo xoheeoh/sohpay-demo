@@ -174,46 +174,50 @@ const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
                 {section.title}
               </Typography>
 
-              <View style={styles.listMenu}>
-                {section.items.map((item, index) => (
-                  <Pressable
-                    key={item.label}
-                    style={({ pressed }) => [
-                      styles.list,
-                      layout.rowBetween,
-                      index > 0 && styles.listDivider,
-                      pressed && styles.pressed,
-                    ]}
-                    onPress={item.onPress}>
-                    <View style={[layout.rowCenter, { gap: 12 }]}>
-                      <View style={styles.menuIcon}>
-                        <Icon source={item.icon} size={18} color={theme.colors.primary} />
+              <View style={styles.listMenuShadow}>
+                <View style={styles.listMenu}>
+                  {section.items.map((item, index) => (
+                    <Pressable
+                      key={item.label}
+                      style={({ pressed }) => [
+                        styles.list,
+                        layout.rowBetween,
+                        index > 0 && styles.listDivider,
+                        pressed && styles.pressed,
+                      ]}
+                      onPress={item.onPress}>
+                      <View style={[layout.rowCenter, { gap: 12 }]}>
+                        <View style={styles.menuIcon}>
+                          <Icon source={item.icon} size={18} color={theme.colors.primary} />
+                        </View>
+                        <Typography mode="subtitle2" color="gray900">
+                          {item.label}
+                        </Typography>
                       </View>
-                      <Typography mode="subtitle2" color="gray900">
-                        {item.label}
-                      </Typography>
-                    </View>
-                    <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
-                  </Pressable>
-                ))}
+                      <Icon source="chevron-right" size={20} color={theme.colors.gray400} />
+                    </Pressable>
+                  ))}
+                </View>
               </View>
             </View>
           ))}
 
           {/* 로그아웃은 화면 이동이 아니라 동작이므로 화살표 없이 나가기 아이콘만 두고 글자도 연하게 한다 */}
-          <View style={styles.listMenu}>
-            <Pressable
-              style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
-              onPress={() => setLogoutModal(true)}>
-              <View style={[layout.rowCenter, { gap: 12 }]}>
-                <View style={[styles.menuIcon, styles.menuIconMuted]}>
-                  <Icon source="logout" size={18} color={theme.colors.gray500} />
+          <View style={styles.listMenuShadow}>
+            <View style={styles.listMenu}>
+              <Pressable
+                style={({ pressed }) => [styles.list, layout.rowBetween, pressed && styles.pressed]}
+                onPress={() => setLogoutModal(true)}>
+                <View style={[layout.rowCenter, { gap: 12 }]}>
+                  <View style={[styles.menuIcon, styles.menuIconMuted]}>
+                    <Icon source="logout" size={18} color={theme.colors.gray500} />
+                  </View>
+                  <Typography mode="subtitle2" color="gray600">
+                    로그아웃
+                  </Typography>
                 </View>
-                <Typography mode="subtitle2" color="gray600">
-                  로그아웃
-                </Typography>
-              </View>
-            </Pressable>
+              </Pressable>
+            </View>
           </View>
         </ScrollView>
 
@@ -255,7 +259,9 @@ const styles = StyleSheet.create({
   // 메뉴
   section: { gap: 8 },
   sectionTitle: { paddingHorizontal: 4 },
-  listMenu: { borderRadius: theme.radius.lg, overflow: 'hidden', boxShadow: theme.shadow.card },
+  // 그림자는 바깥 View 가, 둥근 모서리 안쪽 잘라내기(눌림 배경이 모서리 밖으로 안 나가게)는 목록이 맡는다. iOS 는 한 뷰에 둘을 함께 걸면 모서리가 둥글게 잘리지 않는다
+  listMenuShadow: { borderRadius: theme.radius.lg, boxShadow: theme.shadow.card },
+  listMenu: { borderRadius: theme.radius.lg, overflow: 'hidden' },
   list: { paddingHorizontal: 16, paddingVertical: 14, backgroundColor: theme.colors.surface },
   listDivider: { borderTopWidth: 1, borderTopColor: theme.colors.gray100 },
   pressed: { backgroundColor: theme.colors.gray50 },
