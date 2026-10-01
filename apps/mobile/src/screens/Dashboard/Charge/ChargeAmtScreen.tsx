@@ -76,8 +76,12 @@ const ChargeAmtScreen: React.FC<ChargeAmtScreenProps> = ({ navigation }) => {
     setChargeAmt(rounded > 0 ? String(rounded) : '');
   };
 
+  // 맨 아래 키패드가 회색이라 하단 안전 영역도 같은 색으로 이어 준다
   return (
-    <ScreenWrapper backgroundColor="white" keyboardBottomInset={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
+    <ScreenWrapper
+      backgroundColor="white"
+      bottomSafeAreaColor={theme.colors.gray50}
+      keyboardBottomInset={BOTTOM_BTN_BOX_KEYBOARD_INSET}>
       <AmountEntry
         question="얼마를 충전할까요?"
         amount={chargeAmt}

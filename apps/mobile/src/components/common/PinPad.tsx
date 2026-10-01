@@ -84,7 +84,8 @@ const PinPad: React.FC<PinPadProps> = ({
         </View>
       </View>
 
-      {/* 키패드 */}
+      {/* 키패드. 회색 배경이 화면 맨 아래(안전 영역 포함)까지 내려오고, 마지막 줄은 안전 영역 위로 줄 간격(8)만큼 띄운다.
+          이를 위해 PinPad 를 쓰는 화면은 ScreenWrapper 의 bottomEdge 를 끈다 */}
       <View style={[styles.keypad, { paddingBottom: Math.max(insets.bottom, 16) + 8 }]}>
         {Array(3)
           .fill(0)
