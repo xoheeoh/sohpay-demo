@@ -38,7 +38,8 @@ const Header: React.FC<HeaderProps> = ({ bgColor, title, leftButton, leftEvent, 
           style={({ pressed }) => [styles.button, pressed && leftButton && styles.pressed]}>
           {leftButton && <Icon source="chevron-left" size={26} color={theme.colors.gray900} />}
         </Pressable>
-        <Typography mode="subtitle2" color="gray900" numberOfLines={1} style={styles.title}>
+        {/* 화면 제목은 바텀시트 제목과 같은 subtitle1. 내용 첫 제목(heading3, 20 Bold)보다 작아 위계가 뒤집히지 않되 시트 제목보다 작지는 않다 */}
+        <Typography mode="subtitle1" color="gray900" numberOfLines={1} style={styles.title}>
           {title}
         </Typography>
         {/* 닫기 버튼: DashboardNav 의 햄버거 버튼과 같은 컴포넌트를 써서 위치·모양을 맞춘다 */}
