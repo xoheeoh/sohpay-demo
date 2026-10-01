@@ -52,12 +52,13 @@ const WithdrawalAgrScreen: React.FC<WithdrawalAgrScreenProps> = ({ navigation, r
     }
 
     if (data.resultCd === 'BALANCE_REMAINING') {
-      // 잔액이 남아 있어 서버가 거절한 경우 출금 화면으로 바로 갈 수 있게 한다
+      // 잔액이 남아 있어 서버가 거절한 경우 출금 화면으로 바로 갈 수 있게 한다. 탈퇴를 그만두고 싶을 수도 있으므로 취소 버튼도 둔다
       const goRefund = await confirm({
         title: '잔액이 남아 있어요',
         message1: '잔액을 모두 출금한 뒤에 탈퇴할 수 있습니다.',
         message2: '지금 출금 화면으로 이동할까요?',
         confirmText: '출금하러 가기',
+        cancelText: '취소',
       });
       if (goRefund) navigation.navigate('Refund');
       return;
