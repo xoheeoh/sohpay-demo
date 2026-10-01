@@ -54,6 +54,8 @@ const styles = StyleSheet.create({
     height: controlSize.lg.height, // 드롭다운·입력칸과 나란히 놓여도 높이가 같다 (lg)
     position: 'relative',
     ...typographyStyles.body2, // 다른 입력칸과 같은 body2
+    // iOS 는 한 줄 입력칸이 비어 있을 때는 lineHeight 를 무시하다가 첫 글자부터 적용해 글자가 내려앉는다 (AnimatedTextInput 과 같은 처리)
+    ...(Platform.OS === 'ios' ? { lineHeight: undefined } : null),
     color: theme.colors.gray900,
     includeFontPadding: false, // 안드로이드 기본 패딩 제거
     // 브라우저 기본 포커스 outline 을 끈다. 포커스 표시는 테두리 색이 담당한다
