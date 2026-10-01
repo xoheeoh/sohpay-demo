@@ -10,7 +10,7 @@ import { IRmnAmt } from '@typ/paymentType';
 import { removeData, removeEncryptedToken } from '@storages/asyncStorage';
 import { formatWon } from '@utils/formatter';
 import { loadUserAmt, loadUsrInfoData } from '@apis/commonApi';
-import { PopupModal, ScreenWrapper, Skeleton, Typography } from '@components/common';
+import { PopupModal, ScreenWrapper, Skeleton, Typography, useScreenBottomPadding } from '@components/common';
 import { layout, theme } from '@styles';
 import { getAppWidth } from '@utils/dimensions';
 
@@ -24,6 +24,7 @@ interface MenuItem {
 }
 
 const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
+  const screenBottom = useScreenBottomPadding();
   const [usrData, setUsrData] = useState<IUserProfile | null>(null);
 
   // null 이면 조회 전이라 잔액 자리에 자리표시자를 보여준다
@@ -122,7 +123,7 @@ const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
   return (
     <Animated.View style={[{ flex: 1 }, slideInStyle]}>
       <ScreenWrapper backgroundColor={theme.colors.bg} topComponent={false}>
-        <ScrollView contentContainerStyle={styles.wrap}>
+        <ScrollView contentContainerStyle={[styles.wrap, screenBottom]}>
           {/* 프로필 카드. 아래 띠에 보유 잔액을 함께 보여준다 */}
           <View style={styles.card}>
             <View style={[layout.rowCenter, { gap: 14 }]}>
@@ -233,7 +234,7 @@ const MyPageScreen: React.FC<MyPageScreenProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topCard, paddingBottom: theme.screen.bottom, gap: 24 },
+  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topCard, gap: 24 },
 
   // 프로필 카드
   card: {

@@ -8,7 +8,7 @@ import RenderHtml from 'react-native-render-html';
 import type { RootStackParamList } from '@typ/navigation';
 import { INoticeList } from '@typ/commonType';
 import { InquiryNotice } from '@apis/commonApi';
-import { Badge, ScreenWrapper, SkeletonList, Typography } from '@components/common';
+import { Badge, ScreenWrapper, SkeletonList, Typography, useScreenBottomPadding } from '@components/common';
 import { formatYYYYMMDDDate, getTodayDate } from '@utils/formatter';
 import { useAppWidth } from '@utils/dimensions';
 import { layout, theme } from '@styles';
@@ -22,6 +22,7 @@ const CONTENT_SIDE_INSET = (16 + 14) * 2;
 const noticeTone = (notiCdNm: string) => (notiCdNm === '중요' ? 'red' : 'blue');
 
 const NoticeScreen: React.FC<NoticeScreenProps> = () => {
+  const screenBottom = useScreenBottomPadding();
   const [noticeData, setNoticeData] = useState<INoticeList[]>([]);
   // 첫 조회가 끝나기 전에는 "공지 없음" 문구를 보여주지 않는다
   const [isLoaded, setIsLoaded] = useState(false);
@@ -111,7 +112,7 @@ const NoticeScreen: React.FC<NoticeScreenProps> = () => {
       )}
 
       {/* 스크롤 영역: 공지 목록만 스크롤된다 */}
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.listContent}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={screenBottom}>
         {!isLoaded ? (
           // 조회가 끝나기 전에는 목록 자리에 자리표시자를 보여준다
           <View style={styles.list}>
@@ -145,7 +146,6 @@ const NoticeScreen: React.FC<NoticeScreenProps> = () => {
 
 const styles = StyleSheet.create({
   fixedTop: { paddingTop: theme.screen.topForm, paddingHorizontal: 16, paddingBottom: 16 },
-  listContent: { paddingBottom: theme.screen.bottom },
 
   // 공지 한 건
   list: { paddingHorizontal: 16 },

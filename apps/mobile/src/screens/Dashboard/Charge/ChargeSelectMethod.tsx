@@ -3,7 +3,7 @@ import { Icon } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '@typ/navigation';
-import { Badge, ScreenWrapper, Typography } from '@components/common';
+import { Badge, ScreenWrapper, Typography, useScreenBottomPadding } from '@components/common';
 import { layout, theme } from '@styles';
 
 type ChargeSelectMethodScreenProps = NativeStackScreenProps<RootStackParamList, 'ChargeSelectMethod'>;
@@ -14,9 +14,10 @@ type ChargeSelectMethodScreenProps = NativeStackScreenProps<RootStackParamList, 
  * 1원 인증 계좌는 돈이 나가는 출금에서만 요구한다 (RefundAcntScreen).
  */
 const ChargeSelectMethodScreen: React.FC<ChargeSelectMethodScreenProps> = ({ navigation }) => {
+  const screenBottom = useScreenBottomPadding();
   return (
     <ScreenWrapper backgroundColor={theme.colors.bg}>
-      <View style={styles.wrap}>
+      <View style={[styles.wrap, screenBottom]}>
         <Typography mode="heading3" color="gray900">
           충전수단을 선택해주세요.
         </Typography>
@@ -80,7 +81,7 @@ const ChargeSelectMethodScreen: React.FC<ChargeSelectMethodScreenProps> = ({ nav
 };
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, gap: 24, paddingTop: theme.screen.topForm, paddingBottom: theme.screen.bottom },
+  wrap: { paddingHorizontal: 16, gap: 24, paddingTop: theme.screen.topForm },
   selectBtn: {
     flex: 1,
     padding: 16,

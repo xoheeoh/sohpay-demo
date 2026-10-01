@@ -9,12 +9,13 @@ import { IRefundAcnt } from '@typ/paymentType';
 import { loadRefundAcnt } from '@apis/paymentApi';
 import { getBankImage, getBankName } from '@dt/bankCd';
 import { maskAccountNumber } from '@utils/formatter';
-import { ScreenWrapper, Skeleton, Typography } from '@components/common';
+import { ScreenWrapper, Skeleton, Typography, useScreenBottomPadding } from '@components/common';
 import { layout, theme } from '@styles';
 
 type AcntManageScreenProps = NativeStackScreenProps<RootStackParamList, 'AcntManage'>;
 
 const AcntManageScreen: React.FC<AcntManageScreenProps> = ({ navigation }) => {
+  const screenBottom = useScreenBottomPadding();
   // 등록된 출금 계좌
   const [acntData, setAcntData] = useState<IRefundAcnt | null>(null);
   // 첫 조회가 끝나기 전에는 "계좌 없음" 대신 자리표시자를 보여 깜빡임을 막는다
@@ -43,7 +44,7 @@ const AcntManageScreen: React.FC<AcntManageScreenProps> = ({ navigation }) => {
 
   return (
     <ScreenWrapper backgroundColor={theme.colors.bg} topComponent={false}>
-      <View style={styles.wrap}>
+      <View style={[styles.wrap, screenBottom]}>
         {/* 출금 계좌 카드 */}
         <View style={styles.card}>
           <View style={layout.rowBetween}>
@@ -124,7 +125,7 @@ const AcntManageScreen: React.FC<AcntManageScreenProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topCard, paddingBottom: theme.screen.bottom, gap: 16 },
+  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topCard, gap: 16 },
   card: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,

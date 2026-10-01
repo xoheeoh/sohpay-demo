@@ -6,7 +6,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '@typ/navigation';
 import { storeData } from '@storages/asyncStorage';
-import { InfoBox, PrimaryButton, ScreenWrapper, Typography, Wordmark } from '@components/common';
+import { InfoBox, PrimaryButton, ScreenWrapper, Typography, Wordmark, useScreenBottomPadding } from '@components/common';
 import { theme } from '@styles';
 
 const PERMISSION_NOTICE_SEEN_KEY = 'permissionNoticeSeen';
@@ -14,6 +14,7 @@ const PERMISSION_NOTICE_SEEN_KEY = 'permissionNoticeSeen';
 type PermissionNoticeScreenProps = NativeStackScreenProps<RootStackParamList, 'PermissionNotice'>;
 
 const PermissionNoticeScreen: React.FC<PermissionNoticeScreenProps> = ({ navigation }) => {
+  const screenBottom = useScreenBottomPadding();
   const handleConfirm = async () => {
     await storeData(PERMISSION_NOTICE_SEEN_KEY, true);
     navigation.dispatch(
@@ -82,7 +83,7 @@ const PermissionNoticeScreen: React.FC<PermissionNoticeScreenProps> = ({ navigat
           </View>
         </View>
 
-        <View style={{ paddingBottom: theme.screen.bottom }}>
+        <View style={screenBottom}>
           <PrimaryButton label="네, 확인했어요." size="lg" onPress={handleConfirm} />
         </View>
       </View>

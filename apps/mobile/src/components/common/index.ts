@@ -27,3 +27,4 @@ export * from './SuccessAnimation';
 export { toastConfig } from './AppToast';
 export { Wordmark } from './Wordmark';
 export { usePressScale } from './usePressScale';
+export { useScreenBottomPadding } from './useScreenBottomPadding';

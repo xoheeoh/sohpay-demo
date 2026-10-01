@@ -5,7 +5,7 @@ import { Divider, Icon } from 'react-native-paper';
 import type { RootStackParamList } from '@typ/navigation';
 import { formatPhoneNumber } from '@utils/formatter';
 import { useDialog } from '@contexts/DialogContext';
-import { ScreenWrapper, SecondaryButton, Typography } from '@components/common';
+import { ScreenWrapper, SecondaryButton, Typography, useScreenBottomPadding } from '@components/common';
 import { layout, theme } from '@styles';
 
 type ServiceScreenProps = NativeStackScreenProps<RootStackParamList, 'Service'>;
@@ -39,6 +39,7 @@ const QuickMenuTile = ({ icon, label, onPress }: { icon: string; label: string; 
 );
 
 const ServiceScreen: React.FC<ServiceScreenProps> = ({ navigation }) => {
+  const screenBottom = useScreenBottomPadding();
   const { confirm } = useDialog();
 
   const handleCall = () => {
@@ -63,7 +64,7 @@ const ServiceScreen: React.FC<ServiceScreenProps> = ({ navigation }) => {
 
   return (
     <ScreenWrapper backgroundColor={theme.colors.bg} topComponent={false}>
-      <ScrollView contentContainerStyle={styles.wrap}>
+      <ScrollView contentContainerStyle={[styles.wrap, screenBottom]}>
         {/* 바로가기 타일 */}
         <View style={styles.tileRow}>
           <QuickMenuTile
@@ -132,7 +133,7 @@ const ServiceScreen: React.FC<ServiceScreenProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topCard, paddingBottom: theme.screen.bottom, gap: 24 },
+  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topCard, gap: 24 },
   section: { gap: 8 },
   sectionTitle: { paddingHorizontal: 4 },
 

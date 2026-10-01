@@ -7,12 +7,13 @@ import * as Application from 'expo-application';
 import type { RootStackParamList } from '@typ/navigation';
 import { useDialog } from '@contexts/DialogContext';
 import { loadMarketingOptIn, updateMarketingOptIn } from '@apis/commonApi';
-import { Badge, ScreenWrapper, Skeleton, ToggleSwitch, Typography } from '@components/common';
+import { Badge, ScreenWrapper, Skeleton, ToggleSwitch, Typography, useScreenBottomPadding } from '@components/common';
 import { layout, theme } from '@styles';
 
 type SettingScreenProps = NativeStackScreenProps<RootStackParamList, 'Setting'>;
 
 const SettingScreen: React.FC<SettingScreenProps> = () => {
+  const screenBottom = useScreenBottomPadding();
   const { alert, confirm } = useDialog();
 
   // 스토어에 배포되지 않은 데모 앱이라 최신 버전 조회 없이 현재 버전만 보여준다. 웹은 네이티브 버전이 없어 0.1.0
@@ -63,7 +64,7 @@ const SettingScreen: React.FC<SettingScreenProps> = () => {
 
   return (
     <ScreenWrapper backgroundColor={theme.colors.bg}>
-      <ScrollView contentContainerStyle={styles.wrap}>
+      <ScrollView contentContainerStyle={[styles.wrap, screenBottom]}>
         {/* 앱 정보 */}
         <View style={styles.section}>
           <Typography mode="subtitle3" color="gray500" style={styles.sectionTitle}>
@@ -135,7 +136,7 @@ const SettingScreen: React.FC<SettingScreenProps> = () => {
 };
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topForm, paddingBottom: theme.screen.bottom, gap: 24 },
+  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topForm, gap: 24 },
   section: { gap: 8 },
   sectionTitle: { paddingHorizontal: 4 },
   card: {

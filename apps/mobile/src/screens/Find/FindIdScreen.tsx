@@ -6,7 +6,7 @@ import type { RootStackParamList } from '@typ/navigation';
 import { formatYYYYMMDDDate } from '@utils/formatter';
 import {
   BottomBtnBox,
-  BOTTOM_BTN_BOX_HEIGHT,
+  useBottomBtnBoxHeight,
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
   KeyboardAwareScrollView,
   ScreenWrapper,
@@ -19,11 +19,12 @@ import styles from './FindScreen.styles';
  * 하단 버튼 상자가 스크롤 영역 위에 떠 있어 단순 가운데 정렬은 아래로 치우쳐 보이므로,
  * 버튼 위 영역 기준으로 가운데를 맞추기 위한 추가 아래 여백.
  */
-const CENTERING_EXTRA_BOTTOM_PADDING = BOTTOM_BTN_BOX_HEIGHT - BOTTOM_BTN_BOX_KEYBOARD_INSET + 24;
+const CENTERING_LIFT = 24;
 
 type FindIdScreenProps = NativeStackScreenProps<RootStackParamList, 'FindId'>;
 
 const FindIdScreen: React.FC<FindIdScreenProps> = ({ navigation, route }) => {
+  const centeringExtraBottomPadding = useBottomBtnBoxHeight() - BOTTOM_BTN_BOX_KEYBOARD_INSET + CENTERING_LIFT;
   const { mbUid, regDnt } = route.params;
 
   // 완료 화면에서는 뒤로가기를 막고 로그인 화면으로 보낸다
@@ -54,7 +55,7 @@ const FindIdScreen: React.FC<FindIdScreenProps> = ({ navigation, route }) => {
       <KeyboardAwareScrollView
         contentContainerStyle={[styles.wrap, styles.successWrap]}
         keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}
-        extraBottomPadding={CENTERING_EXTRA_BOTTOM_PADDING}>
+        extraBottomPadding={centeringExtraBottomPadding}>
         <View style={styles.hero}>
           <SuccessAnimation size={160} style={styles.animation} />
 

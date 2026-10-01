@@ -14,12 +14,13 @@ import { hasSession } from '@apis/client';
 import { loadUserAmt, loadUsrInfoData } from '@apis/commonApi';
 import { getUseList } from '@apis/paymentApi';
 import { BalanceInfo, GradientButton, TransactionItem } from '@components/dashboard';
-import { ScreenWrapper, Skeleton, Typography } from '@components/common';
+import { ScreenWrapper, Skeleton, Typography, useScreenBottomPadding } from '@components/common';
 import { layout, theme } from '@styles';
 
 type DashboardScreenProps = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
 
 const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
+  const screenBottom = useScreenBottomPadding();
   // Dialog
   const { alert } = useDialog();
 
@@ -131,7 +132,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   return (
     <ScreenWrapper backgroundColor={theme.colors.bg} topComponent={false}>
       <ScrollView
-        contentContainerStyle={styles.wrap}
+        contentContainerStyle={[styles.wrap, screenBottom]}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
         {/* 상단 */}
         <View style={{ gap: 12 }}>
@@ -220,7 +221,6 @@ const styles = StyleSheet.create({
   wrap: {
     paddingHorizontal: 16,
     paddingTop: theme.screen.topCard,
-    paddingBottom: theme.screen.bottom,
     gap: 16,
     flexGrow: 1,
   },

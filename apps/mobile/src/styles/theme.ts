@@ -15,7 +15,10 @@ export const screen = {
   topForm: 16,
   /** 첫 내용이 카드인 화면. 카드 안쪽 여백이 숨 쉴 공간을 대신한다 */
   topCard: 8,
-  /** 하단 고정 버튼이 없는 화면의 아래 여백. 안전 영역 위에 더한다. 버튼이 있는 화면은 KeyboardAwareScrollView 가 따로 계산한다 */
+  /**
+   * 하단 고정 버튼이 없는 화면의 아래 여백. 안전 영역 위에 더한다. 버튼이 있는 화면은 KeyboardAwareScrollView 가 따로 계산한다.
+   * 화면에서는 직접 쓰지 않고 useScreenBottomPadding 을 쓴다. iOS 홈 인디케이터 기종은 안전 영역만으로 충분해 이 값을 더하지 않는다
+   */
   bottom: 16,
 } as const;
 

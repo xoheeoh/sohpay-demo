@@ -5,7 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@typ/navigation';
 import {
   BottomBtnBox,
-  BOTTOM_BTN_BOX_HEIGHT,
+  useBottomBtnBoxHeight,
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
   KeyboardAwareScrollView,
   ScreenWrapper,
@@ -18,11 +18,12 @@ import styles from './FindScreen.styles';
  * 하단 버튼 상자가 스크롤 영역 위에 떠 있어 단순 가운데 정렬은 아래로 치우쳐 보이므로,
  * 버튼 위 영역 기준으로 가운데를 맞추기 위한 추가 아래 여백.
  */
-const CENTERING_EXTRA_BOTTOM_PADDING = BOTTOM_BTN_BOX_HEIGHT - BOTTOM_BTN_BOX_KEYBOARD_INSET + 24;
+const CENTERING_LIFT = 24;
 
 type FindPwScreenProps = NativeStackScreenProps<RootStackParamList, 'FindPw'>;
 
 const FindPwScreen: React.FC<FindPwScreenProps> = ({ navigation, route }) => {
+  const centeringExtraBottomPadding = useBottomBtnBoxHeight() - BOTTOM_BTN_BOX_KEYBOARD_INSET + CENTERING_LIFT;
   // tempPwd 는 데모 전용: 메일을 보내지 않아 임시 비밀번호를 화면에 표시한다
   const { mbUid, tempPwd } = route.params;
 
@@ -54,7 +55,7 @@ const FindPwScreen: React.FC<FindPwScreenProps> = ({ navigation, route }) => {
       <KeyboardAwareScrollView
         contentContainerStyle={[styles.wrap, styles.successWrap]}
         keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}
-        extraBottomPadding={CENTERING_EXTRA_BOTTOM_PADDING}>
+        extraBottomPadding={centeringExtraBottomPadding}>
         <View style={styles.hero}>
           <SuccessAnimation size={160} style={styles.animation} />
 
