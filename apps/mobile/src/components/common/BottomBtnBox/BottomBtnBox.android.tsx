@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Keyboard, LayoutAnimation, ViewStyle } from 'react-native';
 import PrimaryButton from '../PrimaryButton';
 import { BottomBtnBoxProps } from './BottomBtnBox.ios';
+import { useBottomBtnBoxPaddingBottom } from './metrics';
 
 const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({
   buttonKey,
@@ -14,6 +15,7 @@ const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({
   const [opacityAnim] = useState(new Animated.Value(1));
   const bottomAnim = useRef(new Animated.Value(0)).current;
   const [keyboardVisible, setKeyboardVisible] = useState<boolean>(false);
+  const paddingBottom = useBottomBtnBoxPaddingBottom();
 
   useEffect(() => {
     const didShowSub = Keyboard.addListener('keyboardDidShow', (event) => {
@@ -82,10 +84,10 @@ const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({
       inputRange: [0, 1],
       outputRange: [0, 16],
     }),
-    // ScreenWrapper 가 제스처 막대 높이만큼 이미 비워 두므로, 그 위에 더하는 여백은 iOS(24)보다 작게 잡는다
+    // ScreenWrapper 가 제스처 막대 높이만큼 이미 비워 두므로, 그 위에 더하는 여백은 metrics 의 값(12)만큼만 둔다
     paddingBottom: paddingAnim.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, 12],
+      outputRange: [0, paddingBottom],
     }),
     paddingTop: paddingAnim.interpolate({
       inputRange: [0, 1],

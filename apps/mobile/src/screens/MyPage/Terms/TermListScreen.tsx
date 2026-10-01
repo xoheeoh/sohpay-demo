@@ -2,13 +2,14 @@ import type { RootStackParamList } from '@typ/navigation';
 import { Pressable, ScrollView, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Icon } from 'react-native-paper';
-import { ScreenWrapper, Typography } from '@components/common';
+import { ScreenWrapper, Typography, useScreenBottomPadding } from '@components/common';
 import { theme } from '@styles';
 import styles from './TermListScreen.styles';
 
 type TermListScreenProps = NativeStackScreenProps<RootStackParamList, 'TermList'>;
 
 const TermListScreen: React.FC<TermListScreenProps> = ({ navigation }) => {
+  const screenBottom = useScreenBottomPadding();
   const termList = [
     { title: '서비스 이용약관' },
     { title: '전자금융거래이용약관' },
@@ -20,7 +21,7 @@ const TermListScreen: React.FC<TermListScreenProps> = ({ navigation }) => {
 
   return (
     <ScreenWrapper backgroundColor={theme.colors.bg} topComponent={false}>
-      <ScrollView contentContainerStyle={styles.wrap}>
+      <ScrollView contentContainerStyle={[styles.wrap, screenBottom]}>
         <View style={styles.list}>
           {termList.map((item, index) => (
             <Pressable

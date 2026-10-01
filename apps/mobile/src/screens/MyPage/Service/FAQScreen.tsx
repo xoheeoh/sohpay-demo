@@ -8,7 +8,7 @@ import Accordion from 'react-native-collapsible/Accordion';
 import type { RootStackParamList } from '@typ/navigation';
 import { IFAQList } from '@typ/commonType';
 import { FAQ_CTGR_NM, InquiryFAQ } from '@apis/commonApi';
-import { Dropdown, ScreenWrapper, SearchBox, SkeletonList, Typography } from '@components/common';
+import { Dropdown, ScreenWrapper, SearchBox, SkeletonList, Typography, useScreenBottomPadding } from '@components/common';
 import { useAppWidth } from '@utils/dimensions';
 import { layout, theme } from '@styles';
 
@@ -53,6 +53,7 @@ const sanitizeAnswerHtml = (body: string | undefined): string => {
 };
 
 const FAQScreen: React.FC<FAQScreenProps> = () => {
+  const screenBottom = useScreenBottomPadding();
   // 검색 조건
   const [selectedCategoryLabel, setSelectedCategoryLabel] = useState<string>(ALL_CATEGORY_LABEL);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -178,7 +179,7 @@ const FAQScreen: React.FC<FAQScreenProps> = () => {
       {/* 스크롤 영역: 질문·답변 목록만 스크롤된다 */}
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={screenBottom}
         keyboardShouldPersistTaps="handled"
         onScrollBeginDrag={() => dropdownRef.current?.close()}>
         {isLoading ? (
@@ -216,7 +217,6 @@ const FAQScreen: React.FC<FAQScreenProps> = () => {
 const styles = StyleSheet.create({
   fixedTop: { paddingTop: theme.screen.topForm, paddingHorizontal: 16, paddingBottom: 16, gap: 24, zIndex: 1 },
   search: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  listContent: { paddingBottom: theme.screen.bottom },
 
   // 질문 한 건
   list: { paddingHorizontal: 16 },

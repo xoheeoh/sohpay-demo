@@ -12,7 +12,7 @@ import { getData, removeData } from '@storages/asyncStorage';
 import { useDialog } from '@contexts/DialogContext';
 import {
   BottomBtnBox,
-  BOTTOM_BTN_BOX_HEIGHT,
+  useBottomBtnBoxHeight,
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
   KeyboardAwareScrollView,
   ScreenWrapper,
@@ -44,9 +44,10 @@ const PREVIEW_USER: IUserData = {
  * 하단 버튼 상자가 스크롤 영역 위에 떠 있어 단순 가운데 정렬은 아래로 치우쳐 보이므로,
  * 버튼 위 영역 기준으로 가운데를 맞추기 위한 추가 아래 여백. 24 는 카드가 아래쪽에 무게를 실어 살짝 위로 올리는 보정값.
  */
-const CENTERING_EXTRA_BOTTOM_PADDING = BOTTOM_BTN_BOX_HEIGHT - BOTTOM_BTN_BOX_KEYBOARD_INSET + 24;
+const CENTERING_LIFT = 24;
 
 const JoinCompletedScreen: React.FC<JoinCompletedScreenProps> = ({ navigation }) => {
+  const centeringExtraBottomPadding = useBottomBtnBoxHeight() - BOTTOM_BTN_BOX_KEYBOARD_INSET + CENTERING_LIFT;
   // 1~3 단계에서 저장해 둔 가입 정보
   const [userData, setUserData] = useState<IUserData | null>(IS_PREVIEW ? PREVIEW_USER : null);
 
@@ -152,7 +153,7 @@ const JoinCompletedScreen: React.FC<JoinCompletedScreenProps> = ({ navigation })
           <KeyboardAwareScrollView
             contentContainerStyle={styles.container}
             keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}
-            extraBottomPadding={CENTERING_EXTRA_BOTTOM_PADDING}>
+            extraBottomPadding={centeringExtraBottomPadding}>
             <View style={styles.hero}>
               <SuccessAnimation size={160} style={styles.animation} />
 

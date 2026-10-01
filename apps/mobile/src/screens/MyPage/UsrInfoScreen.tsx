@@ -10,7 +10,14 @@ import { getBankName } from '@dt/bankCd';
 import { formatWon, formatYYYYMMDDDate, maskAccountNumber } from '@utils/formatter';
 import { loadUserAmt } from '@apis/commonApi';
 import { loadRefundAcnt } from '@apis/paymentApi';
-import { ScreenWrapper, SecondaryButton, Skeleton, TextButton, Typography } from '@components/common';
+import {
+  ScreenWrapper,
+  SecondaryButton,
+  Skeleton,
+  TextButton,
+  Typography,
+  useScreenBottomPadding,
+} from '@components/common';
 import { layout, theme } from '@styles';
 
 type UsrInfoScreenProps = NativeStackScreenProps<RootStackParamList, 'UsrInfo'>;
@@ -19,6 +26,7 @@ type UsrInfoScreenProps = NativeStackScreenProps<RootStackParamList, 'UsrInfo'>;
 const formatAmount = (value: string) => Number(value).toLocaleString('ko-KR');
 
 const UsrInfoScreen: React.FC<UsrInfoScreenProps> = ({ navigation, route }) => {
+  const screenBottom = useScreenBottomPadding();
   const usrData = route.params.usrData;
 
   // null 이면 조회 전이라 금액 자리에 자리표시자를 보여준다
@@ -59,7 +67,7 @@ const UsrInfoScreen: React.FC<UsrInfoScreenProps> = ({ navigation, route }) => {
 
   return (
     <ScreenWrapper backgroundColor={theme.colors.bg} topComponent={false}>
-      <ScrollView contentContainerStyle={styles.wrap}>
+      <ScrollView contentContainerStyle={[styles.wrap, screenBottom]}>
         {/* 보유 잔액 카드 */}
         <View style={styles.card}>
           <View style={layout.rowBetween}>
@@ -170,7 +178,7 @@ const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) =
 );
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topCard, paddingBottom: theme.screen.bottom, gap: 16 },
+  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topCard, gap: 16 },
   card: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,

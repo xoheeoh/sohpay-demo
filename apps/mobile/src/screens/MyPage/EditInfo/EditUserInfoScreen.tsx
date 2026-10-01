@@ -261,7 +261,8 @@ const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigati
 };
 
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: 16, paddingTop: theme.screen.topForm, paddingBottom: theme.screen.bottom },
+  // 아래 여백은 KeyboardAwareScrollView 가 계산한다
+  container: { paddingHorizontal: 16, paddingTop: theme.screen.topForm },
 });
 
 export default EditUserInfoScreen;

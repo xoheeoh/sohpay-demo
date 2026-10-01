@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, Easing, Keyboard, LayoutAnimation, ViewStyle } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import PrimaryButton from '../PrimaryButton';
+import { useBottomBtnBoxPaddingBottom } from './metrics';
 
 export interface BottomBtnBoxProps {
   buttonKey: string;
@@ -22,6 +24,8 @@ const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({
   const [opacityAnim] = useState(new Animated.Value(1));
   const [keyboardVisible, setKeyboardVisible] = useState<boolean>(false);
   const [actualKeyboardHeight, setActualKeyboardHeight] = useState<number>(0);
+  const insets = useSafeAreaInsets();
+  const paddingBottom = useBottomBtnBoxPaddingBottom();
 
   useEffect(() => {
     const frameSub = Keyboard.addListener('keyboardWillChangeFrame', (event) => {
@@ -74,7 +78,8 @@ const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({
   const containerStyle: Animated.WithAnimatedObject<ViewStyle> = {
     position: 'absolute',
     backgroundColor,
-    bottom: keyboardVisible ? actualKeyboardHeight - 34 : 0,
+    // 상자는 안전 영역 안쪽에 있으므로 키보드 높이에서 안전 영역을 뺀 만큼만 올린다. 홈 버튼 기종은 안전 영역이 0 이다
+    bottom: keyboardVisible ? actualKeyboardHeight - insets.bottom : 0,
     width: '100%',
     paddingHorizontal: paddingAnim.interpolate({
       inputRange: [0, 1],
@@ -82,7 +87,7 @@ const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({
     }),
     paddingBottom: paddingAnim.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, 24],
+      outputRange: [0, paddingBottom],
     }),
     paddingTop: paddingAnim.interpolate({
       inputRange: [0, 1],

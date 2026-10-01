@@ -10,13 +10,21 @@ import { useDialog } from '@contexts/DialogContext';
 import { formatDateTime, formatWon } from '@utils/formatter';
 import { loadMidInfo } from '@apis/commonApi';
 import { getBankName } from '@dt/bankCd';
-import { Badge, ScreenWrapper, Typography, getTrxAmountColor, getTrxTone } from '@components/common';
+import {
+  Badge,
+  ScreenWrapper,
+  Typography,
+  getTrxAmountColor,
+  getTrxTone,
+  useScreenBottomPadding,
+} from '@components/common';
 import { ChargeInfo, MidInfo, PaymentInfo } from '@components/uselist';
 import { theme } from '@styles';
 
 type UseDetailScreenProps = NativeStackScreenProps<RootStackParamList, 'UseDetail'>;
 
 const UseDetailScreen: React.FC<UseDetailScreenProps> = ({ route }) => {
+  const screenBottom = useScreenBottomPadding();
   const { getCd, item } = route.params;
 
   // Dialog
@@ -194,7 +202,7 @@ const UseDetailScreen: React.FC<UseDetailScreenProps> = ({ route }) => {
 
   return (
     <ScreenWrapper backgroundColor={theme.colors.bg}>
-      <ScrollView contentContainerStyle={styles.wrap}>
+      <ScrollView contentContainerStyle={[styles.wrap, screenBottom]}>
         {/* 이미지 저장 - 캡처 영역 밖 */}
         <Pressable style={styles.saveBtn} onPress={handleSave} hitSlop={8}>
           <Icon source="tray-arrow-down" size={18} color={theme.colors.gray600} />
@@ -276,7 +284,7 @@ const UseDetailScreen: React.FC<UseDetailScreenProps> = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topCard, paddingBottom: theme.screen.bottom, gap: 8 },
+  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topCard, gap: 8 },
   saveBtn: {
     alignSelf: 'flex-end',
     flexDirection: 'row',

@@ -10,7 +10,7 @@ import { loadUserAmt } from '@apis/commonApi';
 import { GlassReceiptCard, GlassReceiptRow } from '@components/dashboard';
 import {
   BottomBtnBox,
-  BOTTOM_BTN_BOX_HEIGHT,
+  useBottomBtnBoxHeight,
   BOTTOM_BTN_BOX_KEYBOARD_INSET,
   KeyboardAwareScrollView,
   ScreenWrapper,
@@ -24,9 +24,10 @@ type ChargeSucScreenProps = NativeStackScreenProps<RootStackParamList, 'ChargeSu
  * 하단 버튼 상자가 떠 있어 스크롤 영역이 그 뒤까지 이어지므로,
  * 내용이 "버튼 위 영역"의 가운데에 오도록 아래 여백을 더한다.
  */
-const CENTERING_EXTRA_BOTTOM_PADDING = BOTTOM_BTN_BOX_HEIGHT - BOTTOM_BTN_BOX_KEYBOARD_INSET + 24;
+const CENTERING_LIFT = 24;
 
 const ChargeSucScreen: React.FC<ChargeSucScreenProps> = ({ navigation, route }) => {
+  const centeringExtraBottomPadding = useBottomBtnBoxHeight() - BOTTOM_BTN_BOX_KEYBOARD_INSET + CENTERING_LIFT;
   const { chargeAmt } = route.params;
 
   // 뒤로 가면 PIN 입력으로 돌아가 다시 충전할 수 있으므로 뒤로가기를 막는다
@@ -79,7 +80,7 @@ const ChargeSucScreen: React.FC<ChargeSucScreenProps> = ({ navigation, route }) 
       <KeyboardAwareScrollView
         contentContainerStyle={styles.container}
         keyboardAccessoryHeight={BOTTOM_BTN_BOX_KEYBOARD_INSET}
-        extraBottomPadding={CENTERING_EXTRA_BOTTOM_PADDING}>
+        extraBottomPadding={centeringExtraBottomPadding}>
         <View style={styles.hero}>
           <SuccessAnimation size={160} style={styles.animation} />
 

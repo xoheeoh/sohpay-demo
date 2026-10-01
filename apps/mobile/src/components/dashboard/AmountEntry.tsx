@@ -1,7 +1,7 @@
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
 
-import { BOTTOM_BTN_BOX_HEIGHT, Typography } from '@components/common';
+import { Typography, useBottomBtnBoxHeight } from '@components/common';
 import { theme } from '@styles';
 import { toKoreanAmount } from '@utils/koreanAmount';
 
@@ -70,6 +70,7 @@ const AmountEntry: React.FC<AmountEntryProps> = ({
   onMax,
   maxDigits = 8,
 }) => {
+  const bottomBtnBoxHeight = useBottomBtnBoxHeight();
   const numeric = Number(amount || 0);
   const hasValue = numeric > 0;
 
@@ -153,7 +154,7 @@ const AmountEntry: React.FC<AmountEntryProps> = ({
       </View>
 
       {/* 숫자 키패드 (PinPad 와 같은 모양, 숫자는 섞지 않는다) */}
-      <View style={styles.keypad}>
+      <View style={[styles.keypad, { paddingBottom: bottomBtnBoxHeight }]}>
         {KEY_ROWS.map((row, i) => (
           <View key={i} style={styles.keyRow}>
             {row.map((key) => (
@@ -207,14 +208,13 @@ const styles = StyleSheet.create({
   chipMax: { backgroundColor: theme.colors.primarySoft },
   chipPressed: { opacity: 0.6 },
 
-  // 하단 고정 버튼 상자가 위에 겹치므로 그 높이만큼만 아래 여백을 둔다. 상자 자체의 위 여백(16)이 키와 버튼 사이 간격이 된다
+  // 하단 고정 버튼 상자가 위에 겹치므로 그 높이만큼만 아래 여백을 둔다(렌더에서 useBottomBtnBoxHeight 로 넣음). 상자 자체의 위 여백(16)이 키와 버튼 사이 간격이 된다
   keypad: {
     backgroundColor: theme.colors.gray50,
     borderTopLeftRadius: theme.radius.xxl + 4,
     borderTopRightRadius: theme.radius.xxl + 4,
     paddingTop: 16,
     paddingHorizontal: 16,
-    paddingBottom: BOTTOM_BTN_BOX_HEIGHT,
     gap: 8,
   },
   keyRow: { flexDirection: 'row', gap: 8 },

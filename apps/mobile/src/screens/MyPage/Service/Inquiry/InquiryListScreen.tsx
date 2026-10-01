@@ -6,7 +6,7 @@ import Accordion from 'react-native-collapsible/Accordion';
 
 import { IMyInquiryList } from '@typ/commonType';
 import { loadMyInquiry } from '@apis/commonApi';
-import { Badge, Dropdown, SearchBox, SkeletonList, Typography } from '@components/common';
+import { Badge, Dropdown, SearchBox, SkeletonList, Typography, useScreenBottomPadding } from '@components/common';
 import { layout, theme } from '@styles';
 import { getAppWidth } from '@utils/dimensions';
 import { formatYYYYMMDDDate } from '@utils/formatter';
@@ -19,6 +19,7 @@ interface InquiryListScreenProps {
 const INQUIRY_ANSWERED = '1';
 
 const InquiryListScreen: React.FC<InquiryListScreenProps> = ({ dropdownRef }) => {
+  const screenBottom = useScreenBottomPadding();
   // 문의 카테고리
   const optionMapping: Record<string, string> = {
     전체: '', // 빈 문자열 = 카테고리 조건 없음
@@ -236,7 +237,7 @@ const InquiryListScreen: React.FC<InquiryListScreenProps> = ({ dropdownRef }) =>
       {/* 스크롤 영역: 문의·답변 목록만 스크롤된다 */}
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={screenBottom}
         keyboardShouldPersistTaps="handled"
         onScrollBeginDrag={() => dropdownRef?.current?.close?.()}>
         {/* 조회가 끝나기 전에는 목록 자리에 자리표시자를 보여준다 */}
@@ -277,7 +278,6 @@ const styles = StyleSheet.create({
   // 탭 바 아래에 들어가는 내용물이라 헤더 간격 토큰이 아닌 탭과의 간격(24)을 쓴다. 문의하기 탭(InquiryEnrollScreen)과 같은 값
   fixedTop: { paddingTop: 24, paddingHorizontal: 16, paddingBottom: 16, gap: 24, zIndex: 1 },
   search: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  listContent: { paddingBottom: theme.screen.bottom },
 
   // 문의 한 건
   list: { paddingHorizontal: 16 },

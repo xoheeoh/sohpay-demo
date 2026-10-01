@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import { layout, theme } from '@styles';
 
 const styles = StyleSheet.create({
-  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topCard, paddingBottom: theme.screen.bottom },
+  wrap: { paddingHorizontal: 16, paddingTop: theme.screen.topCard },
   list: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
