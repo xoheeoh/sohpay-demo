@@ -123,7 +123,7 @@ const JoinStepThreeChkScreen: React.FC<JoinStepThreeChkScreenProps> = ({ navigat
   }, [previousNumber, enteredNumbers, navigation]);
 
   return (
-    <ScreenWrapper backgroundColor="white" topComponent={false}>
+    <ScreenWrapper backgroundColor="white" topComponent={false} bottomEdge={false}>
       <PinPad
         title="간편 비밀번호 확인"
         description={
@@ -141,7 +141,6 @@ const JoinStepThreeChkScreen: React.FC<JoinStepThreeChkScreenProps> = ({ navigat
         onKeyPress={handleKeyPress}
         onShuffle={handleShuffle}
         onDelete={handleDelete}
-
         topSlot={
           <View style={styles.stepBox}>
             <View style={styles.stepBadge}>

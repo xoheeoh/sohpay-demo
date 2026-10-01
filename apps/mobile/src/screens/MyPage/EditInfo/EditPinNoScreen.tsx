@@ -102,7 +102,7 @@ const EditPinNoScreen: React.FC<EditPinNoScreenProps> = ({ navigation, route }) 
   );
 
   return (
-    <ScreenWrapper backgroundColor="white" topComponent={false}>
+    <ScreenWrapper backgroundColor="white" topComponent={false} bottomEdge={false}>
       <PinPad
         title="간편 비밀번호 설정"
         description={

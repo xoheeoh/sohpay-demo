@@ -136,7 +136,7 @@ const PinChargeScreen: React.FC<PinChargeScreenProps> = ({ navigation, route }) 
   }, [error, exceed, remainingAttempts]);
 
   return (
-    <ScreenWrapper backgroundColor="white" topComponent={false}>
+    <ScreenWrapper backgroundColor="white" topComponent={false} bottomEdge={false}>
       <PinPad
         title="간편 비밀번호 입력"
         description={

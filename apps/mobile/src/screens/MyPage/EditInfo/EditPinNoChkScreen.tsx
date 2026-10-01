@@ -143,7 +143,7 @@ const EditPinNoChkScreen: React.FC<EditPinNoChkScreenProps> = ({ navigation, rou
   }, [previousNumber, enteredNumbers, navigation]);
 
   return (
-    <ScreenWrapper backgroundColor="white" topComponent={false}>
+    <ScreenWrapper backgroundColor="white" topComponent={false} bottomEdge={false}>
       <PinPad
         title="간편 비밀번호 확인"
         description={

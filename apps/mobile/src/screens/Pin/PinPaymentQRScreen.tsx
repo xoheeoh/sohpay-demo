@@ -172,7 +172,7 @@ const PinPaymentQRScreen: React.FC<PinPaymentQRScreenProps> = ({ navigation, rou
   };
 
   return (
-    <ScreenWrapper backgroundColor="white" topComponent={false}>
+    <ScreenWrapper backgroundColor="white" topComponent={false} bottomEdge={false}>
       <PinPad
         title="간편 비밀번호 입력"
         description={
