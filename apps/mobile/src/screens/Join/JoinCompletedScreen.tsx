@@ -167,30 +167,32 @@ const JoinCompletedScreen: React.FC<JoinCompletedScreenProps> = ({ navigation })
               </View>
             </View>
 
-            {/* 대시보드 잔액 카드와 같은 브랜드 그라디언트로 회원카드 느낌을 준다 */}
-            <LinearGradient
-              colors={[theme.colors.blue500, theme.colors.primaryDark]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.memberCard}>
-              <View style={styles.decoLarge} />
-              <View style={styles.decoSmall} />
+            {/* 대시보드 잔액 카드와 같은 브랜드 그라디언트로 회원카드 느낌을 준다. 그림자는 바깥 View 가 맡는다 */}
+            <View style={styles.memberCardShadow}>
+              <LinearGradient
+                colors={[theme.colors.blue500, theme.colors.primaryDark]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.memberCard}>
+                <View style={styles.decoLarge} />
+                <View style={styles.decoSmall} />
 
-              <View style={styles.memberCardHead}>
-                <Wordmark height={18} color="white" />
-                <View style={styles.memberBadge}>
-                  <Typography mode="caption2" color="white">
-                    NEW MEMBER
-                  </Typography>
+                <View style={styles.memberCardHead}>
+                  <Wordmark height={18} color="white" />
+                  <View style={styles.memberBadge}>
+                    <Typography mode="caption2" color="white">
+                      NEW MEMBER
+                    </Typography>
+                  </View>
                 </View>
-              </View>
 
-              <View style={{ gap: 10 }}>
-                <MemberRow label="이름" value={userData?.usrNm} />
-                <MemberRow label="ID" value={userData?.mbUid} />
-                {userData?.email ? <MemberRow label="이메일" value={userData.email} /> : null}
-              </View>
-            </LinearGradient>
+                <View style={{ gap: 10 }}>
+                  <MemberRow label="이름" value={userData?.usrNm} />
+                  <MemberRow label="ID" value={userData?.mbUid} />
+                  {userData?.email ? <MemberRow label="이메일" value={userData.email} /> : null}
+                </View>
+              </LinearGradient>
+            </View>
           </KeyboardAwareScrollView>
 
           <BottomBtnBox buttonKey={'goToLogin'} disabled={false} label={'로그인하기'} onPress={goToLogin} />
@@ -220,16 +222,20 @@ const styles = StyleSheet.create({
   // Lottie 그림 안의 투명 여백(위 28px, 아래 35px)을 음수 여백으로 상쇄해 보이는 그림 기준으로 정렬한다
   animation: { marginTop: -28, marginBottom: -32 },
 
-  memberCard: {
+  // 그림자는 바깥 View 가, 둥근 모서리 안쪽 잘라내기는 그라디언트 카드가 맡는다. iOS 는 한 뷰에 둘을 함께 걸면 모서리가 둥글게 잘리지 않는다
+  memberCardShadow: {
     // 웹은 프레임이 700px 까지 넓어지므로 카드를 휴대폰 폭 정도로 제한한다
     width: '100%',
     maxWidth: 400,
     alignSelf: 'center',
     borderRadius: theme.radius.xl,
+    boxShadow: theme.shadow.primary,
+  },
+  memberCard: {
+    borderRadius: theme.radius.xl,
     padding: 22,
     gap: 20,
     overflow: 'hidden',
-    boxShadow: theme.shadow.primary,
   },
   decoLarge: {
     position: 'absolute',

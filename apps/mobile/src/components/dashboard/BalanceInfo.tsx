@@ -20,59 +20,62 @@ const BalanceInfo: React.FC<BalanceInfoProps> = ({ usrData, rmnAmtData, navigati
   const balance = Number(rmnAmtData?.moneyAmt ?? 0).toLocaleString('ko-KR');
 
   return (
-    <LinearGradient
-      colors={[theme.colors.blue500, theme.colors.primaryDark]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.card}>
-      {/* 장식용 원 */}
-      <View style={styles.decoLarge} />
-      <View style={styles.decoSmall} />
+    // 그림자는 바깥 View 가, 둥근 모서리 안쪽 잘라내기는 그라디언트가 맡는다. iOS 는 한 뷰에 둘을 함께 걸면 모서리가 둥글게 잘리지 않는다
+    <View style={styles.cardShadow}>
+      <LinearGradient
+        colors={[theme.colors.blue500, theme.colors.primaryDark]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.card}>
+        {/* 장식용 원 */}
+        <View style={styles.decoLarge} />
+        <View style={styles.decoSmall} />
 
-      <View style={{ gap: 4 }}>
-        <Typography mode="body2" color="white" style={{ opacity: 0.8 }}>
-          {usrData?.usrNm}님의 보유 머니
-        </Typography>
-        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
-          <Typography mode="heading1" color="white" style={styles.amount}>
-            {balance}
+        <View style={{ gap: 4 }}>
+          <Typography mode="body2" color="white" style={{ opacity: 0.8 }}>
+            {usrData?.usrNm}님의 보유 머니
           </Typography>
-          <Typography mode="subtitle1" color="white" style={{ opacity: 0.9 }}>
-            원
-          </Typography>
+          <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
+            <Typography mode="heading1" color="white" style={styles.amount}>
+              {balance}
+            </Typography>
+            <Typography mode="subtitle1" color="white" style={{ opacity: 0.9 }}>
+              원
+            </Typography>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.actions}>
-        <Pressable
-          style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}
-          onPress={() => navigation.navigate('ChargeSelectMethod')}>
-          <Icon source="plus-circle-outline" size={18} color="white" />
-          <Typography mode="subtitle3" color="white">
-            충전
-          </Typography>
-        </Pressable>
+        <View style={styles.actions}>
+          <Pressable
+            style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}
+            onPress={() => navigation.navigate('ChargeSelectMethod')}>
+            <Icon source="plus-circle-outline" size={18} color="white" />
+            <Typography mode="subtitle3" color="white">
+              충전
+            </Typography>
+          </Pressable>
 
-        <Pressable
-          style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}
-          onPress={() => navigation.navigate('Refund')}>
-          <Icon source="bank-transfer-out" size={20} color="white" />
-          <Typography mode="subtitle3" color="white">
-            출금
-          </Typography>
-        </Pressable>
-      </View>
-    </LinearGradient>
+          <Pressable
+            style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}
+            onPress={() => navigation.navigate('Refund')}>
+            <Icon source="bank-transfer-out" size={20} color="white" />
+            <Typography mode="subtitle3" color="white">
+              출금
+            </Typography>
+          </Pressable>
+        </View>
+      </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  cardShadow: { borderRadius: theme.radius.xl, boxShadow: theme.shadow.primary },
   card: {
     borderRadius: theme.radius.xl,
     padding: 22,
     gap: 24,
     overflow: 'hidden',
-    boxShadow: theme.shadow.primary,
   },
   decoLarge: {
     position: 'absolute',
