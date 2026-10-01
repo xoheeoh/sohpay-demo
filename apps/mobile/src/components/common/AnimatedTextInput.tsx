@@ -88,8 +88,9 @@ const AnimatedTextInput = React.forwardRef<TextInput, AnimatedTextInputProps>((p
     top: animatedLabelPosition.interpolate({
       inputRange: [0, 1],
       // 플랫폼별 폰트 메트릭이 달라 라벨 위치가 다르다. 웹은 <input> 이 세로 중앙 정렬을 하지 않아 styles.input 의 paddingTop 과 함께 맞춘다.
-      // iOS 의 자리표시자 위치(18)는 Dropdown 의 body2 글자(줄 높이 20 을 56 안에 중앙 정렬)와 같은 글상자가 되도록 잡은 값이다
-      outputRange: Platform.select({ ios: [18, 10], web: [18, 10], default: [20, 10] }) as number[],
+      // iOS 의 자리표시자 위치(17)는 Dropdown 의 body2 글자(줄 높이 20 을 56 안에 중앙 정렬, 중심 28)와 같은 글상자가 되도록 잡은 값이다.
+      // top 은 테두리(1) 안쪽 기준이라 (56 - 20) / 2 = 18 에서 1 을 뺀다
+      outputRange: Platform.select({ ios: [17, 10], web: [18, 10], default: [20, 10] }) as number[],
     }),
     fontSize: animatedLabelPosition.interpolate({
       inputRange: [0, 1],
