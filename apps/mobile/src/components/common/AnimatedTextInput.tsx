@@ -87,13 +87,23 @@ const AnimatedTextInput = React.forwardRef<TextInput, AnimatedTextInputProps>((p
   const labelStyle = {
     top: animatedLabelPosition.interpolate({
       inputRange: [0, 1],
-      // 플랫폼별 폰트 메트릭이 달라 라벨 위치가 다르다. 웹은 <input> 이 세로 중앙 정렬을 하지 않아 styles.input 의 paddingTop 과 함께 맞춘다
-      outputRange: Platform.select({ ios: [16, 10], web: [18, 10], default: [20, 10] }) as number[],
+      // 플랫폼별 폰트 메트릭이 달라 라벨 위치가 다르다. 웹은 <input> 이 세로 중앙 정렬을 하지 않아 styles.input 의 paddingTop 과 함께 맞춘다.
+      // iOS 의 자리표시자 위치(18)는 Dropdown 의 body2 글자(줄 높이 20 을 56 안에 중앙 정렬)와 같은 글상자가 되도록 잡은 값이다
+      outputRange: Platform.select({ ios: [18, 10], web: [18, 10], default: [20, 10] }) as number[],
     }),
     fontSize: animatedLabelPosition.interpolate({
       inputRange: [0, 1],
       outputRange: [14, 12],
     }),
+    // iOS: 자리표시자일 때는 Dropdown 글자와 같은 줄 높이 20, 위로 떠오르면 자연 높이(12px 글자 약 14.3)로 돌아간다
+    ...(Platform.OS === 'ios'
+      ? {
+          lineHeight: animatedLabelPosition.interpolate({
+            inputRange: [0, 1],
+            outputRange: [20, 14.5],
+          }),
+        }
+      : null),
   };
 
   // 기본 gray50 배경 + line 테두리, 포커스 primary, 오류 red. Textarea·SearchBox·Dropdown 과 같은 규칙
@@ -179,6 +189,8 @@ const styles = StyleSheet.create({
   },
   input: {
     ...typographyStyles.body2, // SearchBox·Textarea·Dropdown 과 같은 body2
+    // iOS 는 한 줄 입력칸이 비어 있을 때는 lineHeight 를 무시하다가 첫 글자부터 적용해 글자가 1~2px 내려앉는다. 줄 높이를 빼면 처음부터 같은 자리에 그려진다
+    ...(Platform.OS === 'ios' ? { lineHeight: undefined } : null),
     paddingHorizontal: 16,
     paddingTop: Platform.select({ ios: 12, web: 12, default: 20 }),
     // 웹은 컨테이너 안쪽 높이를 넘으면 어긋나 보이므로 테두리를 뺀 높이로 맞춘다
