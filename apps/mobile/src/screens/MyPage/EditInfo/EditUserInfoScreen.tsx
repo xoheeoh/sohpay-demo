@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Keyboard, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { RootStackParamList } from '@typ/navigation';
 import { IRefundAcnt } from '@typ/paymentType';
@@ -25,7 +24,6 @@ const EditUserInfoScreen: React.FC<EditUserInfoScreenProps> = ({ route, navigati
 
   const { alert } = useDialog();
 
-  const insets = useSafeAreaInsets();
   const scrollViewRef = useRef<ScrollView>(null);
   const emailRef = useRef<TextInput>(null);
   const pwdRef = useRef<TextInput>(null);
