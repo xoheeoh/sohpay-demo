@@ -79,7 +79,9 @@ const BottomBtnBox: React.FC<BottomBtnBoxProps> = ({
     position: 'absolute',
     backgroundColor,
     // 상자는 안전 영역 안쪽에 있으므로 키보드 높이에서 안전 영역을 뺀 만큼만 올린다. 홈 버튼 기종은 안전 영역이 0 이다
-    bottom: keyboardVisible ? actualKeyboardHeight - insets.bottom : 0,
+    // 키보드 프레임이 소수점으로 오면 상자 아랫변이 픽셀 사이에 걸리므로 정수로 맞춘다.
+    // 상자와 키보드 사이에 보이는 1px 밝은 선은 iOS 키보드 자체의 윗변 경계선이라 앱에서 없앨 수 없다
+    bottom: keyboardVisible ? Math.round(actualKeyboardHeight - insets.bottom) : 0,
     width: '100%',
     paddingHorizontal: paddingAnim.interpolate({
       inputRange: [0, 1],
