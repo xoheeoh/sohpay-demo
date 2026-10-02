@@ -47,8 +47,10 @@ const DateSelectBox: React.FC<DateSelectBoxProps> = ({ label, value, active, onP
 const PeriodModal: React.FC<PeriodModalProps> = ({ radioValue, frDt, toDt, handleSelectPeriod, onPeriodChange }) => {
   // 라디오 선택값에 따라 frDt·toDt 를 정한다. 직접입력은 DatePicker 로 고른다
   const [selectedPeriod, setSelectedPeriod] = useState<string>(radioValue);
-  const [startDate, setStartDate] = useState<string>(frDt); // 모달 내부 표시용
-  const [endDate, setEndDate] = useState<string>(toDt);
+  // 모달 내부 표시용. 화면은 서버 형식(YYYYMMDD)으로 보관하므로 받은 값을 표시 형식(YYYY-MM-DD)으로 바꿔 둔다.
+  // 직접입력일 때는 아래 효과가 값을 다시 계산하지 않아, 변환 없이 쓰면 두 번째 열 때부터 하이픈 없는 값이 그대로 보인다
+  const [startDate, setStartDate] = useState<string>(frDt ? getDateWithHypen(frDt) : '');
+  const [endDate, setEndDate] = useState<string>(toDt ? getDateWithHypen(toDt) : '');
 
   const periodRadioButtons = [
     { id: '1week', label: '1주일', value: '1week' },
