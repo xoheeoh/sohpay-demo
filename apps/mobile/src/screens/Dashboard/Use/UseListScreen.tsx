@@ -8,7 +8,15 @@ import { TransactionListItem } from '@typ/paymentType';
 import { convertDateWithoutHypen, getDateMonthsAgo, getDateWithHypen, getOneWeekAgoDate } from '@utils/formatter';
 import { useDialog } from '@contexts/DialogContext';
 import { loadTransactionList } from '@apis/paymentApi';
-import { BottomSheet, Dropdown, PrimaryButton, ScreenWrapper, SkeletonList, Typography } from '@components/common';
+import {
+  BottomSheet,
+  Dropdown,
+  PrimaryButton,
+  ScreenWrapper,
+  SkeletonList,
+  Typography,
+  useScreenBottomPadding,
+} from '@components/common';
 import {
   ChargeComponent,
   GetCdModal,
@@ -22,6 +30,8 @@ import { theme } from '@styles';
 type UseListScreenProps = NativeStackScreenProps<RootStackParamList, 'UseList'>;
 
 const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
+  // 결과 카드 아래 여백. 다른 카드형 화면과 같은 규칙(iOS 는 안전 영역이 있으면 0, 그 외 16)
+  const screenBottom = useScreenBottomPadding();
   /**
    * 초기 조회 조건. 기본은 1주일·결제, 대시보드 "전체보기"(showAll)로 들어오면 3개월·모두.
    * 대시보드 최근 목록은 기간 제한이 없어 같은 건들이 여기서도 보이도록 넉넉히 연다.
@@ -297,7 +307,7 @@ const UseListScreen: React.FC<UseListScreenProps> = ({ route }) => {
       </View>
 
       {/* 조회 결과 카드: 남은 높이를 다 쓰고 목록만 안에서 스크롤된다 */}
-      <View style={styles.listCard}>
+      <View style={[styles.listCard, { marginBottom: screenBottom.paddingBottom }]}>
         {!isLoaded ? (
           // 첫 조회가 끝나기 전에는 "없음" 문구 대신 자리표시자를 보여준다
           <View style={styles.listInner}>
@@ -413,7 +423,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 16,
     marginTop: 16,
-    marginBottom: 24,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
     boxShadow: theme.shadow.card,
