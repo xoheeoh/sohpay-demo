@@ -52,7 +52,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ data }) => {
           {getContent(data?.transType as TransType)}
         </Typography>
 
-        <Typography mode="caption1" color={isCancel ? 'blue500' : 'gray500'}>
+        <Typography mode="caption1" color={isCancel ? 'primary' : 'gray500'}>
           {TransTypeEnum[data?.transType as 'PAY']}
         </Typography>
       </View>

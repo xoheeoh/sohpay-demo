@@ -49,13 +49,11 @@ export type TrxAmountKind = 'pay' | 'cancel' | 'charge' | 'refund';
 
 /**
  * 거래 금액 글자색. 홈 최근 내역·이용내역 목록·상세가 같은 규칙을 쓰게 한 곳에 둔다.
- * - 취소·부분취소(돈이 돌아옴): 파랑
- * - 충전(돈이 들어옴): 메인 파랑
- * - 결제·출금(돈이 나감): 기본 진한 글자색
+ * - 취소·부분취소·충전(돈이 들어옴, +): 메인 파랑 하나로 쓴다. 종류 구분은 옆의 상태 배지가 맡고, 비슷한 파랑 두 가지는 눈으로 구분되지 않는다
+ * - 결제·출금(돈이 나감, -): 기본 진한 글자색
  */
 export const getTrxAmountColor = (kind: TrxAmountKind): keyof typeof theme.colors => {
-  if (kind === 'cancel') return 'blue500';
-  if (kind === 'charge') return 'primary';
+  if (kind === 'cancel' || kind === 'charge') return 'primary';
   return 'gray900';
 };
 
