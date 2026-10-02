@@ -124,7 +124,7 @@ const QRcodeScanScreen: React.FC<QRcodeScanScreenProps> = ({ navigation }) => {
           });
         }
       }
-    } catch (error) {
+    } catch {
       confirm({
         title: '조회 실패',
         message1: 'QR 코드 인식에 실패했습니다.',

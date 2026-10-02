@@ -178,6 +178,9 @@ const Dropdown = forwardRef<DropDownHandle, DropdownProps>(
   },
 );
 
+// forwardRef 컴포넌트는 이름이 자동으로 붙지 않아 개발 도구에 익명으로 나온다
+Dropdown.displayName = 'Dropdown';
+
 // 셀렉트 박스와 옵션 리스트 사이 간격
 const OPTION_BOX_GAP = 8;
 // 옵션 리스트 상자의 최대 높이. 넘치면 안에서 스크롤된다

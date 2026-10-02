@@ -19,7 +19,7 @@ const Term4 = () => {
           제1조 (목적)
         </Typography>
         <Typography mode="body2" color="gray600">
-          이 약관은 SohPay(이하 "서비스")가 제공하는 데모 기능의 이용 조건과 절차를 정하는 것을 목적으로 합니다.
+          이 약관은 SohPay(이하 “서비스”)가 제공하는 데모 기능의 이용 조건과 절차를 정하는 것을 목적으로 합니다.
         </Typography>
       </View>
 

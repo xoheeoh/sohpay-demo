@@ -40,9 +40,8 @@ export const emailFor = (mbUid: string) => `${mbUid.trim().toLowerCase()}@demo.s
 export const hasSession = async () => !!(await supabase.auth.getSession()).data.session;
 
 /* ── 응답 모양 ─────────────────────────────────────────────────── */
-// 화면 코드는 응답을 any 로 다루므로 어댑터도 그 계약을 지킨다. 내부에서는 T 로 모양을 맞춘다.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ApiResult<T = {}> = any;
+// 화면 코드는 응답을 any 로 다루므로 어댑터도 그 계약을 지킨다. Result<T> 를 함께 적어 T 가 가리키는 모양을 드러내되, any 와의 합집합이라 결국 any 다.
+export type ApiResult<T = object> = Result<T> | any;
 type Result<T> = { resultCd: string; resultMsg: string } & Partial<T>;
 
 export const ok = <T extends object>(data?: T): ApiResult<T> =>
@@ -108,7 +107,7 @@ export const fail = (code: string, msg?: string): ApiResult =>
   ({
     resultCd: LEGACY_CODES[code] ?? code ?? '9999',
     resultMsg: msg ?? MESSAGES[code] ?? '요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.',
-  }) as Result<{}>;
+  }) as Result<object>;
 
 /** supabase { data, error } → 값. 실패는 throw. */
 export function unwrap<T>(res: { data: T | null; error: { message: string; code?: string } | null }): T {
