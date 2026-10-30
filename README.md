@@ -7,7 +7,12 @@
 
 충전 · QR 결제 · 출금이 되는 선불 지갑 앱입니다. React Native(Expo) 한 코드베이스로 iOS · Android · Web 에서 동작합니다.
 
-<!-- 배포 후 채우기: 웹 데모 URL, 스크린샷 또는 GIF 3~4장 (홈 / QR 결제 / 충전 결제창 / 이용 내역) -->
+|                           홈                           |                                 결제 확인                                 |                               충전 · 모의 결제창                                |                               이용내역                                |
+| :----------------------------------------------------: | :-----------------------------------------------------------------------: | :-----------------------------------------------------------------------------: | :-------------------------------------------------------------------: |
+| <img src="docs/screens/home.png" width="190" alt="홈"> | <img src="docs/screens/pay-confirm.png" width="190" alt="결제 확인 화면"> | <img src="docs/screens/charge-checkout.png" width="190" alt="충전 모의 결제창"> | <img src="docs/screens/use-list.png" width="190" alt="이용내역 조회"> |
+|             잔액 · 충전 · 출금 · 최근 내역             |                QR 또는 결제코드로 불러온 가맹점·금액 확인                 |               승인 · 거절 · 취소를 골라 보는 데모용 결제대행사 창               |                기간 · 종류 · 상태 필터와 실패 건 표시                 |
+
+<!-- 배포 후 채우기: 웹 데모 URL -->
 
 ## 데모 계정
 
@@ -75,6 +80,7 @@ sohpay-demo/
     src/shims/                  플랫폼 대역 — env · linear-gradient · 웹용 WebView(iframe)
   docs/api-spec.md              앱이 연동 기준으로 삼은 API 명세
   docs/demo/                    README 용 데모 QR
+  docs/screens/                 README 용 화면 캡처 (웹 빌드, 390×844 @2x)
   supabase/                     데모용 API 서버 (아래 "범위" 참고)
 ```
 
