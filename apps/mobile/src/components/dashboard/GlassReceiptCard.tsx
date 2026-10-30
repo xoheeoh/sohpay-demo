@@ -83,7 +83,7 @@ const GlassReceiptCard: React.FC<GlassReceiptCardProps> = ({ badgeLabel, amountL
         <View style={{ gap: 10 }}>
           {rows.map((row) => (
             <View key={row.label} style={styles.row}>
-              <Typography mode="body2" color="blue700">
+              <Typography mode="body2" color="blue700" style={styles.rowLabel}>
                 {row.label}
               </Typography>
               {row.value === null ? (
@@ -133,7 +133,8 @@ const styles = StyleSheet.create({
   amount: { fontSize: 34, lineHeight: 42, letterSpacing: -1 },
   divider: { height: 1, backgroundColor: 'rgba(30, 99, 240, 0.14)' },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 16 },
-  // 긴 값이 카드 밖으로 나가지 않게 값 칸이 남는 폭만 쓰고 말줄임한다
+  // 라벨은 줄어들지 않고 값 칸만 남는 폭을 쓰며 말줄임한다. 둘 다 줄어들면 거래번호처럼 긴 값에 라벨이 두 줄로 꺾인다
+  rowLabel: { flexShrink: 0 },
   rowValue: { flexShrink: 1, textAlign: 'right' },
   // 유리 위에서는 기본 회색 막대가 묻히므로 파랑 기운을 살짝 준다
   rowSkeleton: { backgroundColor: 'rgba(30, 99, 240, 0.12)' },
