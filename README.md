@@ -14,7 +14,9 @@
   <img src="docs/screenshots/use-list.png" width="180" alt="이용내역">
 </p>
 
-<!-- 배포 후 채우기: 웹 데모 URL -->
+<p align="center">
+  <b>웹 데모</b> · <a href="https://sohpay.expo.app">https://sohpay.expo.app</a>
+</p>
 
 ## 데모 계정
 
